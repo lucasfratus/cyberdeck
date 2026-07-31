@@ -1,0 +1,138 @@
+[gd_scene format=3 uid="uid://ctfhiml4ekq77"]
+
+[ext_resource type="Texture2D" uid="uid://dcaecivuuklci" path="res://assets/cards/frame.png" id="1_5xlns"]
+[ext_resource type="Script" uid="uid://d1yog46kf6p6w" path="res://scenes/cards/Card.gd" id="1_m2018"]
+[ext_resource type="Theme" uid="uid://clquvag5cm5t2" path="res://assets/themes/card_theme.tres" id="1_ylc8b"]
+[ext_resource type="Texture2D" uid="uid://efpkqj2xug20" path="res://assets/icons/category.png" id="2_m2018"]
+[ext_resource type="Texture2D" uid="uid://r1fvpl046c8j" path="res://assets/icons/shield.png" id="3_ylc8b"]
+[ext_resource type="Texture2D" uid="uid://donwnqqgdybna" path="res://assets/icons/chain.png" id="4_vin7x"]
+[ext_resource type="FontFile" uid="uid://du3kj574bj4rs" path="res://assets/fonts/AtkinsonHyperlegible-Bold.ttf" id="5_vin7x"]
+
+[node name="Card" type="Control" unique_id=1464046932]
+custom_minimum_size = Vector2(180, 252)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme = ExtResource("1_ylc8b")
+script = ExtResource("1_m2018")
+
+[node name="Background" type="TextureRect" parent="." unique_id=19592861]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_5xlns")
+expand_mode = 1
+
+[node name="Content" type="MarginContainer" parent="." unique_id=732724409]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 8
+metadata/_edit_use_anchors_ = true
+
+[node name="Main" type="VBoxContainer" parent="Content" unique_id=665047542]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Header" type="HBoxContainer" parent="Content/Main" unique_id=1145897059]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MarginContainer" type="MarginContainer" parent="Content/Main/Header" unique_id=1834575466]
+layout_mode = 2
+
+[node name="CategoryIcon" type="TextureRect" parent="Content/Main/Header" unique_id=2071052810]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("2_m2018")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Content/Main/Header" unique_id=797804091]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("5_vin7x")
+theme_override_font_sizes/font_size = 20
+
+[node name="IllustrationArea" type="Control" parent="Content/Main" unique_id=2115478041]
+custom_minimum_size = Vector2(150, 113)
+layout_mode = 2
+
+[node name="Illustration" type="TextureRect" parent="Content/Main/IllustrationArea" unique_id=1643166742]
+custom_minimum_size = Vector2(150, 113)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="Attributes" type="HBoxContainer" parent="Content/Main" unique_id=322868509]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ProtectionBox" type="CenterContainer" parent="Content/Main/Attributes" unique_id=42537878]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="Protection" type="HBoxContainer" parent="Content/Main/Attributes/ProtectionBox" unique_id=1429539873]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ShieldIcon" type="TextureRect" parent="Content/Main/Attributes/ProtectionBox/Protection" unique_id=1789718335]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("3_ylc8b")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ProtectionValue" type="Label" parent="Content/Main/Attributes/ProtectionBox/Protection" unique_id=672998765]
+layout_mode = 2
+
+[node name="VulnerabilityBox" type="CenterContainer" parent="Content/Main/Attributes" unique_id=2035684439]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="Vulnerability" type="HBoxContainer" parent="Content/Main/Attributes/VulnerabilityBox" unique_id=341107695]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ChainIcon" type="TextureRect" parent="Content/Main/Attributes/VulnerabilityBox/Vulnerability" unique_id=912931546]
+custom_minimum_size = Vector2(28, 22)
+layout_mode = 2
+texture = ExtResource("4_vin7x")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VulnerabilityValue" type="Label" parent="Content/Main/Attributes/VulnerabilityBox/Vulnerability" unique_id=103344056]
+layout_mode = 2
+
+[node name="DescriptionArea" type="Control" parent="Content/Main" unique_id=899630803]
+custom_minimum_size = Vector2(150, 65)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Content/Main/DescriptionArea" unique_id=1310290073]
+layout_mode = 0
+offset_right = 165.0
+offset_bottom = 65.0
+
+[node name="Description" type="RichTextLabel" parent="Content/Main/DescriptionArea/MarginContainer" unique_id=1620549943]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.008202022, 0.008202025, 0.008202025, 1)
+theme_override_constants/line_separation = -4
+theme_override_font_sizes/normal_font_size = 14
+tab_size = 1
+horizontal_alignment = 1
+vertical_alignment = 1
+justification_flags = 161

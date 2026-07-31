@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dvy1qj4sln0g3"]
+
+[ext_resource type="Script" uid="uid://dinr6ebw667sp" path="res://tests/TestRenderCard.gd" id="1_yfbgx"]
+[ext_resource type="PackedScene" uid="uid://ctfhiml4ekq77" path="res://scenes/cards/Card.tscn" id="2_n6he3"]
+
+[node name="TestRenderCard" type="Node" unique_id=1358573665]
+script = ExtResource("1_yfbgx")
+
+[node name="Card" parent="." unique_id=1464046932 instance=ExtResource("2_n6he3")]

@@ -1,0 +1,11 @@
+[gd_resource type="Theme" format=3 uid="uid://clquvag5cm5t2"]
+
+[ext_resource type="FontFile" uid="uid://bbh4srkr8yfql" path="res://assets/fonts/AtkinsonHyperlegible-Regular.ttf" id="1_mc17c"]
+
+[resource]
+default_font = ExtResource("1_mc17c")
+Label/colors/font_color = Color(1, 1, 1, 1)
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/constants/outline_size = 2
+Label/font_sizes/font_size = 16
+Label/fonts/font = ExtResource("1_mc17c")

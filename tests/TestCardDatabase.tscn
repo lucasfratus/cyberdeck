@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cdybysery3o3o"]
+
+[ext_resource type="Script" uid="uid://btxn57vr21uf" path="res://tests/TestCardDatabase.gd" id="1_wj586"]
+
+[node name="TestCardDatabase" type="Node" unique_id=1774585778]
+script = ExtResource("1_wj586")

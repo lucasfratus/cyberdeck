@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dlt4vwvt4jnil"]
+
+[ext_resource type="Texture2D" uid="uid://cf41j70o1n7lq" path="res://assets/icons/categories/authentication.png" id="1_dwhc6"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="1_pfr0a"]
+[ext_resource type="Texture2D" uid="uid://bp4ei2cnriemg" path="res://assets/cards/illustrations/reutilizar_senha.png" id="2_x6rtt"]
+
+[resource]
+script = ExtResource("1_pfr0a")
+id = &"reutilizar_senha"
+title = "Reutilizar Senha"
+description = "Usar a mesma senha em vários serviços facilita ataques em cadeia após um vazamento."
+illustration = ExtResource("2_x6rtt")
+category_icon = ExtResource("1_dwhc6")
+protection = 10
+vulnerability = 3.0
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

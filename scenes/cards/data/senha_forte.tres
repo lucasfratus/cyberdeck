@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dt1sqka14jouu"]
 
-[ext_resource type="Texture2D" uid="uid://yia2ykamkl8q" path="res://assets/icons/categories/authentication.png" id="1_mrx6y"]
+[ext_resource type="Texture2D" uid="uid://cf41j70o1n7lq" path="res://assets/icons/categories/authentication.png" id="1_mrx6y"]
 [ext_resource type="Texture2D" uid="uid://pppivf07c1h4" path="res://assets/cards/illustrations/strong_password_i.png" id="1_ogcaf"]
 [ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="1_xrjt6"]
 
 [resource]
 script = ExtResource("1_xrjt6")
-id = &"strong_password"
+id = &"senha_forte"
 title = "Senha Forte"
 description = "Utilize senhas longas e exclusivas para cada serviço."
 illustration = ExtResource("1_ogcaf")

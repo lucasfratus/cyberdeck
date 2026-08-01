@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ug7jdafbwtx0"]
+
+[ext_resource type="Texture2D" uid="uid://cf41j70o1n7lq" path="res://assets/icons/categories/authentication.png" id="1_27dcg"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="1_m7ntr"]
+[ext_resource type="Texture2D" uid="uid://blxo2b2ijms3r" path="res://assets/cards/illustrations/autenticacao_2fa.png" id="2_iedur"]
+
+[resource]
+script = ExtResource("1_m7ntr")
+id = &"autenticacao_2fa"
+title = "Autenticação em Dois Fatores"
+description = "Adiciona uma segunda etapa de verificação e reduz o risco de acesso indevido."
+illustration = ExtResource("2_iedur")
+category_icon = ExtResource("1_27dcg")
+protection = 20
+vulnerability = 1.5
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

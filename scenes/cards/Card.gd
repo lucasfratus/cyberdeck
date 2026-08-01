@@ -43,6 +43,8 @@ func setup(card_data: CardData):
 		await ready
 
 	title.text = data.title
+	await _fit_title_font()
+	
 	description.text = data.description
 	illustration.texture = data.illustration
 	category_icon.texture = data.category_icon
@@ -151,3 +153,35 @@ func set_interaction_enabled(enabled: bool) -> void:
 
 func is_interaction_enabled() -> bool:
 	return interaction_enabled
+
+
+const TITLE_FONT_SIZE := 16
+const TITLE_MIN_FONT_SIZE := 9
+
+
+func _fit_title_font() -> void:
+	# Espera os Containers definirem a largura real do Label.
+	await get_tree().process_frame
+
+	var available_width: float = title.size.x
+
+	if available_width <= 0.0:
+		return
+
+	var font: Font = title.get_theme_font("font")
+	var font_size := TITLE_FONT_SIZE
+
+	while font_size > TITLE_MIN_FONT_SIZE:
+		var text_width := font.get_string_size(
+			title.text,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			font_size
+		).x
+
+		if text_width <= available_width:
+			break
+
+		font_size -= 1
+
+	title.add_theme_font_size_override("font_size", font_size)

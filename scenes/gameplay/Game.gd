@@ -52,6 +52,7 @@ func _ready() -> void:
 
 	_start_game()
 
+
 func _start_game() -> void:
 	if scenarios.is_empty():
 		push_error("Nenhum cenário foi configurado.")
@@ -99,17 +100,13 @@ func _connect_signals() -> void:
 func _setup_deck() -> void:
 	player_deck.setup([
 		CardID.SENHA_FORTE,
-		#CardID.FIREWALL,
-		#CardID.PHISHING,
-		#CardID.ANTIVIRUS,
 		CardID.SENHA_FORTE,
-		CardID.SENHA_FORTE,
-		CardID.SENHA_FORTE,
-		CardID.SENHA_FORTE,
-		CardID.SENHA_FORTE,
-		#CardID.FIREWALL,
-		#CardID.PHISHING,
-		#CardID.ANTIVIRUS
+		CardID.AUTENTICACAO_2FA,
+		CardID.AUTENTICACAO_2FA,
+		CardID.REUTILIZAR_SENHA,
+		CardID.REUTILIZAR_SENHA,
+		CardID.LINK_SUSPEITO,
+		CardID.LINK_SUSPEITO
 	])
 
 

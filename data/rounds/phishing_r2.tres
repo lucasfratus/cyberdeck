@@ -1,7 +1,10 @@
 [gd_resource type="Resource" script_class="RoundData" format=3 uid="uid://hry0xv3hcptt"]
 
-[ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_vbhqj"]
+[ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_jccd0"]
 
 [resource]
-script = ExtResource("1_vbhqj")
+script = ExtResource("1_jccd0")
+id = &"phishing_r2"
+attack_name = "phishing"
+base_risk = 200.0
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

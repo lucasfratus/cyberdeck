@@ -27,8 +27,13 @@ const PHISHING_SCENARIO: ScenarioData = preload(
 	"res://data/scenarios/phishing_scenario.tres"
 )
 
+const PASSWORD_SCENARIO: ScenarioData = preload(
+	"res://data/scenarios/password_scenario.tres"
+)
+
 var scenarios: Array[ScenarioData] = [
-	PHISHING_SCENARIO
+	PHISHING_SCENARIO,
+	PASSWORD_SCENARIO
 ]
 
 var current_scenario_index := 0

@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cjspi6oyhmk0d"]
 
+[ext_resource type="Script" uid="uid://b7eh6mmgy1fer" path="res://scenes/hand/Hand.gd" id="1_8vxba"]
 [ext_resource type="Script" uid="uid://umdgrr2w5fy3" path="res://scenes/hand/CardContainer.gd" id="1_ou7ip"]
 [ext_resource type="Script" uid="uid://bx40g53r8nypw" path="res://scenes/hand/HandLayout.gd" id="2_0nsk7"]
 
@@ -10,6 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_8vxba")
 
 [node name="CardContainer" type="Control" parent="." unique_id=1322813232]
 layout_mode = 1

@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://1i4hk6sug18l"]
+
+[ext_resource type="Script" uid="uid://0ju2x5rdtj8v" path="res://scenes/gameplay/Game.gd" id="1_14ymu"]
+[ext_resource type="PackedScene" uid="uid://cjspi6oyhmk0d" path="res://scenes/hand/Hand.tscn" id="2_brcjj"]
+
+[node name="Game" type="Control" unique_id=756523954]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_14ymu")
+
+[node name="Hand" parent="." unique_id=965247429 instance=ExtResource("2_brcjj")]
+layout_mode = 1
+
+[node name="PlayButton" type="Button" parent="." unique_id=1669867913]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Jogar"

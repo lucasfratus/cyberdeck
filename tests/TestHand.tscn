@@ -2,15 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cq8lvqkishf6w" path="res://tests/TestHand.gd" id="1_ms8nv"]
 [ext_resource type="PackedScene" uid="uid://cjspi6oyhmk0d" path="res://scenes/hand/Hand.tscn" id="2_o8hvo"]
-[ext_resource type="Script" uid="uid://b7eh6mmgy1fer" path="res://scenes/hand/Hand.gd" id="3_o8hvo"]
 
 [node name="TestHand" type="Node2D" unique_id=1334308115]
 script = ExtResource("1_ms8nv")
 
 [node name="Hand" parent="." unique_id=965247429 instance=ExtResource("2_o8hvo")]
-script = ExtResource("3_o8hvo")
-
-[node name="PlayButton" type="Button" parent="." unique_id=358656167]
-offset_right = 8.0
-offset_bottom = 8.0
-text = "Jogar"

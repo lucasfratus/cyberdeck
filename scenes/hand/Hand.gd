@@ -78,7 +78,7 @@ func clear_selection() -> void:
 func get_selected_cards() -> Array[Card]:
 	return selected_cards.duplicate()
 	
-	
+
 func play_selected_cards() -> void:
 	if selected_cards.is_empty():
 		return

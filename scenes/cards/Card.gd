@@ -8,14 +8,24 @@ class_name Card
 @onready var protection = $Content/Main/Attributes/ProtectionBox/Protection/ProtectionValue
 @onready var vulnerability = $Content/Main/Attributes/VulnerabilityBox/Vulnerability/VulnerabilityValue
 @onready var hover_area: Control = $HoverArea
+@onready var selection_outline: Panel = $SelectionOutline
+
+signal selection_requested(card: Card)
 
 var data: CardData
-
+var is_selected := false
 var hover_tween: Tween
 var original_z_index := 0
 
 const HOVER_SCALE := 1.08
 const HOVER_DURATION := 0.12
+
+var hand_position := Vector2.ZERO
+var position_tween: Tween
+
+const SELECTED_OFFSET := Vector2(0, -20)
+const SELECTION_MOVE_DURATION := 0.12
+
 
 func _ready() -> void:
 	# A escala ocorrerá a partir do centro da carta.
@@ -23,6 +33,7 @@ func _ready() -> void:
 
 	hover_area.mouse_entered.connect(_on_hover_area_mouse_entered)
 	hover_area.mouse_exited.connect(_on_hover_area_mouse_exited)
+	hover_area.gui_input.connect(_on_hover_area_gui_input)
 
 func setup(card_data: CardData):
 	data = card_data
@@ -50,6 +61,19 @@ func _on_hover_area_mouse_exited() -> void:
 	_animate_scale(Vector2.ONE)
 
 
+func _on_hover_area_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			selection_requested.emit(self)
+			accept_event()
+
+
+func set_selected(value: bool) -> void:
+	is_selected = value
+	selection_outline.visible = value
+	_update_selection_position()
+
+
 func _animate_scale(target_scale: Vector2) -> void:
 	if hover_tween != null and hover_tween.is_valid():
 		hover_tween.kill()
@@ -62,4 +86,44 @@ func _animate_scale(target_scale: Vector2) -> void:
 		"scale",
 		target_scale,
 		HOVER_DURATION
+	)
+
+
+func set_hand_position(new_position: Vector2, immediate := false) -> void:
+	hand_position = new_position
+
+	var target_position := _get_target_position()
+
+	if immediate:
+		if position_tween != null and position_tween.is_valid():
+			position_tween.kill()
+
+		position = target_position
+	else:
+		_animate_position(target_position)
+
+
+func _update_selection_position() -> void:
+	_animate_position(_get_target_position())
+
+
+func _get_target_position() -> Vector2:
+	if is_selected:
+		return hand_position + SELECTED_OFFSET
+
+	return hand_position
+
+
+func _animate_position(target_position: Vector2) -> void:
+	if position_tween != null and position_tween.is_valid():
+		position_tween.kill()
+
+	position_tween = create_tween()
+	position_tween.set_trans(Tween.TRANS_QUAD)
+	position_tween.set_ease(Tween.EASE_OUT)
+	position_tween.tween_property(
+		self,
+		"position",
+		target_position,
+		SELECTION_MOVE_DURATION
 	)

@@ -8,6 +8,15 @@
 [ext_resource type="Texture2D" uid="uid://4wlv30nn3mmn" path="res://assets/icons/chain.png" id="4_vin7x"]
 [ext_resource type="FontFile" uid="uid://du3kj574bj4rs" path="res://assets/fonts/AtkinsonHyperlegible-Bold.ttf" id="5_vin7x"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ucufk"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.27710304, 0.24326664, 1, 1)
+corner_detail = 6
+
 [node name="Card" type="Control" unique_id=1464046932]
 custom_minimum_size = Vector2(180, 252)
 layout_mode = 3
@@ -145,3 +154,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_force_pass_scroll_events = false
+
+[node name="SelectionOutline" type="Panel" parent="." unique_id=316824987]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ucufk")

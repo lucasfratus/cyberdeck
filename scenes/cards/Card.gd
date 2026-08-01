@@ -16,6 +16,7 @@ var data: CardData
 var is_selected := false
 var hover_tween: Tween
 var original_z_index := 0
+var interaction_enabled := true
 
 const HOVER_SCALE := 1.08
 const HOVER_DURATION := 0.12
@@ -130,6 +131,8 @@ func _animate_position(target_position: Vector2) -> void:
 
 
 func set_interaction_enabled(enabled: bool) -> void:
+	interaction_enabled = enabled
+
 	if enabled:
 		hover_area.mouse_filter = Control.MOUSE_FILTER_STOP
 		return
@@ -144,3 +147,7 @@ func set_interaction_enabled(enabled: bool) -> void:
 
 	scale = Vector2.ONE
 	z_index = 0
+	
+
+func is_interaction_enabled() -> bool:
+	return interaction_enabled

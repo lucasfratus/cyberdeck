@@ -1,16 +1,27 @@
 extends Control
 
 const INITIAL_HAND_SIZE := 5
+const ROUND_RISK := 200.0
+const MAX_PLAYS := 3
 
 @onready var hand: Hand = $Hand
 @onready var play_button: Button = $PlayButton
 @onready var played_cards: Control = $PlayArea/PlayedCards
 @onready var score_label: Label = $PlayArea/ScoreLabel
 @onready var resolve_play_timer: Timer = $ResolvePlayTimer
+@onready var risk_label: Label = $HUD/RiskLabel
+@onready var round_score_label: Label = $HUD/RoundScoreLabel
+@onready var plays_label: Label = $HUD/PlaysLabel
+@onready var result_label: Label = $HUD/ResultLabel
 
 var player_deck := PlayerDeck.new()
 var pending_cards: Array[Card] = []
 var is_resolving_play := false
+
+var round_score := 0.0
+var plays_remaining := MAX_PLAYS
+var current_play_score := 0.0
+var round_finished := false
 
 func _ready() -> void:
 	hand.position = Vector2(600, 450)
@@ -21,6 +32,7 @@ func _ready() -> void:
 	play_button.disabled = true
 
 	_draw_cards(INITIAL_HAND_SIZE)
+	_start_round()
 
 
 func _connect_signals() -> void:
@@ -67,14 +79,18 @@ func _draw_cards(amount: int) -> void:
 
 
 func _on_play_button_pressed() -> void:
-	if is_resolving_play:
+	if is_resolving_play or round_finished:
 		return
 
 	hand.play_selected_cards()
 
 
 func _on_selection_changed(cards: Array[Card]) -> void:
-	play_button.disabled = cards.is_empty() or is_resolving_play
+	play_button.disabled = (
+		cards.is_empty()
+		or is_resolving_play
+		or round_finished
+	)
 
 
 func _on_cards_played(cards: Array[Card]) -> void:
@@ -136,6 +152,8 @@ func _calculate_score(cards: Array[Card]) -> Dictionary:
 func _update_score_display(cards: Array[Card]) -> void:
 	var result := _calculate_score(cards)
 
+	current_play_score = float(result["total"])
+
 	score_label.text = (
 		"Proteção: %d  |  Vulnerabilidade: ×%.2f  |  Pontuação: %.2f"
 		% [
@@ -153,6 +171,9 @@ func _resolve_played_cards() -> void:
 
 	var amount_played := pending_cards.size()
 
+	round_score += current_play_score
+	plays_remaining -= 1
+
 	for card in pending_cards:
 		if card.data != null:
 			player_deck.discard(str(card.data.id))
@@ -160,6 +181,17 @@ func _resolve_played_cards() -> void:
 		card.queue_free()
 
 	pending_cards.clear()
+	current_play_score = 0.0
+
+	_update_round_hud()
+
+	if round_score >= ROUND_RISK:
+		_finish_round(true)
+		return
+
+	if plays_remaining <= 0:
+		_finish_round(false)
+		return
 
 	score_label.text = "Selecione as cartas"
 
@@ -167,3 +199,39 @@ func _resolve_played_cards() -> void:
 
 	is_resolving_play = false
 	play_button.disabled = true
+
+
+func _start_round() -> void:
+	round_score = 0.0
+	plays_remaining = MAX_PLAYS
+	current_play_score = 0.0
+	round_finished = false
+
+	result_label.text = ""
+
+	_update_round_hud()
+	
+	
+func _update_round_hud() -> void:
+	risk_label.text = "Índice de Risco: %.0f" % ROUND_RISK
+	round_score_label.text = "Pontuação da rodada: %.0f" % round_score
+	plays_label.text = "Jogadas restantes: %d" % plays_remaining
+	
+	
+func _finish_round(victory: bool) -> void:
+	round_finished = true
+	is_resolving_play = false
+	play_button.disabled = true
+
+	if victory:
+		result_label.text = "Rodada vencida!"
+	else:
+		result_label.text = "Rodada perdida!"
+
+	score_label.text = (
+		"Pontuação final: %.0f / %.0f"
+		% [round_score, ROUND_RISK]
+	)
+
+	hand.clear_selection()
+	hand.set_interaction_enabled(false)

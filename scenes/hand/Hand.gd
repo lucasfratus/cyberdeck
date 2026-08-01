@@ -45,14 +45,6 @@ func get_cards() -> Array[Card]:
 	return card_container.get_cards()
 	
 	
-func _on_card_selection_requested(card: Card) -> void:
-	if card.is_selected:
-		_deselect_card(card)
-	else:
-		_select_card(card)
-
-	selection_changed.emit(selected_cards.duplicate())
-	
 
 func _select_card(card: Card) -> void:
 	if selected_cards.size() >= max_selected_cards:
@@ -96,3 +88,20 @@ func play_selected_cards() -> void:
 	layout.update_layout(card_container)
 	selection_changed.emit(selected_cards.duplicate())
 	cards_played.emit(cards_to_play)
+	
+
+func set_interaction_enabled(enabled: bool) -> void:
+	for card in card_container.get_cards():
+		card.set_interaction_enabled(enabled)
+		
+
+func _on_card_selection_requested(card: Card) -> void:
+	if not card.is_interaction_enabled():
+		return
+
+	if card.is_selected:
+		_deselect_card(card)
+	else:
+		_select_card(card)
+
+	selection_changed.emit(selected_cards.duplicate())

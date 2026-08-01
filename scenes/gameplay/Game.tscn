@@ -12,11 +12,39 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_14ymu")
 
+[node name="PlayArea" type="Control" parent="." unique_id=1189517273]
+anchors_preset = 0
+offset_left = 552.0
+offset_top = 247.0
+offset_right = 592.0
+offset_bottom = 287.0
+
+[node name="PlayedCards" type="Control" parent="PlayArea" unique_id=198071342]
+anchors_preset = 0
+offset_left = -78.0
+offset_top = -49.0
+offset_right = -38.0
+offset_bottom = -9.0
+
+[node name="ScoreLabel" type="Label" parent="PlayArea" unique_id=198825016]
+layout_mode = 0
+offset_left = -73.0
+offset_top = -200.0
+offset_right = 74.0
+offset_bottom = -177.0
+text = "Selecione as cartas"
+
 [node name="Hand" parent="." unique_id=965247429 instance=ExtResource("2_brcjj")]
 layout_mode = 1
 
 [node name="PlayButton" type="Button" parent="." unique_id=1669867913]
 layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+offset_left = 69.0
+offset_top = 571.0
+offset_right = 117.0
+offset_bottom = 602.0
 text = "Jogar"
+
+[node name="ResolvePlayTimer" type="Timer" parent="." unique_id=1163770455]
+wait_time = 1.5
+one_shot = true

@@ -127,3 +127,20 @@ func _animate_position(target_position: Vector2) -> void:
 		target_position,
 		SELECTION_MOVE_DURATION
 	)
+
+
+func set_interaction_enabled(enabled: bool) -> void:
+	if enabled:
+		hover_area.mouse_filter = Control.MOUSE_FILTER_STOP
+		return
+
+	hover_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if hover_tween != null and hover_tween.is_valid():
+		hover_tween.kill()
+
+	if position_tween != null and position_tween.is_valid():
+		position_tween.kill()
+
+	scale = Vector2.ONE
+	z_index = 0

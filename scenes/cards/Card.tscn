@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://ctfhiml4ekq77"]
 
-[ext_resource type="Texture2D" uid="uid://dcaecivuuklci" path="res://assets/cards/frame.png" id="1_5xlns"]
+[ext_resource type="Texture2D" uid="uid://dug60u0bo6fqv" path="res://assets/cards/frame.png" id="1_5xlns"]
 [ext_resource type="Script" uid="uid://d1yog46kf6p6w" path="res://scenes/cards/Card.gd" id="1_m2018"]
 [ext_resource type="Theme" uid="uid://clquvag5cm5t2" path="res://assets/themes/card_theme.tres" id="1_ylc8b"]
-[ext_resource type="Texture2D" uid="uid://efpkqj2xug20" path="res://assets/icons/category.png" id="2_m2018"]
-[ext_resource type="Texture2D" uid="uid://r1fvpl046c8j" path="res://assets/icons/shield.png" id="3_ylc8b"]
-[ext_resource type="Texture2D" uid="uid://donwnqqgdybna" path="res://assets/icons/chain.png" id="4_vin7x"]
+[ext_resource type="Texture2D" uid="uid://l8ly3ldt7lun" path="res://assets/icons/category.png" id="2_m2018"]
+[ext_resource type="Texture2D" uid="uid://da5dt25x7m6m2" path="res://assets/icons/shield.png" id="3_ylc8b"]
+[ext_resource type="Texture2D" uid="uid://4wlv30nn3mmn" path="res://assets/icons/chain.png" id="4_vin7x"]
 [ext_resource type="FontFile" uid="uid://du3kj574bj4rs" path="res://assets/fonts/AtkinsonHyperlegible-Bold.ttf" id="5_vin7x"]
 
 [node name="Card" type="Control" unique_id=1464046932]
@@ -136,3 +136,12 @@ tab_size = 1
 horizontal_alignment = 1
 vertical_alignment = 1
 justification_flags = 161
+
+[node name="HoverArea" type="Control" parent="." unique_id=2026206223]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_force_pass_scroll_events = false

@@ -10,22 +10,34 @@ const MAX_PLAYS := 3
 @onready var played_cards: Control = $PlayArea/PlayedCards
 @onready var score_label: Label = $PlayArea/ScoreLabel
 @onready var resolve_play_timer: Timer = $ResolvePlayTimer
+@onready var attack_label: Label = $HUD/AttackLabel
 @onready var risk_label: Label = $HUD/RiskLabel
 @onready var round_score_label: Label = $HUD/RoundScoreLabel
 @onready var plays_label: Label = $HUD/PlaysLabel
 @onready var result_label: Label = $HUD/ResultLabel
 @onready var next_round_button: Button = $HUD/NextRoundButton
 
+
 var player_deck := PlayerDeck.new()
 var pending_cards: Array[Card] = []
 var is_resolving_play := false
-var current_round := 1
-var current_round_risk := INITIAL_ROUND_RISK
-
-var round_score := 0.0
-var plays_remaining := MAX_PLAYS
 var current_play_score := 0.0
-var round_finished := false
+
+const PHISHING_SCENARIO: ScenarioData = preload(
+	"res://data/scenarios/phishing_scenario.tres"
+)
+
+var scenarios: Array[ScenarioData] = [
+	PHISHING_SCENARIO
+]
+
+var current_scenario_index := 0
+var current_round_index := 0
+
+var current_scenario_data: ScenarioData
+var current_round_data: RoundData
+
+var round_controller := RoundController.new()
 
 func _ready() -> void:
 	hand.position = Vector2(600, 450)
@@ -33,8 +45,40 @@ func _ready() -> void:
 	_connect_signals()
 	_setup_deck()
 
-	play_button.disabled = true
-	next_round_button.visible = false
+	_start_game()
+
+func _start_game() -> void:
+	if scenarios.is_empty():
+		push_error("Nenhum cenário foi configurado.")
+		return
+
+	current_scenario_index = 0
+	current_round_index = 0
+
+	current_scenario_data = scenarios[current_scenario_index]
+
+	if current_scenario_data.rounds.is_empty():
+		push_error(
+			"O cenário '%s' não possui rodadas."
+			% current_scenario_data.id
+		)
+		return
+
+	current_round_data = current_scenario_data.rounds[current_round_index]
+
+	_start_scenario()
+	
+	
+func _start_scenario() -> void:
+	print(
+		"Iniciando cenário: ",
+		current_scenario_data.display_name
+	)
+
+	print(
+		"Diálogo introdutório: ",
+		current_scenario_data.intro_dialogue_id
+	)
 
 	_start_round()
 
@@ -84,7 +128,7 @@ func _draw_cards(amount: int) -> void:
 
 
 func _on_play_button_pressed() -> void:
-	if is_resolving_play or round_finished:
+	if is_resolving_play or round_controller.finished:
 		return
 
 	hand.play_selected_cards()
@@ -96,21 +140,22 @@ func _update_play_button_state() -> void:
 	play_button.disabled = (
 		not has_selected_cards
 		or is_resolving_play
-		or round_finished
+		or round_controller.finished
 	)
 	
 
 func _on_next_round_button_pressed() -> void:
-	if not round_finished:
+	if not round_controller.finished:
 		return
+
+	var victory := round_controller.has_won()
 
 	_discard_remaining_hand()
 
-	if round_score >= current_round_risk:
-		current_round += 1
-		current_round_risk += RISK_INCREASE_PER_ROUND
-
-	_start_round()
+	if victory:
+		_advance_progression()
+	else:
+		_start_round()
 	
 
 func _on_selection_changed(_cards: Array[Card]) -> void:
@@ -151,39 +196,19 @@ func _show_played_cards(cards: Array[Card]) -> void:
 
 		card.scale = Vector2.ONE
 		card.z_index = i
-		
-		
-func _calculate_score(cards: Array[Card]) -> Dictionary:
-	var protection_sum := 0
-	var vulnerability_product := 1.0
 
-	for card in cards:
-		if card.data == null:
-			continue
-
-		protection_sum += card.data.protection
-		vulnerability_product *= card.data.vulnerability
-
-	var total_score := protection_sum * vulnerability_product
-
-	return {
-		"protection": protection_sum,
-		"vulnerability": vulnerability_product,
-		"total": total_score
-	}
-	
 
 func _update_score_display(cards: Array[Card]) -> void:
-	var result := _calculate_score(cards)
+	var result := ScoreCalculator.calculate(cards)
 
 	current_play_score = float(result["total"])
 
 	score_label.text = (
 		"Proteção: %d  |  Vulnerabilidade: ×%.2f  |  Pontuação: %.2f"
 		% [
-			result["protection"],
-			result["vulnerability"],
-			result["total"]
+			int(result["protection"]),
+			float(result["vulnerability"]),
+			float(result["total"])
 		]
 	)
 	
@@ -195,8 +220,7 @@ func _resolve_played_cards() -> void:
 
 	var amount_played := pending_cards.size()
 
-	round_score += current_play_score
-	plays_remaining -= 1
+	round_controller.register_play(current_play_score)
 
 	for card in pending_cards:
 		if card.data != null:
@@ -209,11 +233,11 @@ func _resolve_played_cards() -> void:
 
 	_update_round_hud()
 
-	if round_score >= current_round_risk:
+	if round_controller.has_won():
 		_finish_round(true)
 		return
 
-	if plays_remaining <= 0:
+	if round_controller.has_lost():
 		_finish_round(false)
 		return
 
@@ -226,11 +250,10 @@ func _resolve_played_cards() -> void:
 
 
 func _start_round() -> void:
-	round_score = 0.0
-	plays_remaining = MAX_PLAYS
 	current_play_score = 0.0
-	round_finished = false
 	is_resolving_play = false
+
+	round_controller.start(current_round_data)
 
 	result_label.text = ""
 	score_label.text = "Selecione as cartas"
@@ -241,7 +264,6 @@ func _start_round() -> void:
 	hand.set_interaction_enabled(true)
 
 	_fill_hand()
-
 	_update_round_hud()
 	_update_play_button_state()
 	
@@ -255,24 +277,72 @@ func _fill_hand() -> void:
 	
 	
 func _update_round_hud() -> void:
+	attack_label.text = (
+		"%s — Rodada %d/%d — Ataque: %s"
+		% [
+			current_scenario_data.display_name,
+			current_round_index + 1,
+			current_scenario_data.rounds.size(),
+			current_round_data.attack_name
+		]
+	)
+
 	risk_label.text = (
-		"Rodada %d — Índice de Risco: %.0f"
-		% [current_round, current_round_risk]
+		"Índice de Risco: %.0f"
+		% round_controller.get_risk()
 	)
 
 	round_score_label.text = (
 		"Pontuação da rodada: %.0f"
-		% round_score
+		% round_controller.score
 	)
 
 	plays_label.text = (
 		"Jogadas restantes: %d"
-		% plays_remaining
+		% round_controller.plays_remaining
 	)
 	
 	
+func _advance_progression() -> void:
+	current_round_index += 1
+
+	# Ainda existem rodadas no cenário atual.
+	if current_round_index < current_scenario_data.rounds.size():
+		current_round_data = (
+			current_scenario_data.rounds[current_round_index]
+		)
+
+		_start_round()
+		return
+
+	# O cenário atual terminou.
+	current_scenario_index += 1
+
+	# Não existem mais cenários.
+	if current_scenario_index >= scenarios.size():
+		_finish_game()
+		return
+
+	# Carrega o próximo cenário.
+	current_scenario_data = scenarios[current_scenario_index]
+	current_round_index = 0
+
+	if current_scenario_data.rounds.is_empty():
+		push_error(
+			"O cenário '%s' não possui rodadas."
+			% current_scenario_data.id
+		)
+		return
+
+	current_round_data = (
+		current_scenario_data.rounds[current_round_index]
+	)
+
+	_start_scenario()
+	
+	
+	
 func _finish_round(victory: bool) -> void:
-	round_finished = true
 	is_resolving_play = false
 	play_button.disabled = true
 
@@ -288,7 +358,10 @@ func _finish_round(victory: bool) -> void:
 
 	score_label.text = (
 		"Pontuação final: %.0f / %.0f"
-		% [round_score, current_round_risk]
+		% [
+			round_controller.score,
+			round_controller.get_risk()
+		]
 	)
 
 	next_round_button.visible = true
@@ -302,3 +375,14 @@ func _discard_remaining_hand() -> void:
 			player_deck.discard(str(card.data.id))
 
 		card.queue_free()
+		
+		
+func _finish_game() -> void:
+	hand.clear_selection()
+	hand.set_interaction_enabled(false)
+
+	play_button.disabled = true
+	next_round_button.visible = false
+
+	result_label.text = "Você concluiu todos os cenários!"
+	score_label.text = "Fim da partida"

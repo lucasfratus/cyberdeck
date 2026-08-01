@@ -59,6 +59,11 @@ offset_right = 1129.0
 offset_bottom = 49.0
 text = "Próxima Rodada"
 
+[node name="AttackLabel" type="Label" parent="HUD" unique_id=125435583]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
 [node name="PlayArea" type="Control" parent="." unique_id=1189517273]
 anchors_preset = 0
 offset_left = 552.0

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DifficultyData" format=3 uid="uid://bdkjeh7nlrhek"]
+
+[ext_resource type="Script" uid="uid://8ax0cmx61ka2" path="res://gameplay/DifficultyData.gd" id="1_87xsm"]
+
+[resource]
+script = ExtResource("1_87xsm")
+id = &"normal"
+display_name = "Normal"
+metadata/_custom_type_script = "uid://8ax0cmx61ka2"

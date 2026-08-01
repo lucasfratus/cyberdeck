@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="RoundData" format=3 uid="uid://cuxrr4y6361qj"]
+
+[ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_nikyh"]
+
+[resource]
+script = ExtResource("1_nikyh")
+attack_name = "phishing"
+metadata/_custom_type_script = "uid://b2puoy2xliopq"

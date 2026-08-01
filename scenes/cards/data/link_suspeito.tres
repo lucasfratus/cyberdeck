@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://nwc7lh6vogb1"]
 
+[ext_resource type="Texture2D" uid="uid://k2cnw71k42k3" path="res://assets/icons/categories/email.png" id="1_65o4j"]
 [ext_resource type="Texture2D" uid="uid://bmb5mxehy3e5s" path="res://assets/cards/illustrations/link_suspeito.png" id="1_ulqmf"]
 [ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_65o4j"]
 
@@ -10,6 +11,7 @@ title = "Clicar em Link Suspeito"
 description = "Links desconhecidos podem levar a páginas falsas ou iniciar downloads maliciosos."
 illustration = ExtResource("1_ulqmf")
 category = 1
+category_icon = ExtResource("1_65o4j")
 protection = 5
 vulnerability = 4.0
 metadata/_custom_type_script = "uid://canwsgyh34f2f"

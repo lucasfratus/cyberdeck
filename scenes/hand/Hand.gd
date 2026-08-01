@@ -44,7 +44,6 @@ func clear() -> void:
 func get_cards() -> Array[Card]:
 	return card_container.get_cards()
 	
-	
 
 func _select_card(card: Card) -> void:
 	if selected_cards.size() >= max_selected_cards:
@@ -65,6 +64,9 @@ func clear_selection() -> void:
 
 	selected_cards.clear()
 	selection_changed.emit(selected_cards.duplicate())
+
+
+
 
 
 func get_selected_cards() -> Array[Card]:
@@ -105,3 +107,16 @@ func _on_card_selection_requested(card: Card) -> void:
 		_select_card(card)
 
 	selection_changed.emit(selected_cards.duplicate())
+
+
+func take_all_cards() -> Array[Card]:
+	var cards := card_container.get_cards()
+
+	clear_selection()
+
+	for card in cards:
+		card_container.remove_child(card)
+
+	layout.update_layout(card_container)
+
+	return cards

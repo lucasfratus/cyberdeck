@@ -51,6 +51,14 @@ offset_top = 117.0
 offset_right = 52.0
 offset_bottom = 140.0
 
+[node name="NextRoundButton" type="Button" parent="HUD" unique_id=414234039]
+layout_mode = 0
+offset_left = 994.0
+offset_top = 18.0
+offset_right = 1129.0
+offset_bottom = 49.0
+text = "Próxima Rodada"
+
 [node name="PlayArea" type="Control" parent="." unique_id=1189517273]
 anchors_preset = 0
 offset_left = 552.0

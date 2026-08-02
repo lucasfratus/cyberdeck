@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="ScenarioData" format=3 uid="uid://lk85gpv3elkn"]
 
+[ext_resource type="Resource" uid="uid://1id0x8qdi07x" path="res://data/dialogue/phishing_intro.tres" id="1_38gkg"]
 [ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_vta8w"]
 [ext_resource type="Script" uid="uid://wmsuml7vxiif" path="res://gameplay/ScenarioData.gd" id="2_70x5n"]
 [ext_resource type="Resource" uid="uid://cuxrr4y6361qj" path="res://data/rounds/phishing_r1.tres" id="2_wrt42"]
@@ -10,5 +11,6 @@ script = ExtResource("2_70x5n")
 id = &"phishing_scenario"
 intro_dialogue_id = &"phishing_intro"
 display_name = "E-mail suspeito"
+intro_dialogue = ExtResource("1_38gkg")
 rounds = Array[ExtResource("1_vta8w")]([ExtResource("2_wrt42"), ExtResource("3_wrt42")])
 metadata/_custom_type_script = "uid://wmsuml7vxiif"

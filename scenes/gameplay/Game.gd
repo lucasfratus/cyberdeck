@@ -37,10 +37,6 @@ var scenarios: Array[ScenarioData] = [
 	PASSWORD_SCENARIO
 ]
 
-const ASSISTANT_PORTRAIT := preload(
-	"res://assets/dialogue/assistant_portrait.png"
-)
-
 var current_scenario_index := 0
 var current_round_index := 0
 
@@ -395,79 +391,16 @@ func _show_scenario_intro() -> void:
 	hand.set_interaction_enabled(false)
 	play_button.disabled = true
 
-	var intro_sequence := _get_scenario_intro_sequence()
+	var intro_dialogue := current_scenario_data.intro_dialogue
 
-	dialogue_box.show_sequence(intro_sequence)
+	if intro_dialogue == null:
+		push_warning(
+			"O cenário '%s' não possui diálogo introdutório."
+			% current_scenario_data.id
+		)
+		return
+
+	dialogue_box.show_dialogue_data(intro_dialogue)
 
 	await dialogue_box.finished
 	
-
-func _get_scenario_intro_sequence() -> Array[Dictionary]:
-	match current_scenario_data.intro_dialogue_id:
-		"phishing_intro":
-			return [
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Você recebeu uma mensagem aparentemente "
-						+ "urgente solicitando uma ação imediata."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				},
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Mensagens desse tipo podem utilizar pressão "
-						+ "e senso de urgência para induzir decisões precipitadas."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				},
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Analise a situação e escolha práticas que "
-						+ "reduzam o risco causado pelo ataque."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				}
-			]
-
-		"password_intro":
-			return [
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Suas credenciais estão sendo ameaçadas "
-						+ "por uma tentativa de acesso indevido."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				},
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Senhas reutilizadas ou pouco resistentes "
-						+ "podem comprometer várias contas ao mesmo tempo."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				},
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Utilize boas práticas de autenticação "
-						+ "para proteger suas contas."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				}
-			]
-
-		_:
-			return [
-				{
-					"speaker": "Assistente",
-					"text": (
-						"Utilize boas práticas de segurança digital "
-						+ "para proteger o sistema."
-					),
-					"portrait": ASSISTANT_PORTRAIT
-				}
-			]

@@ -40,6 +40,40 @@ func show_dialogue(
 	])
 
 
+func show_dialogue_data(dialogue_data: DialogueData) -> void:
+	if dialogue_data == null:
+		push_warning("Tentativa de exibir um diálogo nulo.")
+		return
+
+	if dialogue_data.lines.is_empty():
+		push_warning(
+			"O diálogo '%s' não possui falas."
+			% dialogue_data.id
+		)
+		return
+
+	var sequence: Array[Dictionary] = []
+
+	for line in dialogue_data.lines:
+		if line == null:
+			continue
+
+		sequence.append({
+			"speaker": line.speaker,
+			"text": line.text,
+			"portrait": line.portrait
+		})
+
+	if sequence.is_empty():
+		push_warning(
+			"O diálogo '%s' não possui falas válidas."
+			% dialogue_data.id
+		)
+		return
+
+	show_sequence(sequence)
+	
+
 func show_sequence(sequence: Array[Dictionary]) -> void:
 	if sequence.is_empty():
 		push_warning("Tentativa de exibir uma sequência de diálogo vazia.")

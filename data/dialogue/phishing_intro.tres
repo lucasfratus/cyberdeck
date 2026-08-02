@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://1id0x8qdi07x"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_axjjj"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_4ucfp"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_q8emf"]
+
+[sub_resource type="Resource" id="Resource_4ucfp"]
+script = ExtResource("1_axjjj")
+speaker = "Assistente"
+text = "Você recebeu uma mensagem aparentemente urgente solicitando uma ação imediata."
+portrait = ExtResource("2_4ucfp")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_mir3d"]
+script = ExtResource("1_axjjj")
+speaker = "Assistente"
+text = "Mensagens desse tipo podem utilizar pressão e senso de urgência para induzir decisões precipitadas."
+portrait = ExtResource("2_4ucfp")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_fse82"]
+script = ExtResource("1_axjjj")
+speaker = "Assistente"
+text = "Analise a situação e escolha práticas que reduzam o risco causado pelo ataque."
+portrait = ExtResource("2_4ucfp")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("2_q8emf")
+id = "phishing_intro"
+lines = Array[ExtResource("1_axjjj")]([SubResource("Resource_4ucfp"), SubResource("Resource_mir3d"), SubResource("Resource_fse82")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

@@ -7,3 +7,4 @@ extends Resource
 @export var base_max_plays: int = 3
 
 @export var start_dialogue: DialogueData
+@export var mid_dialogues: Array[RoundDialogueEventData] = []

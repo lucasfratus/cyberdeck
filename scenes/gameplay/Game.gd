@@ -23,6 +23,8 @@ var player_deck := PlayerDeck.new()
 var pending_cards: Array[Card] = []
 var is_resolving_play := false
 var current_play_score := 0.0
+var plays_made_in_round := 0
+var triggered_mid_dialogues: Dictionary = {}
 
 const PHISHING_SCENARIO: ScenarioData = preload(
 	"res://data/scenarios/phishing_scenario.tres"
@@ -220,6 +222,7 @@ func _resolve_played_cards() -> void:
 	var amount_played := pending_cards.size()
 
 	round_controller.register_play(current_play_score)
+	plays_made_in_round += 1
 
 	for card in pending_cards:
 		if card.data != null:
@@ -231,7 +234,8 @@ func _resolve_played_cards() -> void:
 	current_play_score = 0.0
 
 	_update_round_hud()
-
+	await _show_triggered_mid_dialogues()
+	
 	if round_controller.has_won():
 		_finish_round(true)
 		return
@@ -245,12 +249,16 @@ func _resolve_played_cards() -> void:
 	_draw_cards(amount_played)
 
 	is_resolving_play = false
+	hand.set_interaction_enabled(true)
 	_update_play_button_state()
 
 
 func _start_round() -> void:
 	current_play_score = 0.0
 	is_resolving_play = false
+	
+	plays_made_in_round = 0
+	triggered_mid_dialogues.clear()
 
 	round_controller.start(current_round_data)
 
@@ -422,3 +430,46 @@ func _show_round_start_dialogue() -> void:
 	dialogue_box.show_dialogue_data(round_dialogue)
 
 	await dialogue_box.finished
+	
+
+func _is_mid_dialogue_triggered(
+	dialogue_event: RoundDialogueEventData
+) -> bool:
+	match dialogue_event.trigger_type:
+		RoundDialogueEventData.TriggerType.AFTER_PLAY:
+			return (
+				plays_made_in_round
+				>= dialogue_event.trigger_value
+			)
+
+		_:
+			return false
+			
+
+func _show_triggered_mid_dialogues() -> void:
+	if current_round_data == null:
+		return
+
+	for dialogue_event in current_round_data.mid_dialogues:
+		if dialogue_event == null:
+			continue
+
+		if dialogue_event.dialogue == null:
+			continue
+
+		if triggered_mid_dialogues.has(dialogue_event.id):
+			continue
+
+		if not _is_mid_dialogue_triggered(dialogue_event):
+			continue
+
+		triggered_mid_dialogues[dialogue_event.id] = true
+
+		hand.set_interaction_enabled(false)
+		play_button.disabled = true
+
+		dialogue_box.show_dialogue_data(
+			dialogue_event.dialogue
+		)
+
+		await dialogue_box.finished

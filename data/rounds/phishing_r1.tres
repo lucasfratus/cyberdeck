@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="RoundData" format=3 uid="uid://cuxrr4y6361qj"]
 
+[ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="1_8f36t"]
 [ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_yd1os"]
 [ext_resource type="Resource" uid="uid://7f3tus4jofgr" path="res://data/dialogue/phishing_round_1_start.tres" id="2_vnpe3"]
+[ext_resource type="Resource" uid="uid://ex62nhyvgvw6" path="res://data/dialogue/events/tutorial/tutorial_after_first_play_event.tres" id="2_wi2wu"]
 
 [resource]
 script = ExtResource("1_yd1os")
 id = &"phishing_r1"
 attack_name = "phishing"
 start_dialogue = ExtResource("2_vnpe3")
+mid_dialogues = Array[ExtResource("1_8f36t")]([ExtResource("2_wi2wu")])
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

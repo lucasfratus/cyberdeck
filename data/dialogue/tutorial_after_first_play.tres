@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://nqsrnqqlf2aa"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_xbs2e"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_nwoyn"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_y2q2p"]
+
+[sub_resource type="Resource" id="Resource_y2q2p"]
+script = ExtResource("1_xbs2e")
+speaker = "Assistente"
+text = "A pontuação considera a proteção das cartas utilizadas."
+portrait = ExtResource("2_y2q2p")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_twaq5"]
+script = ExtResource("1_xbs2e")
+speaker = "Assistente"
+text = "A vulnerabilidade funciona como um multiplicador e pode alterar significativamente o resultado da jogada."
+portrait = ExtResource("2_y2q2p")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("2_nwoyn")
+id = "tutorial_after_first_play"
+lines = Array[ExtResource("1_xbs2e")]([SubResource("Resource_y2q2p"), SubResource("Resource_twaq5")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

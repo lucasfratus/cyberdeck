@@ -1,9 +1,11 @@
 [gd_resource type="Resource" script_class="RoundData" format=3 uid="uid://cuxrr4y6361qj"]
 
 [ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_yd1os"]
+[ext_resource type="Resource" uid="uid://7f3tus4jofgr" path="res://data/dialogue/phishing_round_1_start.tres" id="2_vnpe3"]
 
 [resource]
 script = ExtResource("1_yd1os")
 id = &"phishing_r1"
 attack_name = "phishing"
+start_dialogue = ExtResource("2_vnpe3")
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

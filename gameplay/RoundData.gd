@@ -5,3 +5,5 @@ extends Resource
 @export var attack_name: String
 @export var base_risk: float = 100.0
 @export var base_max_plays: int = 3
+
+@export var start_dialogue: DialogueData

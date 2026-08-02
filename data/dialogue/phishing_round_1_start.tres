@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://7f3tus4jofgr"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_1wmm6"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_a06pn"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_rj26s"]
+
+[sub_resource type="Resource" id="Resource_a06pn"]
+script = ExtResource("1_1wmm6")
+speaker = "Assistente"
+text = "Você deve selecionar as cartas que deseja jogar."
+portrait = ExtResource("2_a06pn")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_oy4yy"]
+script = ExtResource("1_1wmm6")
+speaker = "Assistente"
+text = "Escolha cartas que representem decisões seguras e evite práticas que aumentem a vulnerabilidade."
+portrait = ExtResource("2_a06pn")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("2_rj26s")
+id = "phishing_round_1_start"
+position = 0
+lines = Array[ExtResource("1_1wmm6")]([SubResource("Resource_a06pn"), SubResource("Resource_oy4yy")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

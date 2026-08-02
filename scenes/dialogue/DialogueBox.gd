@@ -15,11 +15,15 @@ signal finished
 @onready var continue_button: Button = \
 	$DialoguePanel/MarginContainer/HBoxContainer/DialogueContent/ContinueButton
 
+@onready var dialogue_panel: PanelContainer = $DialoguePanel
 
 var dialogue_active := false
 var dialogue_sequence: Array[Dictionary] = []
 var current_dialogue_index := 0
 
+const PANEL_SIDE_MARGIN := 70.0
+const PANEL_EDGE_MARGIN := 40.0
+const PANEL_HEIGHT := 180.0
 
 func _ready() -> void:
 	continue_button.pressed.connect(_on_continue_button_pressed)
@@ -31,6 +35,8 @@ func show_dialogue(
 	text: String,
 	portrait_texture: Texture2D = null
 ) -> void:
+	_set_dialogue_position(DialogueData.Position.BOTTOM)
+
 	show_sequence([
 		{
 			"speaker": speaker,
@@ -71,6 +77,7 @@ func show_dialogue_data(dialogue_data: DialogueData) -> void:
 		)
 		return
 
+	_set_dialogue_position(dialogue_data.position)
 	show_sequence(sequence)
 	
 
@@ -161,3 +168,32 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled()
 		advance_dialogue()
+
+
+func _set_dialogue_position(
+	dialogue_position: DialogueData.Position
+) -> void:
+	match dialogue_position:
+		DialogueData.Position.TOP:
+			dialogue_panel.set_anchors_preset(
+				Control.PRESET_TOP_WIDE
+			)
+
+			dialogue_panel.offset_left = PANEL_SIDE_MARGIN
+			dialogue_panel.offset_top = PANEL_EDGE_MARGIN
+			dialogue_panel.offset_right = -PANEL_SIDE_MARGIN
+			dialogue_panel.offset_bottom = (
+				PANEL_EDGE_MARGIN + PANEL_HEIGHT
+			)
+
+		DialogueData.Position.BOTTOM:
+			dialogue_panel.set_anchors_preset(
+				Control.PRESET_BOTTOM_WIDE
+			)
+
+			dialogue_panel.offset_left = PANEL_SIDE_MARGIN
+			dialogue_panel.offset_top = (
+				-PANEL_EDGE_MARGIN - PANEL_HEIGHT
+			)
+			dialogue_panel.offset_right = -PANEL_SIDE_MARGIN
+			dialogue_panel.offset_bottom = -PANEL_EDGE_MARGIN

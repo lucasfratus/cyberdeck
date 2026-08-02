@@ -83,7 +83,7 @@ func _start_scenario() -> void:
 
 	await _show_scenario_intro()
 
-	_start_round()
+	await _start_round()
 
 
 func _connect_signals() -> void:
@@ -152,9 +152,9 @@ func _on_next_round_button_pressed() -> void:
 	_discard_remaining_hand()
 
 	if victory:
-		_advance_progression()
+		await _advance_progression()
 	else:
-		_start_round()
+		await _start_round()
 	
 
 func _on_selection_changed(_cards: Array[Card]) -> void:
@@ -260,10 +260,15 @@ func _start_round() -> void:
 	next_round_button.visible = false
 
 	hand.clear_selection()
-	hand.set_interaction_enabled(true)
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
 
 	_fill_hand()
 	_update_round_hud()
+
+	await _show_round_start_dialogue()
+
+	hand.set_interaction_enabled(true)
 	_update_play_button_state()
 	
 	
@@ -311,7 +316,7 @@ func _advance_progression() -> void:
 			current_scenario_data.rounds[current_round_index]
 		)
 
-		_start_round()
+		await _start_round()
 		return
 
 	# O cenário atual terminou.
@@ -337,7 +342,7 @@ func _advance_progression() -> void:
 		current_scenario_data.rounds[current_round_index]
 	)
 
-	_start_scenario()
+	await _start_scenario()
 	
 	
 	
@@ -404,3 +409,16 @@ func _show_scenario_intro() -> void:
 
 	await dialogue_box.finished
 	
+	
+func _show_round_start_dialogue() -> void:
+	var round_dialogue := current_round_data.start_dialogue
+
+	if round_dialogue == null:
+		return
+
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	dialogue_box.show_dialogue_data(round_dialogue)
+
+	await dialogue_box.finished

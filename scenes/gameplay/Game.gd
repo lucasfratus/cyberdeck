@@ -16,6 +16,7 @@ const MAX_PLAYS := 3
 @onready var plays_label: Label = $HUD/PlaysLabel
 @onready var result_label: Label = $HUD/ResultLabel
 @onready var next_round_button: Button = $HUD/NextRoundButton
+@onready var dialogue_box: DialogueBox = $DialogueLayer/DialogueBox
 
 
 var player_deck := PlayerDeck.new()
@@ -36,6 +37,10 @@ var scenarios: Array[ScenarioData] = [
 	PASSWORD_SCENARIO
 ]
 
+const ASSISTANT_PORTRAIT := preload(
+	"res://assets/dialogue/assistant_portrait.png"
+)
+
 var current_scenario_index := 0
 var current_round_index := 0
 
@@ -49,7 +54,6 @@ func _ready() -> void:
 
 	_connect_signals()
 	_setup_deck()
-
 	_start_game()
 
 
@@ -85,6 +89,8 @@ func _start_scenario() -> void:
 		"Diálogo introdutório: ",
 		current_scenario_data.intro_dialogue_id
 	)
+
+	await _show_scenario_intro()
 
 	_start_round()
 
@@ -388,3 +394,39 @@ func _finish_game() -> void:
 
 	result_label.text = "Você concluiu todos os cenários!"
 	score_label.text = "Fim da partida"
+	
+	
+func _show_scenario_intro() -> void:
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	dialogue_box.show_dialogue(
+		"Assistente",
+		_get_scenario_intro_text(),
+		ASSISTANT_PORTRAIT
+	)
+
+	await dialogue_box.finished
+	
+
+func _get_scenario_intro_text() -> String:
+	match current_scenario_data.intro_dialogue_id:
+		"phishing_intro":
+			return (
+				"Você recebeu uma mensagem suspeita. \
+				Analise a situação e utilize boas práticas \
+				para evitar que o ataque tenha sucesso."
+			)
+
+		"password_intro":
+			return (
+				"Neste cenário, suas credenciais estão sob ameaça. \
+				Utilize práticas seguras de autenticação \
+				para proteger suas contas."
+			)
+
+		_:
+			return (
+				"Utilize boas práticas de segurança digital \
+				para proteger o sistema."
+			)

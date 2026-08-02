@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://0ju2x5rdtj8v" path="res://scenes/gameplay/Game.gd" id="1_14ymu"]
 [ext_resource type="PackedScene" uid="uid://cjspi6oyhmk0d" path="res://scenes/hand/Hand.tscn" id="2_brcjj"]
+[ext_resource type="PackedScene" uid="uid://u7r20t6lrd3s" path="res://scenes/dialogue/DialogueBox.tscn" id="3_brcjj"]
 
 [node name="Game" type="Control" unique_id=756523954]
 layout_mode = 3
@@ -88,6 +89,11 @@ text = "Selecione as cartas"
 
 [node name="Hand" parent="." unique_id=965247429 instance=ExtResource("2_brcjj")]
 layout_mode = 1
+
+[node name="DialogueLayer" type="CanvasLayer" parent="." unique_id=1539375575]
+layer = 10
+
+[node name="DialogueBox" parent="DialogueLayer" unique_id=1770029832 instance=ExtResource("3_brcjj")]
 
 [node name="PlayButton" type="Button" parent="." unique_id=1669867913]
 layout_mode = 0

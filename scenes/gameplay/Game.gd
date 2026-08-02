@@ -85,11 +85,6 @@ func _start_scenario() -> void:
 		current_scenario_data.display_name
 	)
 
-	print(
-		"Diálogo introdutório: ",
-		current_scenario_data.intro_dialogue_id
-	)
-
 	await _show_scenario_intro()
 
 	_start_round()
@@ -400,33 +395,79 @@ func _show_scenario_intro() -> void:
 	hand.set_interaction_enabled(false)
 	play_button.disabled = true
 
-	dialogue_box.show_dialogue(
-		"Assistente",
-		_get_scenario_intro_text(),
-		ASSISTANT_PORTRAIT
-	)
+	var intro_sequence := _get_scenario_intro_sequence()
+
+	dialogue_box.show_sequence(intro_sequence)
 
 	await dialogue_box.finished
 	
 
-func _get_scenario_intro_text() -> String:
+func _get_scenario_intro_sequence() -> Array[Dictionary]:
 	match current_scenario_data.intro_dialogue_id:
 		"phishing_intro":
-			return (
-				"Você recebeu uma mensagem suspeita. \
-				Analise a situação e utilize boas práticas \
-				para evitar que o ataque tenha sucesso."
-			)
+			return [
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Você recebeu uma mensagem aparentemente "
+						+ "urgente solicitando uma ação imediata."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				},
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Mensagens desse tipo podem utilizar pressão "
+						+ "e senso de urgência para induzir decisões precipitadas."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				},
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Analise a situação e escolha práticas que "
+						+ "reduzam o risco causado pelo ataque."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				}
+			]
 
 		"password_intro":
-			return (
-				"Neste cenário, suas credenciais estão sob ameaça. \
-				Utilize práticas seguras de autenticação \
-				para proteger suas contas."
-			)
+			return [
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Suas credenciais estão sendo ameaçadas "
+						+ "por uma tentativa de acesso indevido."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				},
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Senhas reutilizadas ou pouco resistentes "
+						+ "podem comprometer várias contas ao mesmo tempo."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				},
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Utilize boas práticas de autenticação "
+						+ "para proteger suas contas."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				}
+			]
 
 		_:
-			return (
-				"Utilize boas práticas de segurança digital \
-				para proteger o sistema."
-			)
+			return [
+				{
+					"speaker": "Assistente",
+					"text": (
+						"Utilize boas práticas de segurança digital "
+						+ "para proteger o sistema."
+					),
+					"portrait": ASSISTANT_PORTRAIT
+				}
+			]

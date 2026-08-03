@@ -229,11 +229,20 @@ func _resolve_played_cards() -> void:
 		is_resolving_play = false
 		return
 
-	var amount_played := pending_cards.size()
+	var amount_played: int = pending_cards.size()
+	var played_card_ids: Array[String] = []
+
+	# Guarda os IDs antes de remover as cartas.
+	for card in pending_cards:
+		if card.data == null:
+			continue
+
+		played_card_ids.append(str(card.data.id))
 
 	round_controller.register_play(current_play_score)
 	plays_made_in_round += 1
 
+	# Descarta e remove todas as cartas utilizadas.
 	for card in pending_cards:
 		if card.data != null:
 			player_deck.discard(str(card.data.id))
@@ -244,13 +253,13 @@ func _resolve_played_cards() -> void:
 	current_play_score = 0.0
 
 	_update_round_hud()
-	
+
+	await _show_triggered_mid_dialogues(played_card_ids)
+
 	if round_controller.has_won():
 		_finish_round(true)
 		return
 
-	await _show_triggered_mid_dialogues()
-	
 	if round_controller.has_lost():
 		_finish_round(false)
 		return
@@ -444,7 +453,8 @@ func _show_round_start_dialogue() -> void:
 	
 
 func _is_mid_dialogue_triggered(
-	dialogue_event: RoundDialogueEventData
+	dialogue_event: RoundDialogueEventData,
+	played_card_ids: Array[String]
 ) -> bool:
 	match dialogue_event.trigger_type:
 		RoundDialogueEventData.TriggerType.AFTER_PLAY:
@@ -459,11 +469,22 @@ func _is_mid_dialogue_triggered(
 				<= dialogue_event.trigger_value
 			)
 
+		RoundDialogueEventData.TriggerType.CARD_PLAYED:
+			if dialogue_event.required_card_id.is_empty():
+				return false
+
+			return (
+				dialogue_event.required_card_id
+				in played_card_ids
+			)
+
 		_:
 			return false
 			
 
-func _show_triggered_mid_dialogues() -> void:
+func _show_triggered_mid_dialogues(
+	played_card_ids: Array[String]
+) -> void:
 	if current_round_data == null:
 		return
 
@@ -477,7 +498,10 @@ func _show_triggered_mid_dialogues() -> void:
 		if triggered_mid_dialogues.has(dialogue_event.id):
 			continue
 
-		if not _is_mid_dialogue_triggered(dialogue_event):
+		if not _is_mid_dialogue_triggered(
+			dialogue_event,
+			played_card_ids
+		):
 			continue
 
 		triggered_mid_dialogues[dialogue_event.id] = true

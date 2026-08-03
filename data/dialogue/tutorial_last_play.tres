@@ -1,12 +1,14 @@
 [gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://ka8vs4tcfm40"]
 
 [ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_tsvkb"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_bdgfg"]
 [ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_rcblv"]
 
 [sub_resource type="Resource" id="Resource_7t6ta"]
 script = ExtResource("1_tsvkb")
 speaker = "Assistente"
 text = "Esta é sua última jogada. Observe o índice de risco e escolha cuidadosamente as cartas que serão utilizadas."
+portrait = ExtResource("2_bdgfg")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [resource]

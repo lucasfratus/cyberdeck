@@ -5,11 +5,12 @@
 [ext_resource type="Resource" uid="uid://7f3tus4jofgr" path="res://data/dialogue/phishing_round_1_start.tres" id="2_vnpe3"]
 [ext_resource type="Resource" uid="uid://ex62nhyvgvw6" path="res://data/dialogue/events/tutorial/tutorial_after_first_play_event.tres" id="2_wi2wu"]
 [ext_resource type="Resource" uid="uid://8e1e1jpifjnt" path="res://data/dialogue/events/tutorial/tutorial_last_play_event.tres" id="3_wi2wu"]
+[ext_resource type="Resource" uid="uid://c2asojgm1nu58" path="res://data/dialogue/events/tutorial/tutorial_reused_password_event.tres" id="4_504wn"]
 
 [resource]
 script = ExtResource("1_yd1os")
 id = &"phishing_r1"
 attack_name = "phishing"
 start_dialogue = ExtResource("2_vnpe3")
-mid_dialogues = Array[ExtResource("1_8f36t")]([ExtResource("2_wi2wu"), ExtResource("3_wi2wu")])
+mid_dialogues = Array[ExtResource("1_8f36t")]([ExtResource("2_wi2wu"), ExtResource("3_wi2wu"), ExtResource("4_504wn")])
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

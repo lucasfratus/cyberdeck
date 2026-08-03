@@ -2,6 +2,7 @@ class_name RoundController
 extends RefCounted
 
 var data: RoundData
+var active_breaches: Array[SecurityBreachData] = []
 
 var score := 0.0
 var plays_remaining := 0
@@ -9,6 +10,7 @@ var finished := false
 
 
 func start(round_data: RoundData) -> void:
+	active_breaches.clear()
 	data = round_data
 	score = 0.0
 	plays_remaining = data.base_max_plays
@@ -43,3 +45,28 @@ func get_risk() -> float:
 		return 0.0
 
 	return data.base_risk
+
+
+func open_breach(breach: SecurityBreachData) -> bool:
+	if breach == null:
+		return false
+
+	for active_breach in active_breaches:
+		if active_breach.id == breach.id:
+			return false
+
+	active_breaches.append(breach)
+	return true
+	
+
+func get_active_breaches() -> Array[SecurityBreachData]:
+	return active_breaches.duplicate()
+	
+	
+func get_breach_vulnerability_per_play() -> float:
+	var total := 0.0
+
+	for breach in active_breaches:
+		total += breach.vulnerability_per_play
+
+	return total

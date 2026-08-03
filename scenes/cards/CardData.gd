@@ -25,12 +25,14 @@ enum Category {
 @export_multiline var educational_description: String = ""
 
 @export var illustration: Texture2D
+@export var category_icon: Texture2D
 
 @export var category: Category
-@export var category_icon: Texture2D
 
 @export var rarity: Rarity = Rarity.COMMON
 
-
 @export var protection: int = 0
 @export var vulnerability: float = 1.0
+
+@export_group("Security Breach")
+@export var opens_breach: SecurityBreachData

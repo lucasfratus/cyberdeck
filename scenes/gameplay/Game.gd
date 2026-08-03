@@ -355,6 +355,8 @@ func _resolve_played_cards() -> void:
 
 	var amount_played: int = pending_cards.size()
 	var played_card_ids: Array[String] = []
+	
+	var newly_opened_breaches: Array[SecurityBreachData] = []
 
 	# Guarda os IDs antes de remover as cartas.
 	for card in pending_cards:
@@ -362,7 +364,26 @@ func _resolve_played_cards() -> void:
 			continue
 
 		played_card_ids.append(str(card.data.id))
+		if card.data.opens_breach != null:
+			var was_opened := round_controller.open_breach(
+				card.data.opens_breach
+			)
 
+			if was_opened:
+				newly_opened_breaches.append(
+					card.data.opens_breach
+				)
+	
+	for breach in newly_opened_breaches:
+		print(
+			"[BRECHAS] Brecha aberta: ",
+			breach.display_name
+		)
+
+	print(
+		"[BRECHAS] Brechas ativas após a jogada: ",
+		round_controller.get_active_breaches().size()
+	)
 	round_controller.register_play(current_play_score)
 	plays_made_in_round += 1
 	

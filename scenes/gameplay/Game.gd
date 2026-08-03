@@ -22,6 +22,11 @@ const MAX_PLAYS := 3
 	$TutorialHighlightLayer/HighlightFrame
 @onready var card_details_panel: CardDetailsPanel = \
 	$CardDetailsLayer/CardDetailsPanel
+@onready var breaches_panel: PanelContainer = \
+	$HUD/BreachesPanel
+@onready var breach_list: VBoxContainer = \
+	$HUD/BreachesPanel/MarginContainer/Content/BreachList
+
 
 var player_deck := PlayerDeck.new()
 var pending_cards: Array[Card] = []
@@ -355,37 +360,63 @@ func _resolve_played_cards() -> void:
 
 	var amount_played: int = pending_cards.size()
 	var played_card_ids: Array[String] = []
-	
+
+	var breaches_to_open: Array[SecurityBreachData] = []
 	var newly_opened_breaches: Array[SecurityBreachData] = []
 
-	# Guarda os IDs antes de remover as cartas.
+	# Calcula a penalidade antes de abrir novas brechas.
+	var breach_penalty := (
+		round_controller.get_breach_vulnerability_per_play()
+	)
+
+	# Guarda os dados das cartas antes de removê-las.
 	for card in pending_cards:
 		if card.data == null:
 			continue
 
 		played_card_ids.append(str(card.data.id))
+
 		if card.data.opens_breach != null:
-			var was_opened := round_controller.open_breach(
+			breaches_to_open.append(
 				card.data.opens_breach
 			)
 
-			if was_opened:
-				newly_opened_breaches.append(
-					card.data.opens_breach
-				)
-	
+	# Registra a jogada considerando apenas as brechas
+	# que já estavam ativas.
+	round_controller.register_play(
+		current_play_score,
+		breach_penalty
+	)
+
+	plays_made_in_round += 1
+
+	# As novas brechas passam a valer nas próximas jogadas.
+	for breach in breaches_to_open:
+		var was_opened := round_controller.open_breach(
+			breach
+		)
+
+		if was_opened:
+			newly_opened_breaches.append(breach)
+
 	for breach in newly_opened_breaches:
 		print(
 			"[BRECHAS] Brecha aberta: ",
 			breach.display_name
 		)
 
+	if not newly_opened_breaches.is_empty():
+		_update_breaches_hud()
+
+	print(
+		"[BRECHAS] Penalidade aplicada: ",
+		round_controller.last_breach_penalty
+	)
+
 	print(
 		"[BRECHAS] Brechas ativas após a jogada: ",
 		round_controller.get_active_breaches().size()
 	)
-	round_controller.register_play(current_play_score)
-	plays_made_in_round += 1
 	
 	if detailed_card in pending_cards:
 		detailed_card = null
@@ -402,6 +433,7 @@ func _resolve_played_cards() -> void:
 	current_play_score = 0.0
 
 	_update_round_hud()
+	_update_resolved_play_display()
 
 	await _show_triggered_mid_dialogues(played_card_ids)
 
@@ -412,8 +444,6 @@ func _resolve_played_cards() -> void:
 	if round_controller.has_lost():
 		await _finish_round(false)
 		return
-
-	score_label.text = "Selecione as cartas"
 
 	_draw_cards(amount_played)
 
@@ -430,6 +460,7 @@ func _start_round() -> void:
 	triggered_mid_dialogues.clear()
 
 	round_controller.start(current_round_data)
+	_update_breaches_hud()
 
 	result_label.text = ""
 	score_label.text = "Selecione as cartas"
@@ -796,3 +827,54 @@ func _show_round_result_dialogue(won: bool) -> void:
 
 	dialogue_box.show_dialogue_data(result_dialogue)
 	await dialogue_box.finished
+
+
+func _update_breaches_hud() -> void:
+	for child in breach_list.get_children():
+		child.queue_free()
+
+	var active_breaches := round_controller.get_active_breaches()
+
+	breaches_panel.visible = not active_breaches.is_empty()
+
+	for breach in active_breaches:
+		var breach_label := Label.new()
+
+		breach_label.text = (
+			"• %s  |  Penalidade: -%.0f por jogada"
+			% [
+				breach.display_name,
+				breach.vulnerability_per_play
+			]
+		)
+
+		breach_label.autowrap_mode = (
+			TextServer.AUTOWRAP_WORD_SMART
+		)
+
+		breach_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		breach_list.add_child(breach_label)
+
+
+func _update_resolved_play_display() -> void:
+	var base_score := round_controller.last_play_base_score
+	var penalty := round_controller.last_breach_penalty
+	var final_score := round_controller.last_play_final_score
+
+	if penalty <= 0.0:
+		score_label.text = (
+			"Pontuação da jogada: %.2f"
+			% final_score
+		)
+		return
+
+	score_label.text = (
+		"Pontuação base: %.2f  |  "
+		+ "Penalidade das brechas: -%.2f  |  "
+		+ "Pontuação aplicada: %.2f"
+	) % [
+		base_score,
+		penalty,
+		final_score
+	]

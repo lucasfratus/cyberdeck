@@ -8,7 +8,8 @@
 script = ExtResource("2_65o4j")
 id = &"link_suspeito"
 title = "Clicar em Link Suspeito"
-description = "Links desconhecidos podem levar a páginas falsas ou iniciar downloads maliciosos."
+description = "Pode levar a páginas falsas usadas para roubar dados e credenciais."
+educational_description = "Links suspeitos podem direcionar para páginas falsas que imitam serviços legítimos. Essas páginas geralmente tentam induzir a vítima a informar senhas, dados pessoais ou informações financeiras. Antes de abrir um link, é importante verificar o remetente, o endereço e o contexto da mensagem."
 illustration = ExtResource("1_ulqmf")
 category = 1
 category_icon = ExtResource("1_65o4j")

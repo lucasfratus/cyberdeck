@@ -7,6 +7,8 @@ class_name Hand
 signal selection_changed(selected_cards: Array[Card])
 signal cards_played(cards: Array[Card])
 signal layout_updated
+signal card_details_requested(card: Card)
+signal card_details_hidden(card: Card)
 
 @export var max_selected_cards := 5
 
@@ -24,8 +26,24 @@ func add_card(card: Card) -> void:
 	card.selection_requested.connect(
 		_on_card_selection_requested
 	)
+	
+	card.details_requested.connect(
+		_on_card_details_requested
+	)
+
+	card.details_hidden.connect(
+		_on_card_details_hidden
+	)
 
 	call_deferred("_update_layout")
+
+
+func _on_card_details_requested(card: Card) -> void:
+	card_details_requested.emit(card)
+
+
+func _on_card_details_hidden(card: Card) -> void:
+	card_details_hidden.emit(card)
 
 
 func remove_card(card: Card) -> void:

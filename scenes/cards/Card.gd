@@ -11,6 +11,8 @@ class_name Card
 @onready var selection_outline: Panel = $SelectionOutline
 
 signal selection_requested(card: Card)
+signal details_requested(card: Card)
+signal details_hidden(card: Card)
 
 var data: CardData
 var is_selected := false
@@ -31,10 +33,26 @@ const SELECTION_MOVE_DURATION := 0.12
 func _ready() -> void:
 	# A escala ocorrerá a partir do centro da carta.
 	pivot_offset = size / 2.0
+	
+	hover_area.mouse_entered.connect(
+		_on_details_mouse_entered
+	)
 
+	hover_area.mouse_exited.connect(
+		_on_details_mouse_exited
+	)
+	
 	hover_area.mouse_entered.connect(_on_hover_area_mouse_entered)
 	hover_area.mouse_exited.connect(_on_hover_area_mouse_exited)
 	hover_area.gui_input.connect(_on_hover_area_gui_input)
+
+
+func _on_details_mouse_entered() -> void:
+	details_requested.emit(self)
+
+
+func _on_details_mouse_exited() -> void:
+	details_hidden.emit(self)
 
 func setup(card_data: CardData):
 	data = card_data

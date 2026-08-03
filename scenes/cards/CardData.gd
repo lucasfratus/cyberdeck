@@ -22,6 +22,7 @@ enum Category {
 @export var id: StringName
 @export var title: String = ""
 @export_multiline var description: String = ""
+@export_multiline var educational_description: String = ""
 
 @export var illustration: Texture2D
 
@@ -29,6 +30,7 @@ enum Category {
 @export var category_icon: Texture2D
 
 @export var rarity: Rarity = Rarity.COMMON
+
 
 @export var protection: int = 0
 @export var vulnerability: float = 1.0

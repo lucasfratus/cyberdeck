@@ -8,7 +8,8 @@
 script = ExtResource("1_pfr0a")
 id = &"reutilizar_senha"
 title = "Reutilizar Senha"
-description = "Usar a mesma senha em vários serviços facilita ataques em cadeia após um vazamento."
+description = "Uma senha vazada pode comprometer todas as contas em que foi reutilizada."
+educational_description = "Usar a mesma senha em diferentes serviços faz com que o vazamento de uma única conta coloque as demais em risco. Atacantes podem testar credenciais expostas em outros sites e aplicativos para tentar acessar novas contas."
 illustration = ExtResource("2_x6rtt")
 category_icon = ExtResource("1_dwhc6")
 protection = 10

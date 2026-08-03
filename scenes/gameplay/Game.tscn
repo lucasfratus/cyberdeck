@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://0ju2x5rdtj8v" path="res://scenes/gameplay/Game.gd" id="1_14ymu"]
 [ext_resource type="PackedScene" uid="uid://cjspi6oyhmk0d" path="res://scenes/hand/Hand.tscn" id="2_brcjj"]
+[ext_resource type="PackedScene" uid="uid://c72riuqhd4bst" path="res://scenes/cards/CardDetailsPanel.tscn" id="3_8275i"]
 [ext_resource type="PackedScene" uid="uid://u7r20t6lrd3s" path="res://scenes/dialogue/DialogueBox.tscn" id="3_brcjj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ucufk"]
@@ -106,11 +107,6 @@ anchor_top = 1.0
 offset_top = -208.0
 grow_vertical = 0
 
-[node name="DialogueLayer" type="CanvasLayer" parent="." unique_id=1539375575]
-layer = 10
-
-[node name="DialogueBox" parent="DialogueLayer" unique_id=1770029832 instance=ExtResource("3_brcjj")]
-
 [node name="PlayButton" type="Button" parent="." unique_id=1669867913]
 layout_mode = 0
 offset_left = 69.0
@@ -123,7 +119,23 @@ text = "Jogar"
 wait_time = 1.5
 one_shot = true
 
+[node name="CardDetailsLayer" type="CanvasLayer" parent="." unique_id=201123027]
+layer = 5
+
+[node name="CardDetailsPanel" parent="CardDetailsLayer" unique_id=1101933271 instance=ExtResource("3_8275i")]
+visible = true
+offset_right = 270.0
+offset_bottom = 340.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="DialogueLayer" type="CanvasLayer" parent="." unique_id=1539375575]
+layer = 10
+
+[node name="DialogueBox" parent="DialogueLayer" unique_id=1770029832 instance=ExtResource("3_brcjj")]
+
 [node name="TutorialHighlightLayer" type="CanvasLayer" parent="." unique_id=722080525]
+layer = 11
 
 [node name="HighlightFrame" type="Panel" parent="TutorialHighlightLayer" unique_id=1084363083]
 visible = false

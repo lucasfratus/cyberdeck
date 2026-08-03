@@ -8,7 +8,8 @@
 script = ExtResource("1_xrjt6")
 id = &"senha_forte"
 title = "Senha Forte"
-description = "Utilize senhas longas e exclusivas para cada serviço."
+description = "Senhas longas e exclusivas dificultam acessos não autorizados."
+educational_description = "Uma senha forte deve ser longa, exclusiva para cada serviço e difícil de adivinhar. O uso de combinações variadas ou frases-senha reduz a possibilidade de descoberta por tentativas automatizadas. Usar uma senha diferente em cada conta também limita os danos caso uma delas seja vazada."
 illustration = ExtResource("1_ogcaf")
 category = 5
 category_icon = ExtResource("1_mrx6y")

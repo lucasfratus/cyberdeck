@@ -20,9 +20,8 @@ const MAX_PLAYS := 3
 @onready var hand_container: Control = $Hand/CardContainer
 @onready var highlight_frame: Panel = \
 	$TutorialHighlightLayer/HighlightFrame
-
-
-
+@onready var card_details_panel: CardDetailsPanel = \
+	$CardDetailsLayer/CardDetailsPanel
 
 var player_deck := PlayerDeck.new()
 var pending_cards: Array[Card] = []
@@ -31,6 +30,7 @@ var current_play_score := 0.0
 var plays_made_in_round := 0
 var triggered_mid_dialogues: Dictionary = {}
 var highlighted_control: Control
+
 var current_highlight_target: DialogueLineData.HighlightTarget = \
 	DialogueLineData.HighlightTarget.NONE
 
@@ -54,6 +54,11 @@ var current_scenario_data: ScenarioData
 var current_round_data: RoundData
 
 var round_controller := RoundController.new()
+var detailed_card: Card = null
+var details_hide_request_id: int = 0
+
+const CARD_DETAILS_GAP := 20.0
+const CARD_DETAILS_SCREEN_MARGIN := 12.0
 
 func _ready() -> void:
 	_connect_signals()
@@ -104,6 +109,120 @@ func _connect_signals() -> void:
 	_on_dialogue_highlight_changed
 	)
 	hand.layout_updated.connect(_on_hand_layout_updated)
+	hand.card_details_requested.connect(
+		_on_card_details_requested
+	)
+
+	hand.card_details_hidden.connect(
+		_on_card_details_hidden
+	)
+
+
+func _on_card_details_requested(card: Card) -> void:
+	if card == null:
+		return
+
+	if card.data == null:
+		return
+
+	details_hide_request_id += 1
+	detailed_card = card
+
+	card_details_panel.show_card(card.data)
+
+	await get_tree().process_frame
+
+	if card == detailed_card:
+		_position_card_details_panel(card)
+
+
+func _position_card_details_panel(card: Card) -> void:
+	if not is_instance_valid(card):
+		return
+
+	if card != detailed_card:
+		return
+
+	var card_rect: Rect2 = card.get_global_rect()
+	var panel_size: Vector2 = card_details_panel.size
+	var viewport_rect: Rect2 = get_viewport().get_visible_rect()
+	var maximum_height := (viewport_rect.size.y - CARD_DETAILS_SCREEN_MARGIN * 2.0)
+
+	if card_details_panel.size.y > maximum_height:
+		card_details_panel.size.y = maximum_height
+
+	panel_size = card_details_panel.size
+
+	# Centraliza o painel horizontalmente sobre a carta.
+	var target_x := (
+		card_rect.get_center().x
+		- panel_size.x / 2.0
+	)
+
+	# Coloca o painel acima da carta.
+	var target_y := (
+		card_rect.position.y
+		- panel_size.y
+		- CARD_DETAILS_GAP
+	)
+
+	# Impede que o painel saia pelas laterais.
+	target_x = clampf(
+		target_x,
+		viewport_rect.position.x
+			+ CARD_DETAILS_SCREEN_MARGIN,
+		viewport_rect.end.x
+			- panel_size.x
+			- CARD_DETAILS_SCREEN_MARGIN
+	)
+
+	# Caso não exista espaço acima, coloca abaixo da carta.
+	if target_y < (
+		viewport_rect.position.y
+		+ CARD_DETAILS_SCREEN_MARGIN
+	):
+		target_y = (
+			card_rect.end.y
+			+ CARD_DETAILS_GAP
+		)
+
+	# Impede que saia pela parte inferior.
+	target_y = clampf(
+		target_y,
+		viewport_rect.position.y
+			+ CARD_DETAILS_SCREEN_MARGIN,
+		viewport_rect.end.y
+			- panel_size.y
+			- CARD_DETAILS_SCREEN_MARGIN
+	)
+
+	card_details_panel.global_position = Vector2(
+		target_x,
+		target_y
+	)
+
+
+func _process(_delta: float) -> void:
+	if detailed_card == null:
+		return
+
+	if not is_instance_valid(detailed_card):
+		detailed_card = null
+		card_details_panel.hide_card()
+		return
+
+	if not card_details_panel.visible:
+		return
+
+	_position_card_details_panel(detailed_card)
+	
+
+func _on_card_details_hidden(card: Card) -> void:
+	if card != detailed_card:
+		return
+
+	detailed_card = null
+	card_details_panel.hide_card()
 
 
 func _setup_deck() -> void:
@@ -209,6 +328,11 @@ func _show_played_cards(cards: Array[Card]) -> void:
 		card.z_index = i
 
 
+func _hide_card_details() -> void:
+	detailed_card = null
+	card_details_panel.hide_card()
+
+
 func _update_score_display(cards: Array[Card]) -> void:
 	var result := ScoreCalculator.calculate(cards)
 
@@ -241,7 +365,11 @@ func _resolve_played_cards() -> void:
 
 	round_controller.register_play(current_play_score)
 	plays_made_in_round += 1
-
+	
+	if detailed_card in pending_cards:
+		detailed_card = null
+		card_details_panel.hide_card()
+		
 	# Descarta e remove todas as cartas utilizadas.
 	for card in pending_cards:
 		if card.data != null:
@@ -432,7 +560,8 @@ func _show_scenario_intro() -> void:
 			% current_scenario_data.id
 		)
 		return
-
+		
+	_hide_card_details()
 	dialogue_box.show_dialogue_data(intro_dialogue)
 
 	await dialogue_box.finished
@@ -509,6 +638,7 @@ func _show_triggered_mid_dialogues(
 		hand.set_interaction_enabled(false)
 		play_button.disabled = true
 
+		_hide_card_details()
 		dialogue_box.show_dialogue_data(
 			dialogue_event.dialogue
 		)

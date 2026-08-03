@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://c72riuqhd4bst"]
+
+[ext_resource type="Script" uid="uid://bq41qgwm450wg" path="res://scenes/cards/CardDetailsPanel.gd" id="1_jwyvc"]
+
+[node name="CardDetailsPanel" type="PanelContainer" unique_id=1101933271]
+visible = false
+custom_minimum_size = Vector2(420, 190)
+offset_right = 360.0
+offset_bottom = 430.0
+mouse_filter = 2
+script = ExtResource("1_jwyvc")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1450413577]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="MarginContainer" unique_id=864458004]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="MarginContainer/Content" unique_id=597670600]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Description" type="Label" parent="MarginContainer/Content" unique_id=1571567276]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Attributes" type="HBoxContainer" parent="MarginContainer/Content" unique_id=830093194]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Protection" type="Label" parent="MarginContainer/Content/Attributes" unique_id=621960082]
+layout_mode = 2
+
+[node name="Vulnerability" type="Label" parent="MarginContainer/Content/Attributes" unique_id=49884166]
+layout_mode = 2

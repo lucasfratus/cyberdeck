@@ -8,7 +8,8 @@
 script = ExtResource("1_m7ntr")
 id = &"autenticacao_2fa"
 title = "Autenticação em Dois Fatores"
-description = "Adiciona uma segunda etapa de verificação e reduz o risco de acesso indevido."
+description = "Uma segunda verificação protege a conta mesmo se a senha for descoberta."
+educational_description = "A autenticação em dois fatores exige uma segunda forma de verificação além da senha, como um código temporário ou uma confirmação em outro dispositivo. Dessa forma, conhecer a senha pode não ser suficiente para acessar a conta."
 illustration = ExtResource("2_iedur")
 category_icon = ExtResource("1_27dcg")
 protection = 20

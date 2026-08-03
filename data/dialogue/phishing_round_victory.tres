@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://d2d3e6ntlo6n0"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_lsrhy"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_3sfmh"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_v362p"]
+
+[sub_resource type="Resource" id="Resource_3sfmh"]
+script = ExtResource("1_lsrhy")
+speaker = "Assistente"
+text = "Boa! Práticas como verificar o remetente, desconfiar de links inesperados e proteger as contas reduzem o risco de ataques de phishing."
+portrait = ExtResource("2_3sfmh")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_lsrhy"]
+script = ExtResource("1_lsrhy")
+speaker = "Assistente"
+text = "Mesmo quando uma mensagem parece legítima, vale conferir o endereço, o contexto e o destino dos links antes de agir."
+portrait = ExtResource("2_3sfmh")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("2_v362p")
+id = "phishing_round_victory"
+lines = Array[ExtResource("1_lsrhy")]([SubResource("Resource_3sfmh"), SubResource("Resource_lsrhy")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

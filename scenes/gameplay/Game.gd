@@ -385,11 +385,11 @@ func _resolve_played_cards() -> void:
 	await _show_triggered_mid_dialogues(played_card_ids)
 
 	if round_controller.has_won():
-		_finish_round(true)
+		await _finish_round(true)
 		return
 
 	if round_controller.has_lost():
-		_finish_round(false)
+		await _finish_round(false)
 		return
 
 	score_label.text = "Selecione as cartas"
@@ -508,7 +508,9 @@ func _finish_round(victory: bool) -> void:
 
 	hand.clear_selection()
 	hand.set_interaction_enabled(false)
-
+	
+	await _show_round_result_dialogue(victory)
+	
 	if victory:
 		result_label.text = "Rodada vencida!"
 		next_round_button.text = "Próxima rodada"
@@ -750,3 +752,26 @@ func _on_hand_layout_updated() -> void:
 		return
 
 	call_deferred("_highlight_hand_cards")
+
+
+func _show_round_result_dialogue(won: bool) -> void:
+	if current_round_data == null:
+		return
+
+	var result_dialogue: DialogueData = null
+
+	if won:
+		result_dialogue = current_round_data.victory_dialogue
+	else:
+		result_dialogue = current_round_data.defeat_dialogue
+
+	if result_dialogue == null:
+		return
+
+	_hide_card_details()
+
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	dialogue_box.show_dialogue_data(result_dialogue)
+	await dialogue_box.finished

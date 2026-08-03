@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://dc2oxr0avtamm"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_p51cr"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_8s00f"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_igiru"]
+
+[sub_resource type="Resource" id="Resource_igiru"]
+script = ExtResource("1_p51cr")
+speaker = "Assistente"
+text = "Algumas escolhas aumentaram o risco desta situação. Mensagens falsas costumam explorar pressa, medo ou curiosidade para induzir ações impulsivas."
+portrait = ExtResource("2_igiru")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_kkxhq"]
+script = ExtResource("1_p51cr")
+speaker = "Assistente"
+text = "Na próxima tentativa, leia as descrições das cartas e procure práticas que ajudem a verificar a mensagem e proteger as credenciais."
+portrait = ExtResource("2_igiru")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("2_8s00f")
+id = "phishing_round_defeat"
+lines = Array[ExtResource("1_p51cr")]([SubResource("Resource_igiru"), SubResource("Resource_kkxhq")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

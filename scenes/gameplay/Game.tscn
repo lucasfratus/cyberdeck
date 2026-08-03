@@ -4,6 +4,18 @@
 [ext_resource type="PackedScene" uid="uid://cjspi6oyhmk0d" path="res://scenes/hand/Hand.tscn" id="2_brcjj"]
 [ext_resource type="PackedScene" uid="uid://u7r20t6lrd3s" path="res://scenes/dialogue/DialogueBox.tscn" id="3_brcjj"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ucufk"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.91558224, 0.8016618, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="Game" type="Control" unique_id=756523954]
 layout_mode = 3
 anchors_preset = 15
@@ -89,6 +101,10 @@ text = "Selecione as cartas"
 
 [node name="Hand" parent="." unique_id=965247429 instance=ExtResource("2_brcjj")]
 layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+offset_top = -208.0
+grow_vertical = 0
 
 [node name="DialogueLayer" type="CanvasLayer" parent="." unique_id=1539375575]
 layer = 10
@@ -106,3 +122,12 @@ text = "Jogar"
 [node name="ResolvePlayTimer" type="Timer" parent="." unique_id=1163770455]
 wait_time = 1.5
 one_shot = true
+
+[node name="TutorialHighlightLayer" type="CanvasLayer" parent="." unique_id=722080525]
+
+[node name="HighlightFrame" type="Panel" parent="TutorialHighlightLayer" unique_id=1084363083]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ucufk")

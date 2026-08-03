@@ -17,6 +17,11 @@ const MAX_PLAYS := 3
 @onready var result_label: Label = $HUD/ResultLabel
 @onready var next_round_button: Button = $HUD/NextRoundButton
 @onready var dialogue_box: DialogueBox = $DialogueLayer/DialogueBox
+@onready var hand_container: Control = $Hand/CardContainer
+@onready var highlight_frame: Panel = \
+	$TutorialHighlightLayer/HighlightFrame
+
+
 
 
 var player_deck := PlayerDeck.new()
@@ -25,6 +30,9 @@ var is_resolving_play := false
 var current_play_score := 0.0
 var plays_made_in_round := 0
 var triggered_mid_dialogues: Dictionary = {}
+var highlighted_control: Control
+var current_highlight_target: DialogueLineData.HighlightTarget = \
+	DialogueLineData.HighlightTarget.NONE
 
 const PHISHING_SCENARIO: ScenarioData = preload(
 	"res://data/scenarios/phishing_scenario.tres"
@@ -48,8 +56,6 @@ var current_round_data: RoundData
 var round_controller := RoundController.new()
 
 func _ready() -> void:
-	hand.position = Vector2(600, 450)
-
 	_connect_signals()
 	_setup_deck()
 	_start_game()
@@ -94,6 +100,10 @@ func _connect_signals() -> void:
 	hand.selection_changed.connect(_on_selection_changed)
 	resolve_play_timer.timeout.connect(_resolve_played_cards)
 	next_round_button.pressed.connect(_on_next_round_button_pressed)
+	dialogue_box.line_changed.connect(
+	_on_dialogue_highlight_changed
+	)
+	hand.layout_updated.connect(_on_hand_layout_updated)
 
 
 func _setup_deck() -> void:
@@ -234,12 +244,13 @@ func _resolve_played_cards() -> void:
 	current_play_score = 0.0
 
 	_update_round_hud()
-	await _show_triggered_mid_dialogues()
 	
 	if round_controller.has_won():
 		_finish_round(true)
 		return
 
+	await _show_triggered_mid_dialogues()
+	
 	if round_controller.has_lost():
 		_finish_round(false)
 		return
@@ -442,6 +453,12 @@ func _is_mid_dialogue_triggered(
 				>= dialogue_event.trigger_value
 			)
 
+		RoundDialogueEventData.TriggerType.PLAYS_REMAINING:
+			return (
+				round_controller.plays_remaining
+				<= dialogue_event.trigger_value
+			)
+
 		_:
 			return false
 			
@@ -473,3 +490,109 @@ func _show_triggered_mid_dialogues() -> void:
 		)
 
 		await dialogue_box.finished
+
+
+func _on_dialogue_highlight_changed(
+	target: DialogueLineData.HighlightTarget
+) -> void:
+	current_highlight_target = target
+	_clear_interface_highlight()
+
+	match target:
+		DialogueLineData.HighlightTarget.ATTACK:
+			_highlight_control(attack_label)
+
+		DialogueLineData.HighlightTarget.RISK:
+			_highlight_control(risk_label)
+
+		DialogueLineData.HighlightTarget.ROUND_SCORE:
+			_highlight_control(round_score_label)
+
+		DialogueLineData.HighlightTarget.PLAYS:
+			_highlight_control(plays_label)
+
+		DialogueLineData.HighlightTarget.PLAY_BUTTON:
+			_highlight_control(play_button)
+
+		DialogueLineData.HighlightTarget.HAND:
+			call_deferred("_highlight_hand_cards")
+
+		DialogueLineData.HighlightTarget.PLAY_AREA:
+			_highlight_control(played_cards)
+
+
+func _highlight_control(control: Control) -> void:
+	if control == null:
+		return
+
+	highlighted_control = control
+	_update_highlight_frame()
+	highlight_frame.show()
+	
+
+func _update_highlight_frame() -> void:
+	if highlighted_control == null:
+		return
+
+	var padding := 8.0
+	var target_rect := highlighted_control.get_global_rect()
+
+	highlight_frame.global_position = (
+		target_rect.position
+		- Vector2.ONE * padding
+	)
+
+	highlight_frame.size = (
+		target_rect.size
+		+ Vector2.ONE * padding * 2.0
+	)
+	
+
+func _clear_interface_highlight() -> void:
+	highlighted_control = null
+	highlight_frame.hide()
+	
+	
+func _highlight_hand_cards() -> void:
+	var cards: Array[Card] = hand.get_cards()
+
+	if cards.is_empty():
+		_clear_interface_highlight()
+		return
+
+	var combined_rect: Rect2 = cards[0].get_global_rect()
+
+	for i in range(1, cards.size()):
+		combined_rect = combined_rect.merge(
+			cards[i].get_global_rect()
+		)
+
+	_highlight_global_rect(combined_rect)
+	
+
+func _highlight_global_rect(target_rect: Rect2) -> void:
+	const PADDING := 8.0
+
+	highlighted_control = null
+
+	highlight_frame.global_position = (
+		target_rect.position
+		- Vector2(PADDING, PADDING)
+	)
+
+	highlight_frame.size = (
+		target_rect.size
+		+ Vector2(PADDING * 2.0, PADDING * 2.0)
+	)
+
+	highlight_frame.show()
+
+
+func _on_hand_layout_updated() -> void:
+	if (
+		current_highlight_target
+		!= DialogueLineData.HighlightTarget.HAND
+	):
+		return
+
+	call_deferred("_highlight_hand_cards")

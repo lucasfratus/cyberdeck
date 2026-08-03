@@ -6,10 +6,16 @@ class_name Hand
 
 signal selection_changed(selected_cards: Array[Card])
 signal cards_played(cards: Array[Card])
+signal layout_updated
 
 @export var max_selected_cards := 5
 
 var selected_cards: Array[Card] = []
+
+
+func _ready() -> void:
+	card_container.resized.connect(_on_card_container_resized)
+	call_deferred("_update_layout")
 
 
 func add_card(card: Card) -> void:
@@ -19,7 +25,7 @@ func add_card(card: Card) -> void:
 		_on_card_selection_requested
 	)
 
-	layout.update_layout(card_container)
+	call_deferred("_update_layout")
 
 
 func remove_card(card: Card) -> void:
@@ -30,7 +36,7 @@ func remove_card(card: Card) -> void:
 	if card.get_parent() == card_container:
 		card_container.remove_child(card)
 
-	layout.update_layout(card_container)
+	_update_layout()
 	selection_changed.emit(selected_cards.duplicate())
 
 
@@ -66,9 +72,6 @@ func clear_selection() -> void:
 	selection_changed.emit(selected_cards.duplicate())
 
 
-
-
-
 func get_selected_cards() -> Array[Card]:
 	return selected_cards.duplicate()
 	
@@ -87,7 +90,8 @@ func play_selected_cards() -> void:
 
 		card.set_selected(false)
 
-	layout.update_layout(card_container)
+	_update_layout()
+	
 	selection_changed.emit(selected_cards.duplicate())
 	cards_played.emit(cards_to_play)
 	
@@ -117,6 +121,26 @@ func take_all_cards() -> Array[Card]:
 	for card in cards:
 		card_container.remove_child(card)
 
-	layout.update_layout(card_container)
+	_update_layout()
 
 	return cards
+
+
+func _update_layout() -> void:
+	if not is_instance_valid(card_container):
+		return
+
+	if card_container.size.x <= 0.0:
+		call_deferred("_update_layout")
+		return
+
+	layout.update_layout(
+		card_container.get_cards(),
+		card_container.size.x,
+		true
+	)
+	
+	layout_updated.emit()
+
+func _on_card_container_resized() -> void:
+	_update_layout()

@@ -2,7 +2,8 @@ extends Resource
 class_name RoundDialogueEventData
 
 enum TriggerType {
-	AFTER_PLAY
+	AFTER_PLAY,
+	PLAYS_REMAINING
 }
 
 @export var id: String = ""

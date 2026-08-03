@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RoundDialogueEventData" format=3 uid="uid://8e1e1jpifjnt"]
+
+[ext_resource type="Resource" uid="uid://ka8vs4tcfm40" path="res://data/dialogue/tutorial_last_play.tres" id="1_ti5vh"]
+[ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="1_v07du"]
+
+[resource]
+script = ExtResource("1_v07du")
+id = "tutorial_last_lay"
+trigger_type = 1
+dialogue = ExtResource("1_ti5vh")
+metadata/_custom_type_script = "uid://cgww5fdyjvwnp"

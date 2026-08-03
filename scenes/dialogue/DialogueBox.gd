@@ -25,6 +25,8 @@ const PANEL_SIDE_MARGIN := 70.0
 const PANEL_EDGE_MARGIN := 40.0
 const PANEL_HEIGHT := 180.0
 
+signal line_changed(highlight_target: DialogueLineData.HighlightTarget)
+
 func _ready() -> void:
 	continue_button.pressed.connect(_on_continue_button_pressed)
 	hide()
@@ -67,7 +69,8 @@ func show_dialogue_data(dialogue_data: DialogueData) -> void:
 		sequence.append({
 			"speaker": line.speaker,
 			"text": line.text,
-			"portrait": line.portrait
+			"portrait": line.portrait,
+			"highlight_target": line.highlight_target
 		})
 
 	if sequence.is_empty():
@@ -118,6 +121,14 @@ func _show_current_line() -> void:
 	)
 
 	portrait.texture = portrait_texture
+	
+	line_changed.emit(
+	current_line.get(
+		"highlight_target",
+		DialogueLineData.HighlightTarget.NONE
+		)
+	)
+	
 	portrait.visible = portrait_texture != null
 
 	if current_dialogue_index == dialogue_sequence.size() - 1:
@@ -150,6 +161,9 @@ func close_dialogue() -> void:
 	current_dialogue_index = 0
 
 	hide()
+	line_changed.emit(
+	DialogueLineData.HighlightTarget.NONE
+	)
 	finished.emit()
 
 

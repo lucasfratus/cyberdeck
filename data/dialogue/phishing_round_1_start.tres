@@ -9,6 +9,7 @@ script = ExtResource("1_1wmm6")
 speaker = "Assistente"
 text = "Você deve selecionar as cartas que deseja jogar."
 portrait = ExtResource("2_a06pn")
+highlight_target = 6
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_oy4yy"]

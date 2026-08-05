@@ -86,3 +86,21 @@ func get_breach_vulnerability_per_play() -> float:
 		total += breach.vulnerability_per_play
 
 	return total
+
+
+func close_breach_by_id(
+	breach_id: String
+) -> SecurityBreachData:
+	if breach_id.is_empty():
+		return null
+
+	for i in range(active_breaches.size()):
+		var breach := active_breaches[i]
+
+		if breach.id != breach_id:
+			continue
+
+		active_breaches.remove_at(i)
+		return breach
+
+	return null

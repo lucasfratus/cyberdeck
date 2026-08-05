@@ -239,7 +239,9 @@ func _setup_deck() -> void:
 		CardID.REUTILIZAR_SENHA,
 		CardID.REUTILIZAR_SENHA,
 		CardID.LINK_SUSPEITO,
-		CardID.LINK_SUSPEITO
+		CardID.LINK_SUSPEITO,
+		CardID.SENHAS_EXCLUSIVAS,
+		CardID.SENHAS_EXCLUSIVAS
 	])
 
 
@@ -362,14 +364,12 @@ func _resolve_played_cards() -> void:
 	var played_card_ids: Array[String] = []
 
 	var breaches_to_open: Array[SecurityBreachData] = []
+	var breach_ids_to_close: Array[String] = []
+
 	var newly_opened_breaches: Array[SecurityBreachData] = []
+	var closed_breaches: Array[SecurityBreachData] = []
 
-	# Calcula a penalidade antes de abrir novas brechas.
-	var breach_penalty := (
-		round_controller.get_breach_vulnerability_per_play()
-	)
-
-	# Guarda os dados das cartas antes de removê-las.
+	# Registra os efeitos das cartas antes de removê-las.
 	for card in pending_cards:
 		if card.data == null:
 			continue
@@ -381,8 +381,31 @@ func _resolve_played_cards() -> void:
 				card.data.opens_breach
 			)
 
-	# Registra a jogada considerando apenas as brechas
-	# que já estavam ativas.
+		for breach_id in card.data.closes_breach_ids:
+			if breach_id.is_empty():
+				continue
+
+			if breach_id not in breach_ids_to_close:
+				breach_ids_to_close.append(breach_id)
+
+	# Fecha brechas antes de calcular a penalidade.
+	for breach_id in breach_ids_to_close:
+		var closed_breach := (
+			round_controller.close_breach_by_id(
+				breach_id
+			)
+		)
+
+		if closed_breach != null:
+			closed_breaches.append(closed_breach)
+
+	# Apenas as brechas que permaneceram abertas
+	# penalizam esta jogada.
+	var breach_penalty := (
+		round_controller
+		.get_breach_vulnerability_per_play()
+	)
+
 	round_controller.register_play(
 		current_play_score,
 		breach_penalty
@@ -390,7 +413,8 @@ func _resolve_played_cards() -> void:
 
 	plays_made_in_round += 1
 
-	# As novas brechas passam a valer nas próximas jogadas.
+	# As brechas criadas nesta jogada passam a valer
+	# nas jogadas seguintes.
 	for breach in breaches_to_open:
 		var was_opened := round_controller.open_breach(
 			breach
@@ -399,13 +423,22 @@ func _resolve_played_cards() -> void:
 		if was_opened:
 			newly_opened_breaches.append(breach)
 
+	for breach in closed_breaches:
+		print(
+			"[BRECHAS] Brecha fechada: ",
+			breach.display_name
+		)
+
 	for breach in newly_opened_breaches:
 		print(
 			"[BRECHAS] Brecha aberta: ",
 			breach.display_name
 		)
 
-	if not newly_opened_breaches.is_empty():
+	if (
+		not closed_breaches.is_empty()
+		or not newly_opened_breaches.is_empty()
+	):
 		_update_breaches_hud()
 
 	print(
@@ -415,7 +448,9 @@ func _resolve_played_cards() -> void:
 
 	print(
 		"[BRECHAS] Brechas ativas após a jogada: ",
-		round_controller.get_active_breaches().size()
+		round_controller
+			.get_active_breaches()
+			.size()
 	)
 	
 	if detailed_card in pending_cards:

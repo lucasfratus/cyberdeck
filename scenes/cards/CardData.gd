@@ -36,3 +36,4 @@ enum Category {
 
 @export_group("Security Breach")
 @export var opens_breach: SecurityBreachData
+@export var closes_breach_ids: Array[String] = []

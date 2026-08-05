@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://4goaawa40c5t"]
+
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="1_0gxmo"]
+[ext_resource type="Texture2D" uid="uid://cf41j70o1n7lq" path="res://assets/icons/categories/authentication.png" id="1_o5il5"]
+
+[resource]
+script = ExtResource("1_0gxmo")
+id = &"senhas_exclusivas"
+title = "Utilizar senhas exclusivas"
+description = "Usar uma senha diferente impede que o vazamento de uma conta comprometa as demais."
+educational_description = "Senhas exclusivas limitam o impacto de vazamentos: mesmo que uma credencial seja descoberta, ela não poderá ser usada para acessar outras contas. Essa prática ajuda a corrigir situações em que várias contas ficaram vulneráveis pelo uso repetido da mesma senha, como a exposição de credenciais"
+category_icon = ExtResource("1_o5il5")
+protection = 55
+vulnerability = 0.15
+closes_breach_ids = Array[String](["exposed_credentials"])
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

@@ -24,9 +24,12 @@ const MAX_PLAYS := 3
 	$CardDetailsLayer/CardDetailsPanel
 @onready var breaches_panel: PanelContainer = \
 	$HUD/BreachesPanel
-@onready var breach_list: VBoxContainer = \
+@onready var breach_list: HBoxContainer = \
 	$HUD/BreachesPanel/MarginContainer/Content/BreachList
-
+@onready var breach_feedback: PanelContainer = \
+	$BreachFeedbackLayer/BreachFeedback
+@onready var breach_feedback_label: Label = \
+	$BreachFeedbackLayer/BreachFeedback/MarginContainer/Message
 
 var player_deck := PlayerDeck.new()
 var pending_cards: Array[Card] = []
@@ -61,6 +64,7 @@ var current_round_data: RoundData
 var round_controller := RoundController.new()
 var detailed_card: Card = null
 var details_hide_request_id: int = 0
+var breach_feedback_tween: Tween
 
 const CARD_DETAILS_GAP := 20.0
 const CARD_DETAILS_SCREEN_MARGIN := 12.0
@@ -423,18 +427,24 @@ func _resolve_played_cards() -> void:
 		if was_opened:
 			newly_opened_breaches.append(breach)
 
+	var breach_feedback_messages: Array[String] = []
+
 	for breach in closed_breaches:
-		print(
-			"[BRECHAS] Brecha fechada: ",
-			breach.display_name
+		breach_feedback_messages.append(
+			"Brecha corrigida: %s"
+			% breach.display_name
 		)
 
 	for breach in newly_opened_breaches:
-		print(
-			"[BRECHAS] Brecha aberta: ",
-			breach.display_name
+		breach_feedback_messages.append(
+			"Brecha aberta: %s"
+			% breach.display_name
 		)
 
+	if not breach_feedback_messages.is_empty():
+		_show_breach_feedback(
+			"\n".join(breach_feedback_messages)
+		)
 	if (
 		not closed_breaches.is_empty()
 		or not newly_opened_breaches.is_empty()
@@ -868,28 +878,41 @@ func _update_breaches_hud() -> void:
 	for child in breach_list.get_children():
 		child.queue_free()
 
-	var active_breaches := round_controller.get_active_breaches()
+	var active_breaches := (
+		round_controller.get_active_breaches()
+	)
 
 	breaches_panel.visible = not active_breaches.is_empty()
 
 	for breach in active_breaches:
+		var breach_indicator := PanelContainer.new()
 		var breach_label := Label.new()
 
-		breach_label.text = (
-			"• %s  |  Penalidade: -%.0f por jogada"
+		breach_indicator.custom_minimum_size = Vector2(
+			0.0,
+			30.0
+		)
+
+		breach_indicator.mouse_filter = (
+			Control.MOUSE_FILTER_STOP
+		)
+
+		breach_indicator.tooltip_text = (
+			"%s\n\n%s\n\nPenalidade: -%.0f por jogada"
 			% [
 				breach.display_name,
+				breach.description,
 				breach.vulnerability_per_play
 			]
 		)
 
-		breach_label.autowrap_mode = (
-			TextServer.AUTOWRAP_WORD_SMART
+		breach_label.text = "[!] %s" % breach.display_name
+		breach_label.mouse_filter = (
+			Control.MOUSE_FILTER_IGNORE
 		)
 
-		breach_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-		breach_list.add_child(breach_label)
+		breach_indicator.add_child(breach_label)
+		breach_list.add_child(breach_indicator)
 
 
 func _update_resolved_play_display() -> void:
@@ -913,3 +936,41 @@ func _update_resolved_play_display() -> void:
 		penalty,
 		final_score
 	]
+
+
+func _show_breach_feedback(message: String) -> void:
+	if message.is_empty():
+		return
+
+	if (
+		breach_feedback_tween != null
+		and breach_feedback_tween.is_valid()
+	):
+		breach_feedback_tween.kill()
+
+	breach_feedback_label.text = message
+
+	breach_feedback.modulate.a = 0.0
+	breach_feedback.show()
+
+	breach_feedback_tween = create_tween()
+
+	breach_feedback_tween.tween_property(
+		breach_feedback,
+		"modulate:a",
+		1.0,
+		0.15
+	)
+
+	breach_feedback_tween.tween_interval(1.5)
+
+	breach_feedback_tween.tween_property(
+		breach_feedback,
+		"modulate:a",
+		0.0,
+		0.25
+	)
+
+	breach_feedback_tween.tween_callback(
+		breach_feedback.hide
+	)

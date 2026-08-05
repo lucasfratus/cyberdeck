@@ -35,12 +35,16 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="RiskLabel" type="Label" parent="HUD" unique_id=439031704]
-layout_mode = 0
-offset_left = 9.0
-offset_top = 14.0
-offset_right = 49.0
-offset_bottom = 37.0
+layout_mode = 1
+anchors_preset = -1
+anchor_top = -0.0030864198
+anchor_bottom = -0.0030864198
+offset_left = 10.0
+offset_top = 18.0
+offset_right = 143.0
+offset_bottom = 41.0
 text = "Índice de Risco: 0"
+metadata/_edit_use_anchors_ = true
 
 [node name="RoundScoreLabel" type="Label" parent="HUD" unique_id=612373624]
 layout_mode = 0
@@ -52,18 +56,18 @@ text = "Pontuação da Rodada: 0"
 
 [node name="PlaysLabel" type="Label" parent="HUD" unique_id=1782237055]
 layout_mode = 0
-offset_left = 12.0
-offset_top = 80.0
-offset_right = 52.0
-offset_bottom = 103.0
+offset_left = 11.0
+offset_top = 88.0
+offset_right = 169.0
+offset_bottom = 111.0
 text = "Jogadas Restantes: 0"
 
 [node name="ResultLabel" type="Label" parent="HUD" unique_id=38650119]
 layout_mode = 0
-offset_left = 12.0
-offset_top = 117.0
-offset_right = 52.0
-offset_bottom = 140.0
+offset_left = 11.0
+offset_top = 125.0
+offset_right = 51.0
+offset_bottom = 148.0
 
 [node name="NextRoundButton" type="Button" parent="HUD" unique_id=414234039]
 layout_mode = 0
@@ -75,15 +79,19 @@ text = "Próxima Rodada"
 
 [node name="AttackLabel" type="Label" parent="HUD" unique_id=125435583]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 374.0
+offset_top = 18.0
+offset_right = 414.0
+offset_bottom = 41.0
+horizontal_alignment = 1
 
 [node name="BreachesPanel" type="PanelContainer" parent="HUD" unique_id=2103640518]
 custom_minimum_size = Vector2(280, 80)
 layout_mode = 0
-offset_top = 119.0
-offset_right = 280.0
-offset_bottom = 199.0
+offset_left = 10.0
+offset_top = 158.0
+offset_right = 290.0
+offset_bottom = 238.0
 mouse_filter = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="HUD/BreachesPanel" unique_id=2075005404]
@@ -95,11 +103,13 @@ theme_override_constants/separation = 8
 
 [node name="Title" type="Label" parent="HUD/BreachesPanel/MarginContainer/Content" unique_id=326084338]
 layout_mode = 2
-text = "Brechas de segurança"
+theme_override_font_sizes/font_size = 12
+text = "Brechas:"
 
-[node name="BreachList" type="VBoxContainer" parent="HUD/BreachesPanel/MarginContainer/Content" unique_id=1496682691]
+[node name="BreachList" type="HBoxContainer" parent="HUD/BreachesPanel/MarginContainer/Content" unique_id=747169448]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="PlayArea" type="Control" parent="." unique_id=1189517273]
 anchors_preset = 0
@@ -116,12 +126,17 @@ offset_right = -38.0
 offset_bottom = -9.0
 
 [node name="ScoreLabel" type="Label" parent="PlayArea" unique_id=198825016]
-layout_mode = 0
-offset_left = -73.0
-offset_top = -200.0
-offset_right = 74.0
-offset_bottom = -177.0
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -74.0
+offset_top = -196.0
+offset_right = 73.0
+offset_bottom = -173.0
+grow_horizontal = 2
 text = "Selecione as cartas"
+horizontal_alignment = 1
 
 [node name="Hand" parent="." unique_id=965247429 instance=ExtResource("2_brcjj")]
 layout_mode = 1
@@ -131,11 +146,18 @@ offset_top = -208.0
 grow_vertical = 0
 
 [node name="PlayButton" type="Button" parent="." unique_id=1669867913]
-layout_mode = 0
-offset_left = 69.0
-offset_top = 571.0
-offset_right = 117.0
-offset_bottom = 602.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = -15.5
+offset_right = 40.0
+offset_bottom = 16.5
+grow_horizontal = 2
+grow_vertical = 2
 text = "Jogar"
 
 [node name="ResolvePlayTimer" type="Timer" parent="." unique_id=1163770455]
@@ -146,7 +168,6 @@ one_shot = true
 layer = 5
 
 [node name="CardDetailsPanel" parent="CardDetailsLayer" unique_id=1101933271 instance=ExtResource("3_8275i")]
-visible = true
 offset_right = 270.0
 offset_bottom = 340.0
 size_flags_horizontal = 4
@@ -156,6 +177,7 @@ size_flags_vertical = 4
 layer = 10
 
 [node name="DialogueBox" parent="DialogueLayer" unique_id=1770029832 instance=ExtResource("3_brcjj")]
+visible = false
 
 [node name="TutorialHighlightLayer" type="CanvasLayer" parent="." unique_id=722080525]
 layer = 11
@@ -166,3 +188,27 @@ offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ucufk")
+
+[node name="BreachFeedbackLayer" type="CanvasLayer" parent="." unique_id=580007574]
+layer = 6
+
+[node name="BreachFeedback" type="PanelContainer" parent="BreachFeedbackLayer" unique_id=1198307080]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -27.5
+offset_right = 190.0
+offset_bottom = 27.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="BreachFeedbackLayer/BreachFeedback" unique_id=1083642456]
+layout_mode = 2
+
+[node name="Message" type="Label" parent="BreachFeedbackLayer/BreachFeedback/MarginContainer" unique_id=1475547388]
+layout_mode = 2

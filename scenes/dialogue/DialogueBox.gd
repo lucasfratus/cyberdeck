@@ -16,6 +16,7 @@ signal finished
 	$DialoguePanel/MarginContainer/HBoxContainer/DialogueContent/ContinueButton
 
 @onready var dialogue_panel: PanelContainer = $DialoguePanel
+@onready var blocker: ColorRect = $Blocker
 
 var dialogue_active := false
 var dialogue_sequence: Array[Dictionary] = []
@@ -48,7 +49,8 @@ func show_dialogue(
 	])
 
 
-func show_dialogue_data(dialogue_data: DialogueData) -> void:
+func show_dialogue_data(dialogue_data: DialogueData, blocker_alpha := 0.15) -> void:
+	set_blocker_alpha(blocker_alpha)
 	if dialogue_data == null:
 		push_warning("Tentativa de exibir um diálogo nulo.")
 		return
@@ -211,3 +213,9 @@ func _set_dialogue_position(
 			)
 			dialogue_panel.offset_right = -PANEL_SIDE_MARGIN
 			dialogue_panel.offset_bottom = -PANEL_EDGE_MARGIN
+			
+	
+func set_blocker_alpha(alpha: float) -> void:
+	var color := blocker.color
+	color.a = alpha
+	blocker.color = color

@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" uid="uid://d31n2ffyrmf1u" path="res://scenes/dialogue/DialogueBox.gd" id="1_wkhp2"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wkhp2"]
+bg_color = Color(0, 0, 0, 0.95800006)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0a554"]
 bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
 border_width_left = 4
@@ -27,7 +30,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.45000002)
+color = Color(0, 0, 0, 0.15)
 
 [node name="DialoguePanel" type="PanelContainer" parent="." unique_id=932542904]
 layout_mode = 1
@@ -41,6 +44,7 @@ offset_right = -70.0
 offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_wkhp2")
 
 [node name="MarginContainer" type="MarginContainer" parent="DialoguePanel" unique_id=538182787]
 layout_mode = 2
@@ -76,7 +80,8 @@ theme_override_constants/separation = 12
 [node name="SpeakerLabel" type="Label" parent="DialoguePanel/MarginContainer/HBoxContainer/DialogueContent" unique_id=1799648804]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.654902, 0.54509807, 0.98039216, 1)
+theme_override_font_sizes/font_size = 20
 text = "Assistente"
 
 [node name="DialogueText" type="Label" parent="DialoguePanel/MarginContainer/HBoxContainer/DialogueContent" unique_id=1182888023]

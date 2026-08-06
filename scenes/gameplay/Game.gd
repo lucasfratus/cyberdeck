@@ -94,9 +94,9 @@ func _show_game_intro() -> void:
 
 	hand.set_interaction_enabled(false)
 	play_button.disabled = true
-
+	
 	dialogue_box.show_dialogue_data(
-		GAME_INTRO_DIALOGUE
+		GAME_INTRO_DIALOGUE, 1.0
 	)
 
 	await dialogue_box.finished
@@ -727,7 +727,7 @@ func _show_scenario_intro() -> void:
 		return
 		
 	_hide_card_details()
-	dialogue_box.show_dialogue_data(intro_dialogue)
+	dialogue_box.show_dialogue_data(intro_dialogue, 1.0)
 
 	await dialogue_box.finished
 	

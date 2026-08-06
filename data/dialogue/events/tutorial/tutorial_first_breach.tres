@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://c1vyolwjsg40w"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_j2mbj"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_h2s7t"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_ckcfv"]
+
+[sub_resource type="Resource" id="Resource_6xyo5"]
+script = ExtResource("1_j2mbj")
+speaker = "Assistente"
+text = "Detectei uma alteração persistente na Rede. Essa escolha abriu uma brecha de segurança."
+portrait = ExtResource("2_h2s7t")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_84ihb"]
+script = ExtResource("1_j2mbj")
+speaker = "Assistente"
+text = "Enquanto permanecer ativa, essa brecha poderá prejudicar suas próximas ações e ser explorada por futuras ameaças."
+portrait = ExtResource("2_h2s7t")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_5pmo0"]
+script = ExtResource("1_j2mbj")
+speaker = "Assistente"
+text = "Observe o indicador de brechas abertas. Passe o mouse sobre ele para consultar a causa e os efeitos da brecha."
+portrait = ExtResource("2_h2s7t")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("3_ckcfv")
+id = "tutorial_first_breach"
+lines = Array[ExtResource("1_j2mbj")]([SubResource("Resource_6xyo5"), SubResource("Resource_84ihb"), SubResource("Resource_5pmo0")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

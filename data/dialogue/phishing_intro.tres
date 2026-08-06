@@ -7,26 +7,40 @@
 [sub_resource type="Resource" id="Resource_4ucfp"]
 script = ExtResource("1_axjjj")
 speaker = "Assistente"
-text = "Você recebeu uma mensagem aparentemente urgente solicitando uma ação imediata."
+text = "Conexão estabelecida. Estamos entrando no primeiro setor, o de Comunicações."
 portrait = ExtResource("2_4ucfp")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_mir3d"]
 script = ExtResource("1_axjjj")
 speaker = "Assistente"
-text = "Mensagens desse tipo podem utilizar pressão e senso de urgência para induzir decisões precipitadas."
+text = "Há algo estranho aqui...  As mensagens continuam circulando, mas algumas delas não pertencem a quem afirmam pertencer."
 portrait = ExtResource("2_4ucfp")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_fse82"]
 script = ExtResource("1_axjjj")
 speaker = "Assistente"
-text = "Analise a situação e escolha práticas que reduzam o risco causado pelo ataque."
+text = "As anomalias aprenderam a imitar nomes, endereços e até o modo como pessoas conhecidas escrevem. Elas tentam despertar urgência, curiosidade ou medo antes que alguém perceba a falsificação."
+portrait = ExtResource("2_4ucfp")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_q8emf"]
+script = ExtResource("1_axjjj")
+speaker = "Assistente"
+text = "Fora daqui, essa técnica é conhecida como phishing. Dentro da Rede, ela se manifesta como uma sequência de sinais falsos misturados às comunicações legítimas."
+portrait = ExtResource("2_4ucfp")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_r1np4"]
+script = ExtResource("1_axjjj")
+speaker = "Assistente"
+text = "Analise as práticas disponíveis. Precisamos separar os sinais confiáveis das imitações antes que novas brechas sejam abertas."
 portrait = ExtResource("2_4ucfp")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [resource]
 script = ExtResource("2_q8emf")
 id = "phishing_intro"
-lines = Array[ExtResource("1_axjjj")]([SubResource("Resource_4ucfp"), SubResource("Resource_mir3d"), SubResource("Resource_fse82")])
+lines = Array[ExtResource("1_axjjj")]([SubResource("Resource_4ucfp"), SubResource("Resource_mir3d"), SubResource("Resource_fse82"), SubResource("Resource_q8emf"), SubResource("Resource_r1np4")])
 metadata/_custom_type_script = "uid://knobenf0qolu"

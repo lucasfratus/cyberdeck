@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="RoundDialogueEventData" format=3 uid="uid://ex62nhyvgvw6"]
 
-[ext_resource type="Resource" uid="uid://nqsrnqqlf2aa" path="res://data/dialogue/tutorial_after_first_play.tres" id="1_uxk40"]
+[ext_resource type="Resource" uid="uid://nqsrnqqlf2aa" path="res://data/dialogue/events/tutorial/tutorial_after_first_play.tres" id="1_uxk40"]
 [ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="1_voqbw"]
 
 [resource]

@@ -104,3 +104,15 @@ func close_breach_by_id(
 		return breach
 
 	return null
+	
+	
+func restore_active_breaches(
+	snapshot: Array[SecurityBreachData]
+) -> void:
+	active_breaches.clear()
+
+	for breach in snapshot:
+		if breach == null:
+			continue
+
+		active_breaches.append(breach)

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://bmgt0ux3opetl"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_4b203"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_eifgg"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_tkuxx"]
+
+[sub_resource type="Resource" id="Resource_a06pn"]
+script = ExtResource("1_4b203")
+speaker = "Assistente"
+text = "Estas cartas representam decisões que podem ser tomadas diante da situação. Algumas fortalecem a segurança; outras introduzem novos riscos."
+portrait = ExtResource("2_eifgg")
+highlight_target = 6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_oy4yy"]
+script = ExtResource("1_4b203")
+speaker = "Assistente"
+text = "Nem toda consequência é imediatamente visível. Passe o mouse sobre uma carta para examinar seus detalhes."
+portrait = ExtResource("2_eifgg")
+highlight_target = 6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_cti4h"]
+script = ExtResource("1_4b203")
+speaker = "Assistente"
+text = "Selecione as práticas que deseja aplicar e confirme sua escolha quando estiver preparado."
+portrait = ExtResource("2_eifgg")
+highlight_target = 5
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("3_tkuxx")
+id = "phishing_round_1_start"
+position = 0
+lines = Array[ExtResource("1_4b203")]([SubResource("Resource_a06pn"), SubResource("Resource_oy4yy"), SubResource("Resource_cti4h")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

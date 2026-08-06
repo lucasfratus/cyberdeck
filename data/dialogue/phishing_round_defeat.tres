@@ -7,19 +7,26 @@
 [sub_resource type="Resource" id="Resource_igiru"]
 script = ExtResource("1_p51cr")
 speaker = "Assistente"
-text = "Algumas escolhas aumentaram o risco desta situação. Mensagens falsas costumam explorar pressa, medo ou curiosidade para induzir ações impulsivas."
+text = "A conexão ficou instável demais para continuarmos neste setor. Precisaremos reiniciar o procedimento."
 portrait = ExtResource("2_igiru")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_kkxhq"]
 script = ExtResource("1_p51cr")
 speaker = "Assistente"
-text = "Na próxima tentativa, leia as descrições das cartas e procure práticas que ajudem a verificar a mensagem e proteger as credenciais."
+text = "As anomalias exploraram decisões tomadas antes que a origem das mensagens fosse verificada. Na próxima tentativa, observe quais práticas ajudam a confirmar remetentes, links e solicitações incomuns."
+portrait = ExtResource("2_igiru")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_8s00f"]
+script = ExtResource("1_p51cr")
+speaker = "Assistente"
+text = "Não se preocupe. Os registros desta tentativa ainda podem nos ajudar a reconhecer os próximos sinais falsos."
 portrait = ExtResource("2_igiru")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [resource]
 script = ExtResource("2_8s00f")
 id = "phishing_round_defeat"
-lines = Array[ExtResource("1_p51cr")]([SubResource("Resource_igiru"), SubResource("Resource_kkxhq")])
+lines = Array[ExtResource("1_p51cr")]([SubResource("Resource_igiru"), SubResource("Resource_kkxhq"), SubResource("Resource_8s00f")])
 metadata/_custom_type_script = "uid://knobenf0qolu"

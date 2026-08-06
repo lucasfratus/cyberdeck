@@ -38,9 +38,14 @@ var current_play_score := 0.0
 var plays_made_in_round := 0
 var triggered_mid_dialogues: Dictionary = {}
 var highlighted_control: Control
+var breaches_at_round_start: Array[SecurityBreachData] = []
 
 var current_highlight_target: DialogueLineData.HighlightTarget = \
 	DialogueLineData.HighlightTarget.NONE
+
+const GAME_INTRO_DIALOGUE: DialogueData = preload(
+	"res://data/dialogue/game_intro.tres"
+)
 
 const PHISHING_SCENARIO: ScenarioData = preload(
 	"res://data/scenarios/phishing_scenario.tres"
@@ -49,6 +54,11 @@ const PHISHING_SCENARIO: ScenarioData = preload(
 const PASSWORD_SCENARIO: ScenarioData = preload(
 	"res://data/scenarios/password_scenario.tres"
 )
+
+const FIRST_BREACH_DIALOGUE: DialogueData = preload(
+	"res://data/dialogue/events/tutorial/tutorial_first_breach.tres"
+)
+
 
 var scenarios: Array[ScenarioData] = [
 	PHISHING_SCENARIO,
@@ -65,6 +75,7 @@ var round_controller := RoundController.new()
 var detailed_card: Card = null
 var details_hide_request_id: int = 0
 var breach_feedback_tween: Tween
+var first_breach_tutorial_shown := false
 
 const CARD_DETAILS_GAP := 20.0
 const CARD_DETAILS_SCREEN_MARGIN := 12.0
@@ -72,8 +83,24 @@ const CARD_DETAILS_SCREEN_MARGIN := 12.0
 func _ready() -> void:
 	_connect_signals()
 	_setup_deck()
-	_start_game()
+	await _start_game()
 
+
+func _show_game_intro() -> void:
+	if GAME_INTRO_DIALOGUE == null:
+		return
+
+	_hide_card_details()
+
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	dialogue_box.show_dialogue_data(
+		GAME_INTRO_DIALOGUE
+	)
+
+	await dialogue_box.finished
+	
 
 func _start_game() -> void:
 	if scenarios.is_empty():
@@ -93,8 +120,10 @@ func _start_game() -> void:
 		return
 
 	current_round_data = current_scenario_data.rounds[current_round_index]
-
-	_start_scenario()
+	first_breach_tutorial_shown = false
+	
+	await _show_game_intro()
+	await _start_scenario()
 	
 	
 func _start_scenario() -> void:
@@ -131,18 +160,49 @@ func _on_card_details_requested(card: Card) -> void:
 	if card == null:
 		return
 
+	if not is_instance_valid(card):
+		return
+
 	if card.data == null:
 		return
 
 	details_hide_request_id += 1
+	var request_id := details_hide_request_id
+
 	detailed_card = card
+
+	# Evita mostrar o painel enquanto seu conteúdo
+	# e seu tamanho ainda estão sendo recalculados.
+	card_details_panel.visible = false
 
 	card_details_panel.show_card(card.data)
 
+	# show_card() pode tornar o painel visível.
+	# Mantemos oculto até terminar o layout.
+	card_details_panel.visible = false
+
+	# Aguarda os Labels e Containers recalcularem
+	# seus tamanhos mínimos.
 	await get_tree().process_frame
 
-	if card == detailed_card:
-		_position_card_details_panel(card)
+	card_details_panel.reset_size()
+
+	await get_tree().process_frame
+
+	# Cancela esta exibição caso o mouse já tenha
+	# saído da carta ou entrado em outra.
+	if request_id != details_hide_request_id:
+		return
+
+	if card != detailed_card:
+		return
+
+	if not is_instance_valid(card):
+		return
+
+	_position_card_details_panel(card)
+
+	card_details_panel.visible = true
 
 
 func _position_card_details_panel(card: Card) -> void:
@@ -152,30 +212,33 @@ func _position_card_details_panel(card: Card) -> void:
 	if card != detailed_card:
 		return
 
-	var card_rect: Rect2 = card.get_global_rect()
-	var panel_size: Vector2 = card_details_panel.size
-	var viewport_rect: Rect2 = get_viewport().get_visible_rect()
-	var maximum_height := (viewport_rect.size.y - CARD_DETAILS_SCREEN_MARGIN * 2.0)
+	var viewport_rect := get_viewport().get_visible_rect()
+	var card_rect := card.get_global_rect()
 
-	if card_details_panel.size.y > maximum_height:
-		card_details_panel.size.y = maximum_height
+	var panel_size := card_details_panel.size
 
-	panel_size = card_details_panel.size
+	var maximum_height := (
+		viewport_rect.size.y
+		- CARD_DETAILS_SCREEN_MARGIN * 2.0
+	)
 
-	# Centraliza o painel horizontalmente sobre a carta.
+	# Limita a altura somente depois de o layout
+	# interno ter sido calculado.
+	if panel_size.y > maximum_height:
+		panel_size.y = maximum_height
+		card_details_panel.size = panel_size
+
 	var target_x := (
 		card_rect.get_center().x
 		- panel_size.x / 2.0
 	)
 
-	# Coloca o painel acima da carta.
 	var target_y := (
 		card_rect.position.y
 		- panel_size.y
 		- CARD_DETAILS_GAP
 	)
 
-	# Impede que o painel saia pelas laterais.
 	target_x = clampf(
 		target_x,
 		viewport_rect.position.x
@@ -185,7 +248,7 @@ func _position_card_details_panel(card: Card) -> void:
 			- CARD_DETAILS_SCREEN_MARGIN
 	)
 
-	# Caso não exista espaço acima, coloca abaixo da carta.
+	# Caso não caiba acima da carta, coloca abaixo.
 	if target_y < (
 		viewport_rect.position.y
 		+ CARD_DETAILS_SCREEN_MARGIN
@@ -195,7 +258,6 @@ func _position_card_details_panel(card: Card) -> void:
 			+ CARD_DETAILS_GAP
 		)
 
-	# Impede que saia pela parte inferior.
 	target_y = clampf(
 		target_y,
 		viewport_rect.position.y
@@ -211,24 +273,13 @@ func _position_card_details_panel(card: Card) -> void:
 	)
 
 
-func _process(_delta: float) -> void:
-	if detailed_card == null:
-		return
-
-	if not is_instance_valid(detailed_card):
-		detailed_card = null
-		card_details_panel.hide_card()
-		return
-
-	if not card_details_panel.visible:
-		return
-
-	_position_card_details_panel(detailed_card)
-	
-
 func _on_card_details_hidden(card: Card) -> void:
 	if card != detailed_card:
 		return
+
+	# Invalida qualquer exibição que ainda esteja
+	# aguardando os frames de atualização do layout.
+	details_hide_request_id += 1
 
 	detailed_card = null
 	card_details_panel.hide_card()
@@ -296,6 +347,12 @@ func _on_next_round_button_pressed() -> void:
 	if victory:
 		await _advance_progression()
 	else:
+		round_controller.restore_active_breaches(
+			breaches_at_round_start
+		)
+
+		_update_breaches_hud()
+
 		await _start_round()
 	
 
@@ -340,6 +397,7 @@ func _show_played_cards(cards: Array[Card]) -> void:
 
 
 func _hide_card_details() -> void:
+	details_hide_request_id += 1
 	detailed_card = null
 	card_details_panel.hide_card()
 
@@ -440,6 +498,13 @@ func _resolve_played_cards() -> void:
 			"Brecha aberta: %s"
 			% breach.display_name
 		)
+		
+	if (not closed_breaches.is_empty()
+		or not newly_opened_breaches.is_empty()):
+		_update_breaches_hud()
+	
+	if not newly_opened_breaches.is_empty():
+		await _show_first_breach_tutorial()
 
 	if not breach_feedback_messages.is_empty():
 		_show_breach_feedback(
@@ -462,7 +527,7 @@ func _resolve_played_cards() -> void:
 			.get_active_breaches()
 			.size()
 	)
-	
+		
 	if detailed_card in pending_cards:
 		detailed_card = null
 		card_details_panel.hide_card()
@@ -504,6 +569,7 @@ func _start_round() -> void:
 	plays_made_in_round = 0
 	triggered_mid_dialogues.clear()
 
+	breaches_at_round_start = (round_controller.get_active_breaches())
 	round_controller.start(current_round_data)
 	_update_breaches_hud()
 
@@ -667,17 +733,47 @@ func _show_scenario_intro() -> void:
 	
 	
 func _show_round_start_dialogue() -> void:
-	var round_dialogue := current_round_data.start_dialogue
-
-	if round_dialogue == null:
+	if current_round_data == null:
 		return
+
+	var dialogues_to_show: Array[DialogueData] = []
+
+	# Usa a sequência nova, caso ela tenha sido configurada.
+	for dialogue_data in current_round_data.start_dialogues:
+		if dialogue_data != null:
+			dialogues_to_show.append(dialogue_data)
+
+	# Compatibilidade com as rodadas antigas.
+	if (
+		dialogues_to_show.is_empty()
+		and current_round_data.start_dialogue != null
+	):
+		dialogues_to_show.append(
+			current_round_data.start_dialogue
+		)
+
+	if dialogues_to_show.is_empty():
+		return
+
+	_hide_card_details()
 
 	hand.set_interaction_enabled(false)
 	play_button.disabled = true
 
-	dialogue_box.show_dialogue_data(round_dialogue)
+	for dialogue_data in dialogues_to_show:
+		_clear_interface_highlight()
 
-	await dialogue_box.finished
+		dialogue_box.show_dialogue_data(
+			dialogue_data
+		)
+
+		await dialogue_box.finished
+
+		# Dá ao DialogueBox um frame para concluir
+		# o fechamento antes de abrir o próximo.
+		await get_tree().process_frame
+
+	_clear_interface_highlight()
 	
 
 func _is_mid_dialogue_triggered(
@@ -974,3 +1070,28 @@ func _show_breach_feedback(message: String) -> void:
 	breach_feedback_tween.tween_callback(
 		breach_feedback.hide
 	)
+
+
+func _show_first_breach_tutorial() -> void:
+	if first_breach_tutorial_shown:
+		return
+
+	if FIRST_BREACH_DIALOGUE == null:
+		return
+
+	first_breach_tutorial_shown = true
+
+	_hide_card_details()
+
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	dialogue_box.show_dialogue_data(
+		FIRST_BREACH_DIALOGUE
+	)
+
+	await dialogue_box.finished
+
+	if not round_controller.finished:
+		hand.set_interaction_enabled(true)
+		_update_play_button_state()

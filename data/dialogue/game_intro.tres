@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://c5tw8rlhq8x4x"]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_hfven"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_20mwt"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_ebp6r"]
+
+[sub_resource type="Resource" id="Resource_20mwt"]
+script = ExtResource("1_hfven")
+speaker = "Assistente"
+text = "Finalmente, um sinal estável. Eu sou o Assistente, uma inteligência de orientação vinculada ao núcleo da Rede."
+portrait = ExtResource("2_20mwt")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_pkm8g"]
+script = ExtResource("1_hfven")
+speaker = "Assistente"
+text = "Este sistema costumava conectar pessoas, informações e serviços. Agora, algumas regiões estão sendo afetadas por anomalias que imitam comunicações legítimas e exploram comportamentos inseguros."
+portrait = ExtResource("2_20mwt")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_ap0rh"]
+script = ExtResource("1_hfven")
+speaker = "Assistente"
+text = "A sua função será analisar cada situação e escolher práticas capazes de estabilizar os setores comprometidos."
+portrait = ExtResource("2_20mwt")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_ebp6r"]
+script = ExtResource("1_hfven")
+speaker = "Assistente"
+text = "Mas tenha cuidado: algumas decisões podem criar brechas. E aquilo que permanece aberto em um setor pode voltar a causar problemas mais adiante."
+portrait = ExtResource("2_20mwt")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_ual65"]
+script = ExtResource("1_hfven")
+speaker = "Assistente"
+text = "Eu acompanharei sua jornada e ajudarei a interpretar os sinais da Rede. Quando estiver pronto, iniciaremos!"
+portrait = ExtResource("2_20mwt")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("2_ebp6r")
+id = "game_intro"
+lines = Array[ExtResource("1_hfven")]([SubResource("Resource_20mwt"), SubResource("Resource_pkm8g"), SubResource("Resource_ap0rh"), SubResource("Resource_ebp6r"), SubResource("Resource_ual65")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

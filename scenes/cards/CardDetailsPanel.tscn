@@ -4,7 +4,7 @@
 
 [node name="CardDetailsPanel" type="PanelContainer" unique_id=1101933271]
 visible = false
-custom_minimum_size = Vector2(420, 190)
+custom_minimum_size = Vector2(420, 0)
 offset_right = 360.0
 offset_bottom = 430.0
 mouse_filter = 2

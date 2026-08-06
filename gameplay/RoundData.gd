@@ -8,6 +8,7 @@ extends Resource
 
 @export_group("Dialogues")
 @export var start_dialogue: DialogueData
+@export var start_dialogues: Array[DialogueData] = []
 @export var victory_dialogue: DialogueData
 @export var defeat_dialogue: DialogueData
 @export var mid_dialogues: Array[RoundDialogueEventData] = []

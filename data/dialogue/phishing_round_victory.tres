@@ -7,19 +7,26 @@
 [sub_resource type="Resource" id="Resource_3sfmh"]
 script = ExtResource("1_lsrhy")
 speaker = "Assistente"
-text = "Boa! Práticas como verificar o remetente, desconfiar de links inesperados e proteger as contas reduzem o risco de ataques de phishing."
+text = "Boa! O sinal falso foi isolado. A conexão deste setor voltou a apresentar níveis seguros de integridade."
 portrait = ExtResource("2_3sfmh")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_lsrhy"]
 script = ExtResource("1_lsrhy")
 speaker = "Assistente"
-text = "Mesmo quando uma mensagem parece legítima, vale conferir o endereço, o contexto e o destino dos links antes de agir."
+text = "Mensagens de phishing costumam parecer legítimas porque reproduzem nomes, identidades visuais e situações familiares. Verificar o remetente, os links e o contexto da mensagem reduz a chance de seguir uma instrução enganosa."
+portrait = ExtResource("2_3sfmh")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Resource_v362p"]
+script = ExtResource("1_lsrhy")
+speaker = "Assistente"
+text = "A conexão está estável por enquanto. Mas as anomalias já começaram a se espalhar para outros setores."
 portrait = ExtResource("2_3sfmh")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [resource]
 script = ExtResource("2_v362p")
 id = "phishing_round_victory"
-lines = Array[ExtResource("1_lsrhy")]([SubResource("Resource_3sfmh"), SubResource("Resource_lsrhy")])
+lines = Array[ExtResource("1_lsrhy")]([SubResource("Resource_3sfmh"), SubResource("Resource_lsrhy"), SubResource("Resource_v362p")])
 metadata/_custom_type_script = "uid://knobenf0qolu"

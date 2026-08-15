@@ -43,6 +43,7 @@ offset_left = 10.0
 offset_top = 18.0
 offset_right = 143.0
 offset_bottom = 41.0
+mouse_filter = 0
 text = "Índice de Risco: 0"
 metadata/_edit_use_anchors_ = true
 

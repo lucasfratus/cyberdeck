@@ -587,6 +587,8 @@ func _start_round() -> void:
 
 	await _show_round_start_dialogue()
 
+	_show_exploited_breaches_feedback()
+
 	hand.set_interaction_enabled(true)
 	_update_play_button_state()
 	
@@ -614,6 +616,40 @@ func _update_round_hud() -> void:
 		"Índice de Risco: %.0f"
 		% round_controller.get_risk()
 	)
+	
+	var exploited_breaches := (
+	round_controller.get_exploited_breaches()
+)
+
+	if exploited_breaches.is_empty():
+		risk_label.tooltip_text = (
+			"Índice de Risco necessário para superar a ameaça."
+		)
+	else:
+		var breach_names: Array[String] = []
+
+		for breach in exploited_breaches:
+			if breach == null:
+				continue
+
+			breach_names.append(
+				breach.display_name
+			)
+
+		var risk_increase := (
+			round_controller
+			.get_breach_exploitation_risk_increase()
+		)
+
+		risk_label.tooltip_text = (
+			"Risco base: %.0f\n"
+			+ "Aumento por brechas exploradas: +%.0f\n"
+			+ "Brechas exploradas: %s"
+		) % [
+			current_round_data.base_risk,
+			risk_increase,
+			", ".join(breach_names)
+		]
 
 	round_score_label.text = (
 		"Pontuação da rodada: %.0f"
@@ -1095,3 +1131,35 @@ func _show_first_breach_tutorial() -> void:
 	if not round_controller.finished:
 		hand.set_interaction_enabled(true)
 		_update_play_button_state()
+
+
+func _show_exploited_breaches_feedback() -> void:
+	var exploited_breaches := (
+		round_controller.get_exploited_breaches()
+	)
+
+	if exploited_breaches.is_empty():
+		return
+
+	var breach_names: Array[String] = []
+
+	for breach in exploited_breaches:
+		if breach == null:
+			continue
+
+		breach_names.append(
+			breach.display_name
+		)
+
+	var risk_increase := (
+		round_controller
+		.get_breach_exploitation_risk_increase()
+	)
+
+	_show_breach_feedback(
+		"Ameaça explorou: %s\nÍndice de Risco +%.0f"
+		% [
+			", ".join(breach_names),
+			risk_increase
+		]
+	)

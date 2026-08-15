@@ -3,6 +3,8 @@ extends RefCounted
 
 var data: RoundData
 var active_breaches: Array[SecurityBreachData] = []
+var exploited_breaches: Array[SecurityBreachData] = []
+var effective_risk := 0.0
 
 var score := 0.0
 var plays_remaining := 0
@@ -20,6 +22,35 @@ func start(round_data: RoundData) -> void:
 	last_play_base_score = 0.0
 	last_breach_penalty = 0.0
 	last_play_final_score = 0.0
+	
+	exploited_breaches.clear()
+	effective_risk = data.base_risk
+
+	for breach in active_breaches:
+		if breach == null:
+			continue
+
+		if breach.id not in data.exploited_breach_ids:
+			continue
+
+		exploited_breaches.append(breach)
+
+	effective_risk += (
+		data.risk_increase_per_exploited_breach
+		* exploited_breaches.size()
+	)
+	
+	print(
+	"[ATAQUE] Brechas exploradas: ",
+	exploited_breaches.size()
+	)
+
+	print(
+		"[ATAQUE] Risco base: ",
+		data.base_risk,
+		" | Risco efetivo: ",
+		effective_risk
+	)
 
 
 func register_play(
@@ -60,7 +91,7 @@ func get_risk() -> float:
 	if data == null:
 		return 0.0
 
-	return data.base_risk
+	return effective_risk
 
 
 func open_breach(breach: SecurityBreachData) -> bool:
@@ -116,3 +147,17 @@ func restore_active_breaches(
 			continue
 
 		active_breaches.append(breach)
+		
+
+func get_exploited_breaches() -> Array[SecurityBreachData]:
+	return exploited_breaches.duplicate()
+	
+
+func get_breach_exploitation_risk_increase() -> float:
+	if data == null:
+		return 0.0
+
+	return (
+		data.risk_increase_per_exploited_breach
+		* exploited_breaches.size()
+	)

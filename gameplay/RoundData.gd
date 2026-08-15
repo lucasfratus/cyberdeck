@@ -12,3 +12,7 @@ extends Resource
 @export var victory_dialogue: DialogueData
 @export var defeat_dialogue: DialogueData
 @export var mid_dialogues: Array[RoundDialogueEventData] = []
+
+@export_group("Breach Exploitation")
+@export var exploited_breach_ids: Array[String] = []
+@export var risk_increase_per_exploited_breach: float = 0.0

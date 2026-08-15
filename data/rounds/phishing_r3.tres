@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_2e3h4"]
 [ext_resource type="Resource" uid="uid://dc2oxr0avtamm" path="res://data/dialogue/phishing_round_defeat.tres" id="1_njhyi"]
 [ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="2_lqksu"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="4_lqksu"]
 [ext_resource type="Resource" uid="uid://d2d3e6ntlo6n0" path="res://data/dialogue/phishing_round_victory.tres" id="4_wwcht"]
 
 [resource]
@@ -12,4 +13,6 @@ attack_name = "phishing"
 base_risk = 300.0
 victory_dialogue = ExtResource("4_wwcht")
 defeat_dialogue = ExtResource("1_njhyi")
+exploited_breach_ids = Array[String](["exposed_credentials"])
+risk_increase_per_exploited_breach = 40.0
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

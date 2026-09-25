@@ -82,7 +82,6 @@ const CARD_DETAILS_SCREEN_MARGIN := 12.0
 
 func _ready() -> void:
 	_connect_signals()
-	_setup_deck()
 	await _start_game()
 
 
@@ -286,18 +285,27 @@ func _on_card_details_hidden(card: Card) -> void:
 
 
 func _setup_deck() -> void:
-	player_deck.setup([
-		CardID.SENHA_FORTE,
-		CardID.SENHA_FORTE,
-		CardID.AUTENTICACAO_2FA,
-		CardID.AUTENTICACAO_2FA,
-		CardID.REUTILIZAR_SENHA,
-		CardID.REUTILIZAR_SENHA,
-		CardID.LINK_SUSPEITO,
-		CardID.LINK_SUSPEITO,
-		CardID.SENHAS_EXCLUSIVAS,
-		CardID.SENHAS_EXCLUSIVAS
-	])
+	# O baralho da rodada, quando existe, substitui
+	# o do cenario.
+	if (
+		current_round_data != null
+		and not current_round_data.deck.is_empty()
+	):
+		player_deck.setup(current_round_data.deck)
+		return
+
+	if current_scenario_data == null:
+		push_error("Nenhum cenario carregado para montar o baralho.")
+		return
+
+	if current_scenario_data.deck.is_empty():
+		push_warning(
+			"O cenario '%s' nao possui baralho configurado."
+			% current_scenario_data.id
+		)
+		return
+
+	player_deck.setup(current_scenario_data.deck)
 
 
 func _draw_cards(amount: int) -> void:
@@ -307,6 +315,8 @@ func _draw_cards(amount: int) -> void:
 		if card_id.is_empty():
 			print("Não há mais cartas disponíveis para compra.")
 			break
+
+		CardCollection.unlock(card_id)
 
 		var card := CardFactory.instantiate_card(card_id)
 
@@ -463,9 +473,9 @@ func _resolve_played_cards() -> void:
 
 	# Apenas as brechas que permaneceram abertas
 	# penalizam esta jogada.
-	var breach_penalty := (
-		round_controller
-		.get_breach_vulnerability_per_play()
+	var breach_penalty: float = (
+		current_play_score
+		* round_controller.get_breach_penalty_ratio()
 	)
 
 	round_controller.register_play(
@@ -582,6 +592,7 @@ func _start_round() -> void:
 	hand.set_interaction_enabled(false)
 	play_button.disabled = true
 
+	_setup_deck()
 	_fill_hand()
 	_update_round_hud()
 
@@ -1030,11 +1041,11 @@ func _update_breaches_hud() -> void:
 		)
 
 		breach_indicator.tooltip_text = (
-			"%s\n\n%s\n\nPenalidade: -%.0f por jogada"
+			"%s\n\n%s\n\nPenalidade: -%.0f%% por jogada"
 			% [
 				breach.display_name,
 				breach.description,
-				breach.vulnerability_per_play
+				breach.score_penalty_ratio * 100.0
 			]
 		)
 
@@ -1049,7 +1060,7 @@ func _update_breaches_hud() -> void:
 
 func _update_resolved_play_display() -> void:
 	var base_score := round_controller.last_play_base_score
-	var penalty := round_controller.last_breach_penalty
+	var penalty: float = round_controller.last_breach_penalty
 	var final_score := round_controller.last_play_final_score
 
 	if penalty <= 0.0:

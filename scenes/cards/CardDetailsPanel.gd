@@ -18,6 +18,9 @@ class_name CardDetailsPanel
 
 
 const PANEL_WIDTH := 420.0
+const LOCKED_PLACEHOLDER := "?"
+const LOCKED_TEXT := \
+	"Carta ainda não encontrada. Ela aparece aqui depois de surgir em uma partida."
 
 
 func _ready() -> void:
@@ -26,13 +29,26 @@ func _ready() -> void:
 	hide()
 
 
-func show_card(card_data: CardData) -> void:
+func show_card(card_data: CardData, locked := false) -> void:
 	if card_data == null:
 		hide_card()
 		return
 
 	custom_minimum_size.x = PANEL_WIDTH
 	size.x = PANEL_WIDTH
+
+	if locked:
+		title_label.text = LOCKED_PLACEHOLDER
+		description_label.text = LOCKED_TEXT
+		protection_label.text = (
+			"Proteção: %s" % LOCKED_PLACEHOLDER
+		)
+		vulnerability_label.text = (
+			"Vulnerabilidade: %s" % LOCKED_PLACEHOLDER
+		)
+		show()
+		return
+
 	title_label.text = card_data.title
 
 	if card_data.educational_description.is_empty():

@@ -2,7 +2,10 @@ class_name CardFactory
 
 const CARD_SCENE := preload("res://scenes/cards/Card.tscn")
 
-static func instantiate_card(card_id: String) -> Card:
+static func instantiate_card(
+	card_id: String,
+	locked := false
+) -> Card:
 	var data := CardDatabase.get_card(card_id)
 
 	if data == null:
@@ -10,6 +13,6 @@ static func instantiate_card(card_id: String) -> Card:
 		return null
 
 	var card := CARD_SCENE.instantiate() as Card
-	card.setup(data)
+	card.setup(data, locked)
 
 	return card

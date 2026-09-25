@@ -20,6 +20,13 @@ var hover_tween: Tween
 var original_z_index := 0
 var interaction_enabled := true
 
+## Com true, a carta continua reagindo ao cursor mas
+## deixa os eventos de mouse seguirem para o no pai.
+## Necessario dentro de um ScrollContainer, senao a
+## roda do mouse morre na carta e a rolagem nao anda.
+var mouse_passthrough := false
+
+const LOCKED_PLACEHOLDER := "?"
 const HOVER_SCALE := 1.08
 const HOVER_DURATION := 0.12
 
@@ -46,6 +53,34 @@ func _ready() -> void:
 	hover_area.mouse_exited.connect(_on_hover_area_mouse_exited)
 	hover_area.gui_input.connect(_on_hover_area_gui_input)
 
+	_update_mouse_filter()
+
+
+func set_mouse_passthrough(enabled: bool) -> void:
+	mouse_passthrough = enabled
+
+	if is_node_ready():
+		_update_mouse_filter()
+
+
+func _update_mouse_filter() -> void:
+	# A raiz tambem precisa deixar passar, senao ela
+	# consome a roda do mouse depois da area de hover.
+	if mouse_passthrough:
+		mouse_filter = Control.MOUSE_FILTER_PASS
+	else:
+		mouse_filter = Control.MOUSE_FILTER_STOP
+
+	if not interaction_enabled:
+		hover_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return
+
+	if mouse_passthrough:
+		hover_area.mouse_filter = Control.MOUSE_FILTER_PASS
+		return
+
+	hover_area.mouse_filter = Control.MOUSE_FILTER_STOP
+
 
 func _on_details_mouse_entered() -> void:
 	details_requested.emit(self)
@@ -54,11 +89,23 @@ func _on_details_mouse_entered() -> void:
 func _on_details_mouse_exited() -> void:
 	details_hidden.emit(self)
 
-func setup(card_data: CardData):
+## Preenche a carta. Com locked = true os campos de texto
+## viram "?", para a enciclopedia mostrar o que ainda nao
+## foi encontrado sem revelar o conteudo.
+func setup(card_data: CardData, locked := false):
 	data = card_data
 
 	if !is_node_ready():
 		await ready
+
+	if locked:
+		title.text = LOCKED_PLACEHOLDER
+		description.text = LOCKED_PLACEHOLDER
+		illustration.texture = null
+		category_icon.texture = data.category_icon
+		protection.text = LOCKED_PLACEHOLDER
+		vulnerability.text = LOCKED_PLACEHOLDER
+		return
 
 	title.text = data.title
 	await _fit_title_font()
@@ -153,11 +200,10 @@ func _animate_position(target_position: Vector2) -> void:
 func set_interaction_enabled(enabled: bool) -> void:
 	interaction_enabled = enabled
 
-	if enabled:
-		hover_area.mouse_filter = Control.MOUSE_FILTER_STOP
-		return
+	_update_mouse_filter()
 
-	hover_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if enabled:
+		return
 
 	if hover_tween != null and hover_tween.is_valid():
 		hover_tween.kill()

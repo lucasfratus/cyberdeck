@@ -97,6 +97,18 @@ var details_view_card_id := ""
 ## e para a resolucao esperar o fim dela.
 var score_tween: Tween
 
+## Indicadores de brecha no HUD, por id da brecha. Mantidos
+## entre atualizacoes para animar so o que abriu ou fechou.
+var breach_indicators: Dictionary = {}
+
+const BREACH_FLASH_COLOR := Color(1.8, 0.45, 0.45)
+const BREACH_FLASH_STEP := 0.12
+const BREACH_FLASH_LOOPS := 3
+const BREACH_FADE_DURATION := 0.35
+const RISK_PULSE_SCALE := 1.25
+const RISK_PULSE_STEP := 0.15
+const RISK_PULSE_LOOPS := 2
+
 ## Numero grande no centro da tela que mostra a conta da
 ## jogada e depois voa ate a pontuacao da rodada.
 var score_popup: Label
@@ -1245,44 +1257,154 @@ func _show_round_result_dialogue(won: bool) -> void:
 
 
 func _update_breaches_hud() -> void:
-	for child in breach_list.get_children():
-		child.queue_free()
+	var active_ids: Array[String] = []
 
-	var active_breaches := (
-		round_controller.get_active_breaches()
+	# Brechas novas: cria o indicador e faz piscar.
+	for breach in round_controller.get_active_breaches():
+		if breach == null:
+			continue
+
+		active_ids.append(breach.id)
+
+		if breach_indicators.has(breach.id):
+			continue
+
+		var indicator := _create_breach_indicator(breach)
+		breach_list.add_child(indicator)
+		breach_indicators[breach.id] = indicator
+		_flash_control(indicator)
+
+	# Brechas corrigidas: o indicador some com fade.
+	for key: Variant in breach_indicators.keys():
+		var breach_id: String = key
+
+		if breach_id in active_ids:
+			continue
+
+		var closed_indicator: Control = breach_indicators[breach_id]
+		breach_indicators.erase(breach_id)
+		_fade_out_breach_indicator(closed_indicator)
+
+	# Sem brechas ativas, o painel so some depois do fade,
+	# em _hide_breaches_panel_if_empty().
+	if not active_ids.is_empty():
+		breaches_panel.visible = true
+	elif breach_list.get_child_count() == 0:
+		breaches_panel.visible = false
+
+
+func _create_breach_indicator(
+	breach: SecurityBreachData
+) -> PanelContainer:
+	var breach_indicator := PanelContainer.new()
+	var breach_label := Label.new()
+
+	breach_indicator.custom_minimum_size = Vector2(
+		0.0,
+		30.0
 	)
 
-	breaches_panel.visible = not active_breaches.is_empty()
+	breach_indicator.mouse_filter = (
+		Control.MOUSE_FILTER_STOP
+	)
 
-	for breach in active_breaches:
-		var breach_indicator := PanelContainer.new()
-		var breach_label := Label.new()
+	breach_indicator.tooltip_text = (
+		"%s\n\n%s\n\nPenalidade: -%.0f%% por jogada"
+		% [
+			breach.display_name,
+			breach.description,
+			breach.score_penalty_ratio * 100.0
+		]
+	)
 
-		breach_indicator.custom_minimum_size = Vector2(
-			0.0,
-			30.0
-		)
+	breach_label.text = "[!] %s" % breach.display_name
+	breach_label.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
 
-		breach_indicator.mouse_filter = (
-			Control.MOUSE_FILTER_STOP
-		)
+	breach_indicator.add_child(breach_label)
 
-		breach_indicator.tooltip_text = (
-			"%s\n\n%s\n\nPenalidade: -%.0f%% por jogada"
-			% [
-				breach.display_name,
-				breach.description,
-				breach.score_penalty_ratio * 100.0
-			]
-		)
+	return breach_indicator
 
-		breach_label.text = "[!] %s" % breach.display_name
-		breach_label.mouse_filter = (
-			Control.MOUSE_FILTER_IGNORE
-		)
 
-		breach_indicator.add_child(breach_label)
-		breach_list.add_child(breach_indicator)
+## Pisca em vermelho algumas vezes e volta a cor normal.
+func _flash_control(control: Control) -> void:
+	if control == null:
+		return
+
+	control.modulate = Color.WHITE
+
+	var tween := create_tween()
+	tween.set_loops(BREACH_FLASH_LOOPS)
+
+	tween.tween_property(
+		control,
+		"modulate",
+		BREACH_FLASH_COLOR,
+		BREACH_FLASH_STEP
+	)
+	tween.tween_property(
+		control,
+		"modulate",
+		Color.WHITE,
+		BREACH_FLASH_STEP
+	)
+
+
+func _fade_out_breach_indicator(indicator: Control) -> void:
+	if indicator == null:
+		return
+
+	var tween := create_tween()
+
+	tween.tween_property(
+		indicator,
+		"modulate:a",
+		0.0,
+		BREACH_FADE_DURATION
+	)
+	tween.tween_callback(indicator.queue_free)
+	tween.tween_callback(_hide_breaches_panel_if_empty)
+
+
+func _hide_breaches_panel_if_empty() -> void:
+	if breach_indicators.is_empty():
+		breaches_panel.visible = false
+
+
+## Chamado quando uma ameaca explora brechas no inicio da
+## rodada: o Indice de Risco pulsa em vermelho.
+func _pulse_risk_label() -> void:
+	risk_label.pivot_offset = risk_label.size / 2.0
+
+	var tween := create_tween()
+	tween.set_loops(RISK_PULSE_LOOPS)
+
+	tween.tween_property(
+		risk_label,
+		"scale",
+		Vector2.ONE * RISK_PULSE_SCALE,
+		RISK_PULSE_STEP
+	)
+	tween.parallel().tween_property(
+		risk_label,
+		"modulate",
+		BREACH_FLASH_COLOR,
+		RISK_PULSE_STEP
+	)
+
+	tween.tween_property(
+		risk_label,
+		"scale",
+		Vector2.ONE,
+		RISK_PULSE_STEP
+	)
+	tween.parallel().tween_property(
+		risk_label,
+		"modulate",
+		Color.WHITE,
+		RISK_PULSE_STEP
+	)
 
 
 func _update_resolved_play_display() -> void:
@@ -1385,6 +1507,12 @@ func _show_exploited_breaches_feedback() -> void:
 		round_controller
 		.get_breach_exploitation_risk_increase()
 	)
+
+	_pulse_risk_label()
+
+	for breach in exploited_breaches:
+		if breach != null and breach_indicators.has(breach.id):
+			_flash_control(breach_indicators[breach.id])
 
 	_show_breach_feedback(
 		"Ameaça explorou: %s\nÍndice de Risco +%.0f"

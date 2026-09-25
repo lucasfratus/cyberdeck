@@ -146,12 +146,39 @@ func _build_header() -> Control:
 	_counter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	header.add_child(_counter_label)
 
+	# So existe em build de depuracao: no editor e em
+	# exportacoes com "Export With Debug". Serve para zerar
+	# a colecao entre um participante e outro nos testes.
+	if OS.is_debug_build():
+		var reset_dialog := ConfirmationDialog.new()
+		reset_dialog.title = "Limpar coleção"
+		reset_dialog.dialog_text = (
+			"Apagar o registro de cartas encontradas?\n"
+			+ "Todas as cartas voltam a aparecer bloqueadas."
+		)
+		reset_dialog.ok_button_text = "Limpar"
+		reset_dialog.cancel_button_text = "Cancelar"
+		reset_dialog.confirmed.connect(_on_reset_confirmed)
+		add_child(reset_dialog)
+
+		var reset_button := Button.new()
+		reset_button.text = "Limpar coleção"
+		reset_button.pressed.connect(
+			func() -> void: reset_dialog.popup_centered()
+		)
+		header.add_child(reset_button)
+
 	var close_button := Button.new()
 	close_button.text = "Fechar"
 	close_button.pressed.connect(_on_close_pressed)
 	header.add_child(close_button)
 
 	return header
+
+
+func _on_reset_confirmed() -> void:
+	CardCollection.clear_collection()
+	refresh()
 
 
 func _populate_sections() -> void:

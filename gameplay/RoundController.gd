@@ -110,13 +110,13 @@ func get_active_breaches() -> Array[SecurityBreachData]:
 	return active_breaches.duplicate()
 	
 	
-func get_breach_vulnerability_per_play() -> float:
+func get_breach_penalty_ratio() -> float:
 	var total := 0.0
 
 	for breach in active_breaches:
-		total += breach.vulnerability_per_play
+		total += breach.score_penalty_ratio
 
-	return total
+	return clampf(total, 0.0, 1.0)
 
 
 func close_breach_by_id(

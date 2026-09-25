@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://k2cnw71k42k3" path="res://assets/icons/categories/email.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Resource" path="res://data/breaches/dispositivo_comprometido.tres" id="3_breach"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"abrir_anexo"
+title = "Abrir Anexo Desconhecido"
+description = "Arquivos anexados a mensagens inesperadas podem instalar programas maliciosos."
+educational_description = "Anexos são um dos meios mais comuns de distribuição de programas maliciosos. Documentos, planilhas e arquivos compactados podem executar código ao serem abertos, instalando programas que roubam dados ou concedem acesso remoto ao dispositivo. Quando a mensagem não era esperada, o mais seguro é confirmar a origem por outro canal antes de abrir o arquivo."
+category_icon = ExtResource("1_icon")
+category = 1
+protection = 10
+vulnerability = 2.0
+opens_breach = ExtResource("3_breach")
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

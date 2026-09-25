@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://k2cnw71k42k3" path="res://assets/icons/categories/email.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"verificar_remetente"
+title = "Verificar o Remetente"
+description = "Conferir o endereço real de quem enviou revela mensagens falsas antes de qualquer clique."
+educational_description = "Mensagens fraudulentas costumam imitar o nome de empresas e pessoas conhecidas, mas o endereço real do remetente quase sempre revela a fraude: domínios trocados, letras substituídas ou serviços gratuitos no lugar do domínio oficial. Conferir esse endereço, e desconfiar de pedidos urgentes, é uma das formas mais simples de identificar uma tentativa de phishing."
+category_icon = ExtResource("1_icon")
+category = 1
+protection = 30
+vulnerability = 1.5
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

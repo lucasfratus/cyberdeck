@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SecurityBreachData" format=3]
+
+[ext_resource type="Script" uid="uid://cvwsw4croxvns" path="res://scenes/breaches/SecurityBreachData.gd" id="1_dcomp"]
+
+[resource]
+script = ExtResource("1_dcomp")
+id = "dispositivo_comprometido"
+display_name = "Dispositivo comprometido"
+description = "Abrir anexos ou links de origem desconhecida pode instalar programas maliciosos que permanecem ativos no dispositivo e enfraquecem as defesas seguintes."
+score_penalty_ratio = 0.3
+metadata/_custom_type_script = "uid://cvwsw4croxvns"

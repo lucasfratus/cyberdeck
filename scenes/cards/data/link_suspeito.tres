@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://k2cnw71k42k3" path="res://assets/icons/categories/email.png" id="1_65o4j"]
 [ext_resource type="Texture2D" uid="uid://bmb5mxehy3e5s" path="res://assets/cards/illustrations/link_suspeito.png" id="1_ulqmf"]
 [ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_65o4j"]
+[ext_resource type="Resource" path="res://data/breaches/dispositivo_comprometido.tres" id="3_dcomp"]
 
 [resource]
 script = ExtResource("2_65o4j")
@@ -11,8 +12,9 @@ title = "Clicar em Link Suspeito"
 description = "Pode levar a páginas falsas usadas para roubar dados e credenciais."
 educational_description = "Links suspeitos podem direcionar para páginas falsas que imitam serviços legítimos. Essas páginas geralmente tentam induzir a vítima a informar senhas, dados pessoais ou informações financeiras. Antes de abrir um link, é importante verificar o remetente, o endereço e o contexto da mensagem."
 illustration = ExtResource("1_ulqmf")
-category = 1
 category_icon = ExtResource("1_65o4j")
+category = 1
 protection = 5
-vulnerability = 4.0
+vulnerability = 2.0
+opens_breach = ExtResource("3_dcomp")
 metadata/_custom_type_script = "uid://canwsgyh34f2f"

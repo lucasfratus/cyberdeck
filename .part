@@ -1,0 +1,10 @@
+git add managers/CardCollection.gd \
+        globals/CardCategory.gd \
+        scenes/encyclopedia/ \
+        scenes/cards/Card.gd \
+        scenes/cards/CardDetailsPanel.gd \
+        managers/CardFactory.gd \
+        scenes/gameplay/Game.gd \
+        project.godot
+
+git commit -m "Adiciona enciclopédia de cartas e registro de cartas encontradas"

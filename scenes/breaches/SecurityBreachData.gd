@@ -7,4 +7,6 @@ class_name SecurityBreachData
 @export var icon: Texture2D
 
 @export_group("Effect")
-@export var vulnerability_per_play: float = 0.0
+## Fracao da pontuacao base da jogada perdida
+## enquanto a brecha permanecer aberta.
+@export_range(0.0, 1.0, 0.05) var score_penalty_ratio: float = 0.0

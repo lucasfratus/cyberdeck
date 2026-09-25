@@ -14,6 +14,6 @@ educational_description = "Usar a mesma senha em diferentes serviços faz com qu
 illustration = ExtResource("2_x6rtt")
 category_icon = ExtResource("1_dwhc6")
 protection = 10
-vulnerability = 3.0
+vulnerability = 2.0
 opens_breach = ExtResource("3_uabrl")
 metadata/_custom_type_script = "uid://canwsgyh34f2f"

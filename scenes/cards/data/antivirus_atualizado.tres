@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"antivirus_atualizado"
+title = "Antivírus Atualizado"
+description = "Um antivírus atualizado detecta e remove programas maliciosos já instalados."
+educational_description = "Programas antivírus identificam ameaças comparando arquivos e comportamentos com bases de assinaturas que são atualizadas continuamente. Por isso um antivírus desatualizado reconhece apenas ameaças antigas. Manter a atualização automática ativa e executar verificações periódicas permite detectar e remover programas maliciosos que já tenham sido instalados no dispositivo."
+category = 6
+protection = 40
+vulnerability = 1.0
+closes_breach_ids = Array[String](["dispositivo_comprometido"])
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

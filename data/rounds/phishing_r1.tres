@@ -10,5 +10,7 @@
 script = ExtResource("1_yd1os")
 id = &"phishing_r1"
 attack_name = "phishing"
+base_risk = 250.0
 start_dialogues = Array[ExtResource("3_wi2wu")]([ExtResource("4_504wn"), ExtResource("5_yd2yd")])
+deck = Array[String](["verificar_remetente", "verificar_remetente", "senha_forte", "senha_forte", "link_suspeito", "link_suspeito"])
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

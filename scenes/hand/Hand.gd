@@ -10,7 +10,7 @@ signal layout_updated
 signal card_details_requested(card: Card)
 signal card_details_hidden(card: Card)
 
-@export var max_selected_cards := 5
+@export var max_selected_cards := 3
 
 var selected_cards: Array[Card] = []
 

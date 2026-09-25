@@ -10,9 +10,10 @@
 script = ExtResource("1_2e3h4")
 id = &"phishing_r3"
 attack_name = "phishing"
-base_risk = 300.0
+base_risk = 400.0
 victory_dialogue = ExtResource("4_wwcht")
 defeat_dialogue = ExtResource("1_njhyi")
-exploited_breach_ids = Array[String](["exposed_credentials"])
+deck = Array[String](["verificar_remetente", "verificar_remetente", "autenticacao_2fa", "autenticacao_2fa", "antivirus_atualizado", "antivirus_atualizado", "abrir_anexo", "link_suspeito"])
+exploited_breach_ids = Array[String](["dispositivo_comprometido"])
 risk_increase_per_exploited_breach = 40.0
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

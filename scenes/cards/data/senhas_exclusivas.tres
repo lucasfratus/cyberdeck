@@ -11,6 +11,5 @@ description = "Usar uma senha diferente impede que o vazamento de uma conta comp
 educational_description = "Senhas exclusivas limitam o impacto de vazamentos: mesmo que uma credencial seja descoberta, ela não poderá ser usada para acessar outras contas. Essa prática ajuda a corrigir situações em que várias contas ficaram vulneráveis pelo uso repetido da mesma senha, como a exposição de credenciais"
 category_icon = ExtResource("1_o5il5")
 protection = 55
-vulnerability = 0.15
 closes_breach_ids = Array[String](["exposed_credentials"])
 metadata/_custom_type_script = "uid://canwsgyh34f2f"

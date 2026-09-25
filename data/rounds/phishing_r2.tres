@@ -1,10 +1,13 @@
 [gd_resource type="Resource" script_class="RoundData" format=3 uid="uid://hry0xv3hcptt"]
 
+[ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="1_f5vji"]
 [ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_jccd0"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_3n888"]
 
 [resource]
 script = ExtResource("1_jccd0")
 id = &"phishing_r2"
 attack_name = "phishing"
-base_risk = 200.0
+base_risk = 300.0
+deck = Array[String](["verificar_remetente", "verificar_remetente", "senha_forte", "senha_forte", "antivirus_atualizado", "antivirus_atualizado", "abrir_anexo", "abrir_anexo"])
 metadata/_custom_type_script = "uid://b2puoy2xliopq"

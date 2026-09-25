@@ -97,6 +97,13 @@ var details_view_card_id := ""
 ## e para a resolucao esperar o fim dela.
 var score_tween: Tween
 
+## Tempo ate a ultima carta jogada pousar na mesa. A conta
+## da jogada so comeca depois disso.
+var played_cards_landing_time := 0.0
+
+const PLAY_CARD_MOVE_DURATION := 0.3
+const PLAY_CARD_STAGGER := 0.06
+
 ## Indicadores de brecha no HUD, por id da brecha. Mantidos
 ## entre atualizacoes para animar so o que abriu ou fechou.
 var breach_indicators: Dictionary = {}
@@ -599,19 +606,49 @@ func _show_played_cards(cards: Array[Card]) -> void:
 	var total_width := (cards.size() - 1) * CARD_SPACING
 	var start_x := -total_width / 2.0
 
+	played_cards_landing_time = 0.0
+
 	for i in range(cards.size()):
 		var card := cards[i]
 
 		played_cards.add_child(card)
+
+		# Tambem interrompe o tween de posicao da mao, que
+		# senao continuaria puxando a carta no novo pai.
 		card.set_interaction_enabled(false)
 
-		card.position = Vector2(
+		card.scale = Vector2.ONE
+		card.z_index = i
+
+		var target_position := Vector2(
 			start_x + i * CARD_SPACING,
 			0.0
 		)
 
-		card.scale = Vector2.ONE
-		card.z_index = i
+		if not card.has_play_origin:
+			card.position = target_position
+			continue
+
+		card.global_position = card.play_origin_global
+		card.has_play_origin = false
+
+		# As cartas saem uma depois da outra, da esquerda
+		# para a direita.
+		var delay: float = i * PLAY_CARD_STAGGER
+		var tween := card.create_tween()
+
+		tween.tween_interval(delay)
+		tween.tween_property(
+			card,
+			"position",
+			target_position,
+			PLAY_CARD_MOVE_DURATION
+		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+		played_cards_landing_time = maxf(
+			played_cards_landing_time,
+			delay + PLAY_CARD_MOVE_DURATION
+		)
 
 
 func _hide_card_details() -> void:
@@ -1774,6 +1811,9 @@ func _animate_play_score(
 	score_popup_root.show()
 
 	score_tween = create_tween()
+
+	if played_cards_landing_time > 0.0:
+		score_tween.tween_interval(played_cards_landing_time)
 
 	score_tween.tween_property(
 		score_popup_root,

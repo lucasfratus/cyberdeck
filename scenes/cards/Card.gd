@@ -26,6 +26,23 @@ var interaction_enabled := true
 ## roda do mouse morre na carta e a rolagem nao anda.
 var mouse_passthrough := false
 
+## Posicao global da carta na mao no instante em que foi
+## jogada. O Hand preenche antes de tira-la da arvore, que
+## e quando essa posicao se perde, e a mesa usa como ponto
+## de partida da animacao.
+var play_origin_global := Vector2.ZERO
+var has_play_origin := false
+
+## Marcada pelo Hand quando a carta acaba de ser comprada.
+## O layout consome a marca e faz a carta subir de baixo da
+## tela ate o lugar dela na mao.
+var is_entering_hand := false
+
+## A mao fica na borda inferior. Deslocar a carta pela
+## propria altura a coloca inteira fora da tela.
+const ENTRY_OFFSET := Vector2(0.0, 260.0)
+const ENTRY_DURATION := 0.3
+
 const LOCKED_PLACEHOLDER := "?"
 const HOVER_SCALE := 1.08
 const HOVER_DURATION := 0.12
@@ -158,6 +175,17 @@ func _animate_scale(target_scale: Vector2) -> void:
 
 
 func set_hand_position(new_position: Vector2, immediate := false) -> void:
+	# Varias atualizacoes de layout no mesmo quadro pedem o
+	# mesmo destino. Reiniciar o movimento apagaria a subida
+	# da carta recem-comprada.
+	if (
+		not immediate
+		and new_position == hand_position
+		and position_tween != null
+		and position_tween.is_running()
+	):
+		return
+
 	hand_position = new_position
 
 	var target_position := _get_target_position()
@@ -169,6 +197,32 @@ func set_hand_position(new_position: Vector2, immediate := false) -> void:
 		position = target_position
 	else:
 		_animate_position(target_position)
+
+
+## Sobe a carta de baixo da tela ate a posicao na mao,
+## depois de esperar delay segundos.
+func play_entry_animation(
+	target_position: Vector2,
+	delay: float
+) -> void:
+	hand_position = target_position
+
+	if position_tween != null and position_tween.is_valid():
+		position_tween.kill()
+
+	position = target_position + ENTRY_OFFSET
+
+	position_tween = create_tween()
+
+	if delay > 0.0:
+		position_tween.tween_interval(delay)
+
+	position_tween.tween_property(
+		self,
+		"position",
+		_get_target_position(),
+		ENTRY_DURATION
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func _update_selection_position() -> void:

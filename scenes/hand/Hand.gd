@@ -21,6 +21,7 @@ func _ready() -> void:
 
 
 func add_card(card: Card) -> void:
+	card.is_entering_hand = true
 	card_container.add_child(card)
 
 	card.selection_requested.connect(
@@ -103,6 +104,11 @@ func play_selected_cards() -> void:
 	for card in cards_to_play:
 		selected_cards.erase(card)
 
+		# Fora da arvore a carta perde a posicao global,
+		# entao ela e guardada antes de remover.
+		card.play_origin_global = card.global_position
+		card.has_play_origin = true
+
 		if card.get_parent() == card_container:
 			card_container.remove_child(card)
 
@@ -152,12 +158,25 @@ func _update_layout() -> void:
 		call_deferred("_update_layout")
 		return
 
-	layout.update_layout(
+	# Sem salto: as cartas que ficam na mao deslizam para
+	# fechar o espaco e as recem-compradas sobem de baixo.
+	var entry_time: float = layout.update_layout(
 		card_container.get_cards(),
 		card_container.size.x,
-		true
+		false
 	)
-	
+
+	layout_updated.emit()
+
+	# O destaque do tutorial mede a posicao das cartas.
+	# Avisa de novo quando elas terminam de subir.
+	if entry_time > 0.0:
+		get_tree().create_timer(entry_time).timeout.connect(
+			_emit_layout_updated
+		)
+
+
+func _emit_layout_updated() -> void:
 	layout_updated.emit()
 
 func _on_card_container_resized() -> void:

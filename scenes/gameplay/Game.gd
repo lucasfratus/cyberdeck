@@ -84,6 +84,29 @@ var scenario_summary: ScenarioSummary
 var scenario_seen_card_ids: Array[String] = []
 var scenario_new_card_ids: Array[String] = []
 
+## Controle de tentativas da mesma rodada, para as
+## metricas distinguirem a primeira vez de um retry.
+var round_attempt := 0
+var attempt_round_key := ""
+
+## Carta cujo painel educativo esta aberto e desde quando,
+## para medir o tempo de leitura.
+var details_view_card_id := ""
+
+## Animacoes de pontuacao. Guardadas para poder
+## interromper e para a resolucao esperar o fim delas.
+var score_tween: Tween
+var round_score_tween: Tween
+
+## Duracao de cada etapa da contagem da jogada, em
+## segundos. A soma precisa caber no ResolvePlayTimer.
+const SCORE_PROTECTION_DURATION := 0.35
+const SCORE_MULTIPLIER_DURATION := 0.3
+const SCORE_TOTAL_DURATION := 0.45
+const SCORE_PENALTY_DURATION := 0.5
+const ROUND_SCORE_DURATION := 0.5
+var details_view_started_msec := 0
+
 
 var scenarios: Array[ScenarioData] = [
 	PHISHING_SCENARIO,
@@ -108,6 +131,11 @@ const CARD_DETAILS_SCREEN_MARGIN := 12.0
 func _ready() -> void:
 	_connect_signals()
 	_setup_menus()
+
+	# Rodando Game.tscn direto (F6), sem o menu principal.
+	if not SessionLogger.is_active():
+		SessionLogger.start_session("")
+
 	await _start_game()
 
 
@@ -170,6 +198,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _open_pause_menu() -> void:
+	SessionLogger.log_event("pause_opened", {})
 	_hide_card_details()
 	pause_menu.show()
 	get_tree().paused = true
@@ -185,6 +214,9 @@ func _on_resume_requested() -> void:
 
 
 func _on_encyclopedia_requested() -> void:
+	SessionLogger.log_event("encyclopedia_opened", {
+		"from": "pause",
+	})
 	pause_menu.hide()
 	encyclopedia.refresh()
 	encyclopedia.show()
@@ -196,6 +228,7 @@ func _on_encyclopedia_closed() -> void:
 
 
 func _on_main_menu_requested() -> void:
+	SessionLogger.end_session("returned_to_menu")
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
@@ -249,6 +282,10 @@ func _start_scenario() -> void:
 		current_scenario_data.display_name
 	)
 
+	SessionLogger.log_event("scenario_start", {
+		"scenario_id": str(current_scenario_data.id),
+	})
+
 	await _show_scenario_intro()
 
 	await _start_round()
@@ -287,6 +324,7 @@ func _on_card_details_requested(card: Card) -> void:
 	var request_id := details_hide_request_id
 
 	detailed_card = card
+	_begin_details_view(card)
 
 	# Evita mostrar o painel enquanto seu conteúdo
 	# e seu tamanho ainda estão sendo recalculados.
@@ -398,6 +436,7 @@ func _on_card_details_hidden(card: Card) -> void:
 	# aguardando os frames de atualização do layout.
 	details_hide_request_id += 1
 
+	_end_details_view()
 	detailed_card = null
 	card_details_panel.hide_card()
 
@@ -527,6 +566,7 @@ func _show_played_cards(cards: Array[Card]) -> void:
 
 func _hide_card_details() -> void:
 	details_hide_request_id += 1
+	_end_details_view()
 	detailed_card = null
 	card_details_panel.hide_card()
 
@@ -536,13 +576,10 @@ func _update_score_display(cards: Array[Card]) -> void:
 
 	current_play_score = float(result["total"])
 
-	score_label.text = (
-		"Proteção: %d  |  Vulnerabilidade: ×%.2f  |  Pontuação: %.2f"
-		% [
-			int(result["protection"]),
-			float(result["vulnerability"]),
-			float(result["total"])
-		]
+	_animate_play_score(
+		int(result["protection"]),
+		float(result["vulnerability"]),
+		float(result["total"])
 	)
 	
 	
@@ -597,6 +634,12 @@ func _resolve_played_cards() -> void:
 		* round_controller.get_breach_penalty_ratio()
 	)
 
+	# A contagem da jogada termina antes de a penalidade
+	# e o placar da rodada entrarem na tela.
+	await _wait_score_tween()
+
+	var round_score_before: float = round_controller.score
+
 	round_controller.register_play(
 		current_play_score,
 		breach_penalty
@@ -613,6 +656,8 @@ func _resolve_played_cards() -> void:
 
 		if was_opened:
 			newly_opened_breaches.append(breach)
+
+	_log_play(newly_opened_breaches, closed_breaches)
 
 	var breach_feedback_messages: Array[String] = []
 
@@ -672,7 +717,12 @@ func _resolve_played_cards() -> void:
 	current_play_score = 0.0
 
 	_update_round_hud()
+	_animate_round_score(round_score_before, round_controller.score)
 	_update_resolved_play_display()
+
+	# Deixa o jogador ver a penalidade sendo descontada
+	# antes de dialogos ou do fim da rodada.
+	await _wait_score_tween()
 
 	await _show_triggered_mid_dialogues(played_card_ids)
 
@@ -692,6 +742,13 @@ func _resolve_played_cards() -> void:
 
 
 func _start_round() -> void:
+	# Uma contagem da rodada anterior nao pode sobrescrever
+	# o placar zerado da nova rodada.
+	_kill_score_tween()
+
+	if round_score_tween != null and round_score_tween.is_valid():
+		round_score_tween.kill()
+
 	current_play_score = 0.0
 	is_resolving_play = false
 	
@@ -701,6 +758,7 @@ func _start_round() -> void:
 	breaches_at_round_start = (round_controller.get_active_breaches())
 	round_controller.start(current_round_data)
 	_update_breaches_hud()
+	_log_round_start()
 
 	result_label.text = ""
 	score_label.text = "Selecione as cartas"
@@ -805,6 +863,12 @@ func _advance_progression() -> void:
 		return
 
 	# O cenário atual terminou.
+	SessionLogger.log_event("scenario_end", {
+		"scenario_id": str(current_scenario_data.id),
+		"cards_seen": scenario_seen_card_ids.duplicate(),
+		"new_cards": scenario_new_card_ids.duplicate(),
+	})
+
 	await _show_scenario_summary()
 	current_scenario_index += 1
 
@@ -833,6 +897,8 @@ func _advance_progression() -> void:
 	
 	
 func _finish_round(victory: bool) -> void:
+	_log_round_end(victory)
+
 	is_resolving_play = false
 	play_button.disabled = true
 
@@ -875,6 +941,8 @@ func _finish_game() -> void:
 
 	play_button.disabled = true
 	next_round_button.visible = false
+
+	SessionLogger.end_session("completed")
 
 	result_label.text = "Você concluiu todos os cenários!"
 	score_label.text = "Fim da partida"
@@ -1190,15 +1258,15 @@ func _update_resolved_play_display() -> void:
 		)
 		return
 
-	score_label.text = (
-		"Pontuação base: %.2f  |  "
-		+ "Penalidade das brechas: -%.2f  |  "
-		+ "Pontuação aplicada: %.2f"
-	) % [
+	_kill_score_tween()
+	score_tween = create_tween()
+
+	score_tween.tween_method(
+		_show_penalty_step.bind(base_score, penalty),
 		base_score,
-		penalty,
-		final_score
-	]
+		final_score,
+		SCORE_PENALTY_DURATION
+	)
 
 
 func _show_breach_feedback(message: String) -> void:
@@ -1332,3 +1400,229 @@ func _show_scenario_summary() -> void:
 	await scenario_summary.continue_requested
 
 	scenario_summary.hide()
+
+
+# --- Metricas da avaliacao experimental ---------------------
+
+func _log_round_start() -> void:
+	var round_key := "%s/%s" % [
+		current_scenario_data.id,
+		current_round_data.id
+	]
+
+	if round_key == attempt_round_key:
+		round_attempt += 1
+	else:
+		attempt_round_key = round_key
+		round_attempt = 1
+
+	SessionLogger.log_event("round_start", {
+		"scenario_id": str(current_scenario_data.id),
+		"round_id": str(current_round_data.id),
+		"attempt": round_attempt,
+		"base_risk": current_round_data.base_risk,
+		"effective_risk": round_controller.get_risk(),
+		"exploited_breaches": _breach_ids(
+			round_controller.get_exploited_breaches()
+		),
+		"active_breaches": _breach_ids(
+			round_controller.get_active_breaches()
+		),
+	})
+
+
+func _log_play(
+	opened: Array[SecurityBreachData],
+	closed: Array[SecurityBreachData]
+) -> void:
+	var score_parts: Dictionary = ScoreCalculator.calculate(
+		pending_cards
+	)
+
+	var cards_log: Array[Dictionary] = []
+	var insecure_cards := 0
+
+	for card in pending_cards:
+		if card == null or card.data == null:
+			continue
+
+		# Nesta versao, toda pratica insegura abre uma brecha.
+		var opens_breach: bool = card.data.opens_breach != null
+
+		if opens_breach:
+			insecure_cards += 1
+
+		cards_log.append({
+			"id": str(card.data.id),
+			"opens_breach": opens_breach,
+			"closes_breach": not card.data.closes_breach_ids.is_empty(),
+		})
+
+	SessionLogger.log_event("play", {
+		"scenario_id": str(current_scenario_data.id),
+		"round_id": str(current_round_data.id),
+		"attempt": round_attempt,
+		"play_number": plays_made_in_round,
+		"cards": cards_log,
+		"insecure_cards": insecure_cards,
+		"protection": int(score_parts["protection"]),
+		"multiplier": float(score_parts["vulnerability"]),
+		"base_score": round_controller.last_play_base_score,
+		"breach_penalty": round_controller.last_breach_penalty,
+		"final_score": round_controller.last_play_final_score,
+		"round_score": round_controller.score,
+		"breaches_opened": _breach_ids(opened),
+		"breaches_closed": _breach_ids(closed),
+		"active_breaches": _breach_ids(
+			round_controller.get_active_breaches()
+		),
+	})
+
+
+func _log_round_end(victory: bool) -> void:
+	SessionLogger.log_event("round_end", {
+		"scenario_id": str(current_scenario_data.id),
+		"round_id": str(current_round_data.id),
+		"attempt": round_attempt,
+		"won": victory,
+		"score": round_controller.score,
+		"risk": round_controller.get_risk(),
+		"plays_used": plays_made_in_round,
+		"active_breaches": _breach_ids(
+			round_controller.get_active_breaches()
+		),
+	})
+
+
+func _begin_details_view(card: Card) -> void:
+	_end_details_view()
+
+	if card == null or card.data == null:
+		return
+
+	details_view_card_id = str(card.data.id)
+	details_view_started_msec = Time.get_ticks_msec()
+
+
+func _end_details_view() -> void:
+	if details_view_card_id.is_empty():
+		return
+
+	var seconds: float = (
+		(Time.get_ticks_msec() - details_view_started_msec)
+		/ 1000.0
+	)
+
+	SessionLogger.note_details_view(details_view_card_id, seconds)
+	details_view_card_id = ""
+
+
+func _breach_ids(
+	breaches: Array[SecurityBreachData]
+) -> Array[String]:
+	var ids: Array[String] = []
+
+	for breach in breaches:
+		if breach != null:
+			ids.append(breach.id)
+
+	return ids
+
+
+# --- Animacoes de pontuacao ---------------------------------
+
+## Mostra a conta da jogada acontecendo: a protecao soma,
+## o multiplicador e aplicado e o total sobe ate o valor final.
+func _animate_play_score(
+	protection: int,
+	multiplier: float,
+	total: float
+) -> void:
+	_kill_score_tween()
+	score_tween = create_tween()
+
+	score_tween.tween_method(
+		_show_protection_step,
+		0.0,
+		float(protection),
+		SCORE_PROTECTION_DURATION
+	)
+
+	score_tween.tween_method(
+		_show_multiplier_step.bind(protection),
+		1.0,
+		multiplier,
+		SCORE_MULTIPLIER_DURATION
+	)
+
+	score_tween.tween_method(
+		_show_total_step.bind(protection, multiplier),
+		0.0,
+		total,
+		SCORE_TOTAL_DURATION
+	)
+
+
+func _animate_round_score(from_score: float, to_score: float) -> void:
+	if round_score_tween != null and round_score_tween.is_valid():
+		round_score_tween.kill()
+
+	round_score_tween = create_tween()
+
+	round_score_tween.tween_method(
+		_show_round_score_step,
+		from_score,
+		to_score,
+		ROUND_SCORE_DURATION
+	)
+
+
+# Cada etapa recebe primeiro o valor interpolado pelo
+# tween e depois os argumentos fixos passados com bind().
+
+func _show_protection_step(value: float) -> void:
+	score_label.text = "Proteção: %d" % roundi(value)
+
+
+func _show_multiplier_step(value: float, protection: int) -> void:
+	score_label.text = (
+		"Proteção: %d  |  Vulnerabilidade: ×%.2f"
+		% [protection, value]
+	)
+
+
+func _show_total_step(
+	value: float,
+	protection: int,
+	multiplier: float
+) -> void:
+	score_label.text = (
+		"Proteção: %d  |  Vulnerabilidade: ×%.2f"
+		+ "  |  Pontuação: %.2f"
+	) % [protection, multiplier, value]
+
+
+func _show_penalty_step(
+	value: float,
+	base_score: float,
+	penalty: float
+) -> void:
+	score_label.text = (
+		"Pontuação base: %.2f  |  "
+		+ "Penalidade das brechas: -%.2f  |  "
+		+ "Pontuação aplicada: %.2f"
+	) % [base_score, penalty, value]
+
+
+func _show_round_score_step(value: float) -> void:
+	round_score_label.text = "Pontuação da rodada: %.0f" % value
+
+
+func _kill_score_tween() -> void:
+	if score_tween != null and score_tween.is_valid():
+		score_tween.kill()
+
+
+func _wait_score_tween() -> void:
+	if score_tween != null and score_tween.is_running():
+		await score_tween.finished

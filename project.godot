@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 CardDatabase="*uid://blsavorn7sktb"
 CardCollection="*res://managers/CardCollection.gd"
+SessionLogger="*res://managers/SessionLogger.gd"
 
 [display]
 

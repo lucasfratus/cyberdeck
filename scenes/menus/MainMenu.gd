@@ -13,6 +13,7 @@ const PANEL_WIDTH := 320.0
 const BUTTON_HEIGHT := 44.0
 
 var _encyclopedia: Encyclopedia
+var _participant_code_input: LineEdit
 
 
 func _ready() -> void:
@@ -59,11 +60,34 @@ func _build_interface() -> void:
 	spacer.custom_minimum_size = Vector2(0.0, 16.0)
 	box.add_child(spacer)
 
+	# Ferramentas da avaliacao: so em build de depuracao.
+	if OS.is_debug_build():
+		_participant_code_input = LineEdit.new()
+		_participant_code_input.placeholder_text = (
+			"Código do participante (ex.: P01)"
+		)
+		_participant_code_input.custom_minimum_size = Vector2(
+			0.0,
+			BUTTON_HEIGHT
+		)
+		_participant_code_input.text_submitted.connect(
+			func(_text: String) -> void: _on_play_pressed()
+		)
+		box.add_child(_participant_code_input)
+
 	box.add_child(_build_button("Jogar", _on_play_pressed))
 
 	box.add_child(
 		_build_button("Enciclopédia", _on_encyclopedia_pressed)
 	)
+
+	if OS.is_debug_build():
+		box.add_child(
+			_build_button(
+				"Abrir pasta das sessões",
+				_on_open_sessions_pressed
+			)
+		)
 
 	# No navegador nao existe "sair", a aba e que fecha.
 	if not OS.has_feature("web"):
@@ -94,7 +118,19 @@ func _build_button(
 
 
 func _on_play_pressed() -> void:
+	var participant_code := ""
+
+	if _participant_code_input != null:
+		participant_code = _participant_code_input.text
+
+	SessionLogger.start_session(participant_code)
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+
+
+func _on_open_sessions_pressed() -> void:
+	var folder: String = SessionLogger.get_sessions_folder()
+	DirAccess.make_dir_recursive_absolute(folder)
+	OS.shell_open(folder)
 
 
 func _on_encyclopedia_pressed() -> void:

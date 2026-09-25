@@ -93,17 +93,54 @@ var attempt_round_key := ""
 ## para medir o tempo de leitura.
 var details_view_card_id := ""
 
-## Animacoes de pontuacao. Guardadas para poder
-## interromper e para a resolucao esperar o fim delas.
+## Animacao da pontuacao. Guardada para poder interromper
+## e para a resolucao esperar o fim dela.
 var score_tween: Tween
-var round_score_tween: Tween
 
-## Duracao de cada etapa da contagem da jogada, em
-## segundos. A soma precisa caber no ResolvePlayTimer.
+## Numero grande no centro da tela que mostra a conta da
+## jogada e depois voa ate a pontuacao da rodada.
+var score_popup: Label
+
+## Container da tela inteira que mantem o numero centralizado.
+## O voo e a escala sao aplicados nele, nao no numero.
+var score_popup_root: CenterContainer
+
+## Multiplicador ou porcentagem de penalidade, desenhado a
+## direita do numero para nao desloca-lo do centro.
+var score_popup_modifier: Label
+
+const SCORE_POPUP_FONT_SIZE := 56
+const SCORE_POPUP_OUTLINE_SIZE := 10
+const SCORE_POPUP_COLOR := Color(0.92, 0.8, 0.0)
+const SCORE_POPUP_FLY_SCALE := 0.35
+
+## Acima das cartas jogadas, que recebem z_index 0, 1, 2...
+## Os dialogos ficam por cima mesmo assim, porque estao em
+## CanvasLayers proprios.
+const SCORE_POPUP_Z_INDEX := 200
+
+const SCORE_MODIFIER_FONT_SIZE := 40
+const SCORE_MODIFIER_GAP := 16.0
+const SCORE_MULTIPLIER_COLOR := Color(0.55, 0.85, 1.0)
+const SCORE_PENALTY_COLOR := Color(1.0, 0.4, 0.4)
+
+## Largura reservada ao texto acima das cartas. Larga o
+## bastante para a mensagem mais longa, para o texto nao
+## precisar crescer e sair do centro.
+const SCORE_LABEL_WIDTH := 900.0
+
+## Duracao de cada etapa, em segundos. As etapas ate o
+## pulso (primeira fase) precisam caber no ResolvePlayTimer,
+## que espera 1,5 s.
+const SCORE_APPEAR_DURATION := 0.15
 const SCORE_PROTECTION_DURATION := 0.35
 const SCORE_MULTIPLIER_DURATION := 0.3
 const SCORE_TOTAL_DURATION := 0.45
-const SCORE_PENALTY_DURATION := 0.5
+const SCORE_PULSE_DURATION := 0.2
+const SCORE_PENALTY_HOLD := 0.35
+const SCORE_PENALTY_DURATION := 0.4
+const SCORE_FLY_DURATION := 0.45
+const SCORE_FADE_DURATION := 0.1
 const ROUND_SCORE_DURATION := 0.5
 var details_view_started_msec := 0
 
@@ -131,6 +168,7 @@ const CARD_DETAILS_SCREEN_MARGIN := 12.0
 func _ready() -> void:
 	_connect_signals()
 	_setup_menus()
+	_setup_score_popup()
 
 	# Rodando Game.tscn direto (F6), sem o menu principal.
 	if not SessionLogger.is_active():
@@ -647,6 +685,12 @@ func _resolve_played_cards() -> void:
 
 	plays_made_in_round += 1
 
+	# O numero sofre a penalidade no centro e voa ate o
+	# placar da rodada antes dos avisos de brecha aberta.
+	_show_round_score_step(round_score_before)
+	_animate_play_resolution(round_score_before, round_controller.score)
+	await _wait_score_tween()
+
 	# As brechas criadas nesta jogada passam a valer
 	# nas jogadas seguintes.
 	for breach in breaches_to_open:
@@ -717,12 +761,7 @@ func _resolve_played_cards() -> void:
 	current_play_score = 0.0
 
 	_update_round_hud()
-	_animate_round_score(round_score_before, round_controller.score)
 	_update_resolved_play_display()
-
-	# Deixa o jogador ver a penalidade sendo descontada
-	# antes de dialogos ou do fim da rodada.
-	await _wait_score_tween()
 
 	await _show_triggered_mid_dialogues(played_card_ids)
 
@@ -746,8 +785,8 @@ func _start_round() -> void:
 	# o placar zerado da nova rodada.
 	_kill_score_tween()
 
-	if round_score_tween != null and round_score_tween.is_valid():
-		round_score_tween.kill()
+	if score_popup_root != null:
+		score_popup_root.hide()
 
 	current_play_score = 0.0
 	is_resolving_play = false
@@ -1252,21 +1291,13 @@ func _update_resolved_play_display() -> void:
 	var final_score := round_controller.last_play_final_score
 
 	if penalty <= 0.0:
-		score_label.text = (
-			"Pontuação da jogada: %.2f"
-			% final_score
-		)
+		score_label.text = "Última jogada: +%.2f" % final_score
 		return
 
-	_kill_score_tween()
-	score_tween = create_tween()
-
-	score_tween.tween_method(
-		_show_penalty_step.bind(base_score, penalty),
-		base_score,
-		final_score,
-		SCORE_PENALTY_DURATION
-	)
+	score_label.text = (
+		"Última jogada: +%.2f  "
+		+ "(base %.2f, penalidade das brechas -%.2f)"
+	) % [final_score, base_score, penalty]
 
 
 func _show_breach_feedback(message: String) -> void:
@@ -1531,87 +1562,250 @@ func _breach_ids(
 
 # --- Animacoes de pontuacao ---------------------------------
 
-## Mostra a conta da jogada acontecendo: a protecao soma,
-## o multiplicador e aplicado e o total sobe ate o valor final.
+func _setup_score_popup() -> void:
+	score_popup_root = CenterContainer.new()
+	score_popup_root.z_index = SCORE_POPUP_Z_INDEX
+	score_popup_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Ultimo filho da raiz: desenha por cima das cartas e
+	# do HUD, mas abaixo dos dialogos, que ficam em
+	# CanvasLayers proprios.
+	add_child(score_popup_root)
+	score_popup_root.hide()
+
+	score_popup = Label.new()
+	score_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	score_popup.add_theme_font_size_override(
+		"font_size",
+		SCORE_POPUP_FONT_SIZE
+	)
+	score_popup.add_theme_color_override(
+		"font_color",
+		SCORE_POPUP_COLOR
+	)
+	score_popup.add_theme_color_override(
+		"font_outline_color",
+		Color.BLACK
+	)
+	score_popup.add_theme_constant_override(
+		"outline_size",
+		SCORE_POPUP_OUTLINE_SIZE
+	)
+	score_popup_root.add_child(score_popup)
+
+	score_popup_modifier = Label.new()
+	score_popup_modifier.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	score_popup_modifier.add_theme_font_size_override(
+		"font_size",
+		SCORE_MODIFIER_FONT_SIZE
+	)
+	score_popup_modifier.add_theme_color_override(
+		"font_outline_color",
+		Color.BLACK
+	)
+	score_popup_modifier.add_theme_constant_override(
+		"outline_size",
+		SCORE_POPUP_OUTLINE_SIZE
+	)
+
+	# Filho do numero, fora do layout do container: fica
+	# colado a direita dele sem empurra-lo do centro.
+	score_popup.add_child(score_popup_modifier)
+	score_popup_modifier.hide()
+
+
+## Recoloca o container cobrindo a tela inteira, sem escala.
+## Precisa rodar antes de cada jogada, porque o voo da
+## jogada anterior o deixou movido e encolhido.
+func _reset_score_popup() -> void:
+	score_popup_root.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+	score_popup_root.pivot_offset = score_popup_root.size / 2.0
+	score_popup_root.scale = Vector2.ONE
+	score_popup_root.modulate.a = 1.0
+	score_popup_modifier.hide()
+
+
+## Primeira fase, ao jogar as cartas: no centro da tela a
+## protecao soma, o multiplicador aparece e o resultado
+## e calculado.
 func _animate_play_score(
 	protection: int,
 	multiplier: float,
 	total: float
 ) -> void:
 	_kill_score_tween()
+
+	score_label.text = ""
+
+	_reset_score_popup()
+	score_popup_root.scale = Vector2.ONE * 0.8
+	score_popup_root.modulate.a = 0.0
+	score_popup.text = "0"
+	score_popup_root.show()
+
 	score_tween = create_tween()
 
+	score_tween.tween_property(
+		score_popup_root,
+		"modulate:a",
+		1.0,
+		SCORE_APPEAR_DURATION
+	)
+	score_tween.parallel().tween_property(
+		score_popup_root,
+		"scale",
+		Vector2.ONE,
+		SCORE_APPEAR_DURATION
+	)
+
 	score_tween.tween_method(
-		_show_protection_step,
+		_show_popup_protection,
 		0.0,
 		float(protection),
 		SCORE_PROTECTION_DURATION
 	)
 
 	score_tween.tween_method(
-		_show_multiplier_step.bind(protection),
+		_show_popup_multiplier.bind(protection),
 		1.0,
 		multiplier,
 		SCORE_MULTIPLIER_DURATION
 	)
 
 	score_tween.tween_method(
-		_show_total_step.bind(protection, multiplier),
-		0.0,
+		_show_popup_total,
+		float(protection),
 		total,
 		SCORE_TOTAL_DURATION
 	)
 
+	score_tween.tween_property(
+		score_popup_root,
+		"scale",
+		Vector2.ONE * 1.2,
+		SCORE_PULSE_DURATION / 2.0
+	)
+	score_tween.tween_property(
+		score_popup_root,
+		"scale",
+		Vector2.ONE,
+		SCORE_PULSE_DURATION / 2.0
+	)
 
-func _animate_round_score(from_score: float, to_score: float) -> void:
-	if round_score_tween != null and round_score_tween.is_valid():
-		round_score_tween.kill()
 
-	round_score_tween = create_tween()
+## Segunda fase, depois que a jogada e registrada: aplica a
+## penalidade das brechas no centro, voa ate a pontuacao da
+## rodada e so entao o placar da rodada sobe.
+func _animate_play_resolution(
+	round_score_before: float,
+	round_score_after: float
+) -> void:
+	var base_score: float = round_controller.last_play_base_score
+	var penalty: float = round_controller.last_breach_penalty
+	var final_score: float = round_controller.last_play_final_score
 
-	round_score_tween.tween_method(
+	_kill_score_tween()
+	score_tween = create_tween()
+
+	if penalty > 0.0 and base_score > 0.0:
+		var percent: int = roundi(penalty / base_score * 100.0)
+
+		# Mostra a porcentagem parada antes de descontar.
+		score_tween.tween_method(
+			_show_popup_penalty.bind(percent),
+			base_score,
+			base_score,
+			SCORE_PENALTY_HOLD
+		)
+		score_tween.tween_method(
+			_show_popup_penalty.bind(percent),
+			base_score,
+			final_score,
+			SCORE_PENALTY_DURATION
+		)
+		score_tween.tween_callback(
+			_show_popup_total.bind(final_score)
+		)
+
+	# O centro do container e o centro do numero. Basta levar
+	# o centro do container ao centro do placar da rodada.
+	var target_center: Vector2 = (
+		get_global_transform().affine_inverse()
+		* round_score_label.get_global_rect().get_center()
+	)
+
+	score_tween.tween_property(
+		score_popup_root,
+		"position",
+		target_center - score_popup_root.size / 2.0,
+		SCORE_FLY_DURATION
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	score_tween.parallel().tween_property(
+		score_popup_root,
+		"scale",
+		Vector2.ONE * SCORE_POPUP_FLY_SCALE,
+		SCORE_FLY_DURATION
+	)
+
+	score_tween.tween_property(
+		score_popup_root,
+		"modulate:a",
+		0.0,
+		SCORE_FADE_DURATION
+	)
+	score_tween.tween_callback(score_popup_root.hide)
+
+	score_tween.tween_method(
 		_show_round_score_step,
-		from_score,
-		to_score,
+		round_score_before,
+		round_score_after,
 		ROUND_SCORE_DURATION
 	)
+
+
+func _show_popup_modifier(text: String, color: Color) -> void:
+	score_popup_modifier.text = text
+	score_popup_modifier.add_theme_color_override("font_color", color)
+
+	var modifier_size: Vector2 = score_popup_modifier.get_minimum_size()
+	score_popup_modifier.size = modifier_size
+
+	# O tamanho minimo do numero ja reflete o texto novo,
+	# mesmo antes de o container reposiciona-lo.
+	var number_size: Vector2 = score_popup.get_minimum_size()
+
+	score_popup_modifier.position = Vector2(
+		number_size.x + SCORE_MODIFIER_GAP,
+		(number_size.y - modifier_size.y) / 2.0
+	)
+
+	score_popup_modifier.show()
 
 
 # Cada etapa recebe primeiro o valor interpolado pelo
 # tween e depois os argumentos fixos passados com bind().
 
-func _show_protection_step(value: float) -> void:
-	score_label.text = "Proteção: %d" % roundi(value)
+func _show_popup_protection(value: float) -> void:
+	score_popup.text = "%d" % roundi(value)
+	score_popup_modifier.hide()
 
 
-func _show_multiplier_step(value: float, protection: int) -> void:
-	score_label.text = (
-		"Proteção: %d  |  Vulnerabilidade: ×%.2f"
-		% [protection, value]
-	)
+func _show_popup_multiplier(value: float, protection: int) -> void:
+	score_popup.text = "%d" % protection
+	_show_popup_modifier("× %.2f" % value, SCORE_MULTIPLIER_COLOR)
 
 
-func _show_total_step(
-	value: float,
-	protection: int,
-	multiplier: float
-) -> void:
-	score_label.text = (
-		"Proteção: %d  |  Vulnerabilidade: ×%.2f"
-		+ "  |  Pontuação: %.2f"
-	) % [protection, multiplier, value]
+func _show_popup_total(value: float) -> void:
+	score_popup.text = "%.2f" % value
+	score_popup_modifier.hide()
 
 
-func _show_penalty_step(
-	value: float,
-	base_score: float,
-	penalty: float
-) -> void:
-	score_label.text = (
-		"Pontuação base: %.2f  |  "
-		+ "Penalidade das brechas: -%.2f  |  "
-		+ "Pontuação aplicada: %.2f"
-	) % [base_score, penalty, value]
+func _show_popup_penalty(value: float, percent: int) -> void:
+	score_popup.text = "%.2f" % value
+	_show_popup_modifier("-%d%%" % percent, SCORE_PENALTY_COLOR)
 
 
 func _show_round_score_step(value: float) -> void:

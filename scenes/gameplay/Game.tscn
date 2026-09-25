@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://1i4hk6sug18l"]
 
-[ext_resource type="Script" uid="uid://0ju2x5rdtj8v" path="res://scenes/gameplay/Game.gd" id="1_14ymu"]
+[ext_resource type="Script" uid="uid://dv4lw50wunkik" path="res://scenes/gameplay/Game.gd" id="1_14ymu"]
 [ext_resource type="PackedScene" uid="uid://cjspi6oyhmk0d" path="res://scenes/hand/Hand.tscn" id="2_brcjj"]
 [ext_resource type="PackedScene" uid="uid://c72riuqhd4bst" path="res://scenes/cards/CardDetailsPanel.tscn" id="3_8275i"]
 [ext_resource type="PackedScene" uid="uid://u7r20t6lrd3s" path="res://scenes/dialogue/DialogueBox.tscn" id="3_brcjj"]
@@ -25,6 +25,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_14ymu")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1230807328]
+z_index = -10
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
 
 [node name="HUD" type="Control" parent="." unique_id=2060903433]
 layout_mode = 1

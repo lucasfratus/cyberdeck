@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="security_card_game"
-run/main_scene="uid://1i4hk6sug18l"
+run/main_scene="res://scenes/menus/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

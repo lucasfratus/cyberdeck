@@ -59,6 +59,20 @@ const FIRST_BREACH_DIALOGUE: DialogueData = preload(
 	"res://data/dialogue/events/tutorial/tutorial_first_breach.tres"
 )
 
+const PAUSE_MENU_SCENE := preload(
+	"res://scenes/menus/PauseMenu.tscn"
+)
+
+const ENCYCLOPEDIA_SCENE := preload(
+	"res://scenes/encyclopedia/Encyclopedia.tscn"
+)
+
+const MAIN_MENU_SCENE_PATH := "res://scenes/menus/MainMenu.tscn"
+
+var menu_layer: CanvasLayer
+var pause_menu: PauseMenu
+var encyclopedia: Encyclopedia
+
 
 var scenarios: Array[ScenarioData] = [
 	PHISHING_SCENARIO,
@@ -82,7 +96,88 @@ const CARD_DETAILS_SCREEN_MARGIN := 12.0
 
 func _ready() -> void:
 	_connect_signals()
+	_setup_menus()
 	await _start_game()
+
+
+func _setup_menus() -> void:
+	menu_layer = CanvasLayer.new()
+	menu_layer.layer = 100
+	add_child(menu_layer)
+
+	pause_menu = PAUSE_MENU_SCENE.instantiate() as PauseMenu
+	menu_layer.add_child(pause_menu)
+
+	# Precisam continuar respondendo com a arvore pausada.
+	pause_menu.process_mode = Node.PROCESS_MODE_ALWAYS
+
+	pause_menu.resume_requested.connect(
+		_on_resume_requested
+	)
+	pause_menu.encyclopedia_requested.connect(
+		_on_encyclopedia_requested
+	)
+	pause_menu.main_menu_requested.connect(
+		_on_main_menu_requested
+	)
+
+	encyclopedia = (
+		ENCYCLOPEDIA_SCENE.instantiate()
+		as Encyclopedia
+	)
+	menu_layer.add_child(encyclopedia)
+	encyclopedia.process_mode = Node.PROCESS_MODE_ALWAYS
+	encyclopedia.closed.connect(_on_encyclopedia_closed)
+	encyclopedia.hide()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+
+	if pause_menu == null:
+		return
+
+	# A enciclopedia e o menu de pausa tratam o ESC deles.
+	if encyclopedia != null and encyclopedia.visible:
+		return
+
+	if pause_menu.visible:
+		return
+
+	get_viewport().set_input_as_handled()
+	_open_pause_menu()
+
+
+func _open_pause_menu() -> void:
+	_hide_card_details()
+	pause_menu.show()
+	get_tree().paused = true
+
+
+func _close_pause_menu() -> void:
+	pause_menu.hide()
+	get_tree().paused = false
+
+
+func _on_resume_requested() -> void:
+	_close_pause_menu()
+
+
+func _on_encyclopedia_requested() -> void:
+	pause_menu.hide()
+	encyclopedia.refresh()
+	encyclopedia.show()
+
+
+func _on_encyclopedia_closed() -> void:
+	encyclopedia.hide()
+	pause_menu.show()
+
+
+func _on_main_menu_requested() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 
 func _show_game_intro() -> void:

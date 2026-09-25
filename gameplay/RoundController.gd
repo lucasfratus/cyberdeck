@@ -76,7 +76,9 @@ func register_play(
 
 
 func has_won() -> bool:
-	return data != null and score >= data.base_risk
+	# Compara com o risco efetivo, que inclui o aumento
+	# causado pelas brechas exploradas nesta rodada.
+	return data != null and score >= get_risk()
 
 
 func has_lost() -> bool:

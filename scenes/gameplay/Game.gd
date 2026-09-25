@@ -73,6 +73,17 @@ var menu_layer: CanvasLayer
 var pause_menu: PauseMenu
 var encyclopedia: Encyclopedia
 
+const SCENARIO_SUMMARY_SCENE := preload(
+	"res://scenes/menus/ScenarioSummary.tscn"
+)
+
+var scenario_summary: ScenarioSummary
+
+## Cartas que apareceram no cenario atual, na ordem em
+## que surgiram, e quais delas foram desbloqueadas nele.
+var scenario_seen_card_ids: Array[String] = []
+var scenario_new_card_ids: Array[String] = []
+
 
 var scenarios: Array[ScenarioData] = [
 	PHISHING_SCENARIO,
@@ -105,6 +116,12 @@ func _setup_menus() -> void:
 	menu_layer.layer = 100
 	add_child(menu_layer)
 
+	scenario_summary = (
+		SCENARIO_SUMMARY_SCENE.instantiate()
+		as ScenarioSummary
+	)
+	menu_layer.add_child(scenario_summary)
+
 	pause_menu = PAUSE_MENU_SCENE.instantiate() as PauseMenu
 	menu_layer.add_child(pause_menu)
 
@@ -136,6 +153,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if pause_menu == null:
+		return
+
+	if scenario_summary != null and scenario_summary.visible:
 		return
 
 	# A enciclopedia e o menu de pausa tratam o ESC deles.
@@ -221,6 +241,9 @@ func _start_game() -> void:
 	
 	
 func _start_scenario() -> void:
+	scenario_seen_card_ids.clear()
+	scenario_new_card_ids.clear()
+
 	print(
 		"Iniciando cenário: ",
 		current_scenario_data.display_name
@@ -411,7 +434,8 @@ func _draw_cards(amount: int) -> void:
 			print("Não há mais cartas disponíveis para compra.")
 			break
 
-		CardCollection.unlock(card_id)
+		var is_new_card: bool = CardCollection.unlock(card_id)
+		_register_scenario_card(card_id, is_new_card)
 
 		var card := CardFactory.instantiate_card(card_id)
 
@@ -781,6 +805,7 @@ func _advance_progression() -> void:
 		return
 
 	# O cenário atual terminou.
+	await _show_scenario_summary()
 	current_scenario_index += 1
 
 	# Não existem mais cenários.
@@ -1269,3 +1294,41 @@ func _show_exploited_breaches_feedback() -> void:
 			risk_increase
 		]
 	)
+
+
+func _register_scenario_card(
+	card_id: String,
+	is_new: bool
+) -> void:
+	if card_id not in scenario_seen_card_ids:
+		scenario_seen_card_ids.append(card_id)
+
+	if is_new and card_id not in scenario_new_card_ids:
+		scenario_new_card_ids.append(card_id)
+
+
+func _show_scenario_summary() -> void:
+	if scenario_summary == null:
+		return
+
+	if current_scenario_data == null:
+		return
+
+	if scenario_seen_card_ids.is_empty():
+		return
+
+	_hide_card_details()
+
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+	next_round_button.visible = false
+
+	scenario_summary.show_summary(
+		current_scenario_data.display_name,
+		scenario_seen_card_ids,
+		scenario_new_card_ids
+	)
+
+	await scenario_summary.continue_requested
+
+	scenario_summary.hide()

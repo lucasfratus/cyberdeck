@@ -108,6 +108,12 @@ const PLAY_CARD_STAGGER := 0.06
 ## entre atualizacoes para animar so o que abriu ou fechou.
 var breach_indicators: Dictionary = {}
 
+## Indicador com dica de ferramenta que quebra linha, para a
+## descricao da brecha nao passar da borda da tela.
+const WRAPPING_TOOLTIP_PANEL := preload(
+	"res://scenes/ui/WrappingTooltipPanel.gd"
+)
+
 const BREACH_FLASH_COLOR := Color(1.8, 0.45, 0.45)
 const BREACH_FLASH_STEP := 0.12
 const BREACH_FLASH_LOOPS := 3
@@ -182,6 +188,11 @@ var breach_feedback_tween: Tween
 var first_breach_tutorial_shown := false
 
 const CARD_DETAILS_GAP := 20.0
+
+## Na partida o painel pode ser mais largo que na coluna da
+## enciclopedia. Com a fonte monoespacada, mais largura
+## significa menos linhas, e o painel cabe acima das cartas.
+const GAME_DETAILS_PANEL_WIDTH := 520.0
 const CARD_DETAILS_SCREEN_MARGIN := 12.0
 
 func _ready() -> void:
@@ -366,6 +377,12 @@ func _connect_signals() -> void:
 		_on_card_details_hidden
 	)
 
+	card_details_panel.set_panel_width(GAME_DETAILS_PANEL_WIDTH)
+
+	# O texto com quebra automatica pode mudar de altura depois
+	# do primeiro posicionamento. Reposiciona a cada mudanca.
+	card_details_panel.resized.connect(_on_card_details_panel_resized)
+
 
 func _on_card_details_requested(card: Card) -> void:
 	if card == null:
@@ -483,6 +500,16 @@ func _position_card_details_panel(card: Card) -> void:
 		target_x,
 		target_y
 	)
+
+
+func _on_card_details_panel_resized() -> void:
+	if not card_details_panel.visible:
+		return
+
+	if detailed_card == null or not is_instance_valid(detailed_card):
+		return
+
+	_position_card_details_panel(detailed_card)
 
 
 func _on_card_details_hidden(card: Card) -> void:
@@ -1333,7 +1360,9 @@ func _update_breaches_hud() -> void:
 func _create_breach_indicator(
 	breach: SecurityBreachData
 ) -> PanelContainer:
-	var breach_indicator := PanelContainer.new()
+	var breach_indicator := (
+		WRAPPING_TOOLTIP_PANEL.new() as PanelContainer
+	)
 	var breach_label := Label.new()
 
 	breach_indicator.custom_minimum_size = Vector2(

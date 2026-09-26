@@ -1,0 +1,139 @@
+[gd_resource type="Theme" format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleMono-Regular.ttf" id="1_mono"]
+[ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleMono-Bold.ttf" id="2_mono_bold"]
+
+[sub_resource type="StyleBoxFlat" id="btn_normal"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.03, 0.09, 0.05, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.45, 0.25, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="btn_hover"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.07, 0.25, 0.13, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1.0, 0.45, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="btn_pressed"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.2, 1.0, 0.45, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1.0, 0.45, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="btn_disabled"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.03, 0.09, 0.05, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.45, 0.32, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="btn_focus"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.03, 0.09, 0.05, 1.0)
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1.0, 0.45, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="panel"]
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.03, 0.09, 0.05, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.45, 0.25, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="line_normal"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.02, 0.05, 0.03, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.45, 0.25, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="line_focus"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.02, 0.05, 0.03, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1.0, 0.45, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="tooltip"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.02, 0.05, 0.03, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1.0, 0.45, 1.0)
+
+[resource]
+default_font = ExtResource("1_mono")
+default_font_size = 16
+Button/colors/font_color = Color(0.72, 0.98, 0.8, 1.0)
+Button/colors/font_hover_color = Color(0.2, 1.0, 0.45, 1.0)
+Button/colors/font_focus_color = Color(0.2, 1.0, 0.45, 1.0)
+Button/colors/font_pressed_color = Color(0.02, 0.05, 0.03, 1.0)
+Button/colors/font_hover_pressed_color = Color(0.02, 0.05, 0.03, 1.0)
+Button/colors/font_disabled_color = Color(0.25, 0.45, 0.32, 1.0)
+Button/fonts/font = ExtResource("2_mono_bold")
+Button/styles/normal = SubResource("btn_normal")
+Button/styles/hover = SubResource("btn_hover")
+Button/styles/pressed = SubResource("btn_pressed")
+Button/styles/disabled = SubResource("btn_disabled")
+Button/styles/focus = SubResource("btn_focus")
+Label/colors/font_color = Color(0.72, 0.98, 0.8, 1.0)
+LineEdit/colors/font_color = Color(0.72, 0.98, 0.8, 1.0)
+LineEdit/colors/font_placeholder_color = Color(0.25, 0.45, 0.32, 1.0)
+LineEdit/colors/caret_color = Color(0.2, 1.0, 0.45, 1.0)
+LineEdit/styles/normal = SubResource("line_normal")
+LineEdit/styles/focus = SubResource("line_focus")
+Panel/styles/panel = SubResource("panel")
+PanelContainer/styles/panel = SubResource("panel")
+TooltipLabel/colors/font_color = Color(0.72, 0.98, 0.8, 1.0)
+TooltipPanel/styles/panel = SubResource("tooltip")

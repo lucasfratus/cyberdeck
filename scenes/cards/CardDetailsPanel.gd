@@ -18,15 +18,36 @@ class_name CardDetailsPanel
 
 
 const PANEL_WIDTH := 420.0
+const DESCRIPTION_FONT_SIZE := 15
+
+## Largura em uso. A partida pede um painel mais largo que
+## a coluna da enciclopedia comporta, com set_panel_width().
+var panel_width := PANEL_WIDTH
 const LOCKED_PLACEHOLDER := "?"
 const LOCKED_TEXT := \
 	"Carta ainda não encontrada. Ela aparece aqui depois de surgir em uma partida."
 
 
 func _ready() -> void:
-	custom_minimum_size.x = PANEL_WIDTH
-	size.x = PANEL_WIDTH
+	custom_minimum_size.x = panel_width
+	size.x = panel_width
+
+	description_label.add_theme_font_size_override(
+		"font_size",
+		DESCRIPTION_FONT_SIZE
+	)
+
+	# Texto justificado. A ultima linha de cada paragrafo
+	# continua alinhada a esquerda, pelo padrao do Label.
+	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_FILL
+
 	hide()
+
+
+func set_panel_width(width: float) -> void:
+	panel_width = width
+	custom_minimum_size.x = width
+	size.x = width
 
 
 func show_card(card_data: CardData, locked := false) -> void:
@@ -34,8 +55,8 @@ func show_card(card_data: CardData, locked := false) -> void:
 		hide_card()
 		return
 
-	custom_minimum_size.x = PANEL_WIDTH
-	size.x = PANEL_WIDTH
+	custom_minimum_size.x = panel_width
+	size.x = panel_width
 
 	if locked:
 		title_label.text = LOCKED_PLACEHOLDER

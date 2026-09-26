@@ -86,7 +86,7 @@ func _build_interface() -> void:
 	background.set_anchors_and_offsets_preset(
 		Control.PRESET_FULL_RECT
 	)
-	background.color = Color(0.04, 0.05, 0.08)
+	background.color = UIPalette.BACKGROUND
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var margin := MarginContainer.new()

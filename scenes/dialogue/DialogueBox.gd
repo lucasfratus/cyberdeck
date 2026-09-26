@@ -26,10 +26,27 @@ const PANEL_SIDE_MARGIN := 70.0
 const PANEL_EDGE_MARGIN := 40.0
 const PANEL_HEIGHT := 180.0
 
+## Velocidade da digitacao das falas, em caracteres por
+## segundo. Uma fala de 200 caracteres leva cerca de 3,6 s.
+const CHARACTERS_PER_SECOND := 55.0
+
+var typing_tween: Tween
+
 signal line_changed(highlight_target: DialogueLineData.HighlightTarget)
 
 func _ready() -> void:
 	continue_button.pressed.connect(_on_continue_button_pressed)
+
+	# A quebra de linha e calculada com o texto inteiro e as
+	# letras so vao sendo reveladas. No comportamento padrao,
+	# as palavras pulariam de linha durante a digitacao.
+	dialogue_text.visible_characters_behavior = (
+		TextServer.VC_CHARS_AFTER_SHAPING
+	)
+
+	# Clicar em qualquer parte da caixa tambem avanca.
+	dialogue_panel.gui_input.connect(_on_dialogue_panel_gui_input)
+
 	hide()
 
 
@@ -116,6 +133,7 @@ func _show_current_line() -> void:
 	dialogue_text.text = str(
 		current_line.get("text", "")
 	)
+	_start_typing()
 
 	var portrait_texture: Texture2D = current_line.get(
 		"portrait",
@@ -143,6 +161,12 @@ func advance_dialogue() -> void:
 	if not dialogue_active:
 		return
 
+	# O primeiro toque completa a fala que ainda esta sendo
+	# digitada. So o seguinte passa para a proxima.
+	if is_typing():
+		_complete_typing()
+		return
+
 	current_dialogue_index += 1
 
 	if current_dialogue_index >= dialogue_sequence.size():
@@ -158,6 +182,7 @@ func close_dialogue() -> void:
 
 	dialogue_active = false
 	continue_button.disabled = true
+	_complete_typing()
 
 	dialogue_sequence.clear()
 	current_dialogue_index = 0
@@ -175,6 +200,59 @@ func is_dialogue_active() -> bool:
 
 func _on_continue_button_pressed() -> void:
 	advance_dialogue()
+
+
+func _on_dialogue_panel_gui_input(event: InputEvent) -> void:
+	if not dialogue_active:
+		return
+
+	if (
+		event is InputEventMouseButton
+		and event.button_index == MOUSE_BUTTON_LEFT
+		and event.pressed
+	):
+		dialogue_panel.accept_event()
+		advance_dialogue()
+
+
+func is_typing() -> bool:
+	return typing_tween != null and typing_tween.is_running()
+
+
+func _start_typing() -> void:
+	_kill_typing_tween()
+
+	var total: int = dialogue_text.text.length()
+
+	if total <= 0:
+		dialogue_text.visible_characters = -1
+		return
+
+	dialogue_text.visible_characters = 0
+
+	typing_tween = create_tween()
+	typing_tween.tween_property(
+		dialogue_text,
+		"visible_characters",
+		total,
+		total / CHARACTERS_PER_SECOND
+	)
+	typing_tween.tween_callback(_on_typing_finished)
+
+
+func _on_typing_finished() -> void:
+	dialogue_text.visible_characters = -1
+
+
+## Mostra a fala inteira. -1 significa "todos os caracteres".
+func _complete_typing() -> void:
+	_kill_typing_tween()
+	dialogue_text.visible_characters = -1
+
+
+func _kill_typing_tween() -> void:
+	if typing_tween != null and typing_tween.is_valid():
+		typing_tween.kill()
 
 
 func _unhandled_input(event: InputEvent) -> void:

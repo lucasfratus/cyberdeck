@@ -193,12 +193,51 @@ const CARD_DETAILS_GAP := 20.0
 ## enciclopedia. Com a fonte monoespacada, mais largura
 ## significa menos linhas, e o painel cabe acima das cartas.
 const GAME_DETAILS_PANEL_WIDTH := 520.0
+
+## Coluna do HUD no canto superior esquerdo: um painel com
+## risco, pontuacao, barra de progresso e jogadas, e o painel
+## de brechas logo abaixo.
+## Camada de CRT por cima da partida. Passa por cima das
+## cartas; se atrapalhar a leitura, desligue aqui.
+const CRT_OVERLAY_ENABLED := true
+
+## Acima da partida e dos dialogos, abaixo dos menus (100).
+const CRT_OVERLAY_LAYER := 50
+
+const HUD_MARGIN := 10.0
+
+## Layout vertical da partida, de cima para baixo: linha de
+## status, faixa da conta da jogada, mesa e mao. A mao fica
+## ancorada na borda inferior pelo proprio Game.tscn.
+const HUD_COLUMN_TOP := 48.0
+const SCORE_BAND_TOP := 52.0
+const SCORE_BAND_HEIGHT := 100.0
+const TABLE_TOP := 170.0
+const TABLE_CARD_HALF_WIDTH := 90.0
+const TABLE_CARD_HEIGHT := 252.0
+const ACTION_BUTTON_SIZE := Vector2(170.0, 44.0)
+const ACTION_BUTTON_MARGIN := 20.0
+const HUD_COLUMN_WIDTH := 300.0
+const SCORE_BAR_LENGTH := 20
+
+var hud_column: VBoxContainer
+var stats_panel: PanelContainer
+var score_bar_label: Label
+
+## Linha de status no topo, no estilo de prompt de terminal,
+## com um cursor piscando no fim.
+const STATUS_CURSOR_BLINK := 0.5
+var attack_status_text := ""
+var status_cursor_on := true
+var status_cursor_timer: Timer
 const CARD_DETAILS_SCREEN_MARGIN := 12.0
 
 func _ready() -> void:
 	_connect_signals()
 	_setup_menus()
 	_setup_score_popup()
+	_setup_hud()
+	_setup_background()
 
 	# Rodando Game.tscn direto (F6), sem o menu principal.
 	if not SessionLogger.is_active():
@@ -876,9 +915,11 @@ func _start_round() -> void:
 	_log_round_start()
 
 	result_label.text = ""
+	result_label.visible = false
 	score_label.text = "Selecione as cartas"
 
 	next_round_button.visible = false
+	play_button.visible = true
 
 	hand.clear_selection()
 	hand.set_interaction_enabled(false)
@@ -905,15 +946,16 @@ func _fill_hand() -> void:
 	
 	
 func _update_round_hud() -> void:
-	attack_label.text = (
-		"%s — Rodada %d/%d — Ataque: %s"
+	attack_status_text = (
+		"> SETOR: %s   RODADA %d/%d   AMEAÇA: %s"
 		% [
-			current_scenario_data.display_name,
+			current_scenario_data.display_name.to_upper(),
 			current_round_index + 1,
 			current_scenario_data.rounds.size(),
-			current_round_data.attack_name
+			current_round_data.attack_name.to_upper()
 		]
 	)
+	_refresh_attack_label()
 
 	risk_label.text = (
 		"Índice de Risco: %.0f"
@@ -958,6 +1000,8 @@ func _update_round_hud() -> void:
 		"Pontuação da rodada: %.0f"
 		% round_controller.score
 	)
+
+	_update_score_bar(round_controller.score)
 
 	plays_label.text = (
 		"Jogadas restantes: %d"
@@ -1023,10 +1067,18 @@ func _finish_round(victory: bool) -> void:
 	await _show_round_result_dialogue(victory)
 	
 	if victory:
-		result_label.text = "Rodada vencida!"
+		result_label.text = "Rodada vencida!  %.0f / %.0f" % [
+			round_controller.score,
+			round_controller.get_risk()
+		]
+		result_label.visible = true
 		next_round_button.text = "Próxima rodada"
 	else:
-		result_label.text = "Rodada perdida!"
+		result_label.text = "Rodada perdida!  %.0f / %.0f" % [
+			round_controller.score,
+			round_controller.get_risk()
+		]
+		result_label.visible = true
 		next_round_button.text = "Tentar novamente"
 
 	score_label.text = (
@@ -1038,6 +1090,10 @@ func _finish_round(victory: bool) -> void:
 	)
 
 	next_round_button.visible = true
+	# Os dois botoes ocupam o mesmo lugar. Um botao
+	# desabilitado ainda recebe o clique, entao o Jogar
+	# precisa sumir para o Proxima rodada ser clicavel.
+	play_button.visible = false
 
 
 func _discard_remaining_hand() -> void:
@@ -1056,10 +1112,13 @@ func _finish_game() -> void:
 
 	play_button.disabled = true
 	next_round_button.visible = false
+	# Fim da partida: nenhum dos dois botoes tem funcao.
+	play_button.visible = false
 
 	SessionLogger.end_session("completed")
 
 	result_label.text = "Você concluiu todos os cenários!"
+	result_label.visible = true
 	score_label.text = "Fim da partida"
 	
 	
@@ -1615,6 +1674,7 @@ func _show_scenario_summary() -> void:
 	hand.set_interaction_enabled(false)
 	play_button.disabled = true
 	next_round_button.visible = false
+	play_button.visible = true
 
 	scenario_summary.show_summary(
 		current_scenario_data.display_name,
@@ -1808,13 +1868,15 @@ func _setup_score_popup() -> void:
 	score_popup_modifier.hide()
 
 
-## Recoloca o container cobrindo a tela inteira, sem escala.
+## Recoloca o container na faixa da conta, sem escala.
 ## Precisa rodar antes de cada jogada, porque o voo da
 ## jogada anterior o deixou movido e encolhido.
 func _reset_score_popup() -> void:
 	score_popup_root.set_anchors_and_offsets_preset(
-		Control.PRESET_FULL_RECT
+		Control.PRESET_TOP_WIDE
 	)
+	score_popup_root.offset_top = SCORE_BAND_TOP
+	score_popup_root.offset_bottom = SCORE_BAND_TOP + SCORE_BAND_HEIGHT
 	score_popup_root.pivot_offset = score_popup_root.size / 2.0
 	score_popup_root.scale = Vector2.ONE
 	score_popup_root.modulate.a = 1.0
@@ -2007,6 +2069,7 @@ func _show_popup_penalty(value: float, percent: int) -> void:
 
 func _show_round_score_step(value: float) -> void:
 	round_score_label.text = "Pontuação da rodada: %.0f" % value
+	_update_score_bar(value)
 
 
 func _kill_score_tween() -> void:
@@ -2017,3 +2080,198 @@ func _kill_score_tween() -> void:
 func _wait_score_tween() -> void:
 	if score_tween != null and score_tween.is_running():
 		await score_tween.finished
+
+
+# --- HUD -----------------------------------------------------
+
+## Monta a coluna do HUD em codigo e move para ela os
+## rotulos que ja existem na cena. As referencias @onready
+## continuam validas, entao o resto do codigo e os destaques
+## do tutorial seguem funcionando sem mudanca.
+func _setup_hud() -> void:
+	var hud: Control = risk_label.get_parent()
+
+	hud_column = VBoxContainer.new()
+	hud_column.position = Vector2(HUD_MARGIN, HUD_COLUMN_TOP)
+	hud_column.custom_minimum_size = Vector2(HUD_COLUMN_WIDTH, 0.0)
+	hud_column.add_theme_constant_override("separation", 8)
+	hud_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(hud_column)
+
+	stats_panel = PanelContainer.new()
+	stats_panel.mouse_filter = Control.MOUSE_FILTER_PASS
+	hud_column.add_child(stats_panel)
+
+	var stats := VBoxContainer.new()
+	stats.add_theme_constant_override("separation", 4)
+	stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stats_panel.add_child(stats)
+
+	risk_label.reparent(stats, false)
+	round_score_label.reparent(stats, false)
+
+	score_bar_label = Label.new()
+	score_bar_label.add_theme_color_override(
+		"font_color",
+		UIPalette.PRIMARY
+	)
+	stats.add_child(score_bar_label)
+
+	plays_label.reparent(stats, false)
+
+	# So aparece no fim da rodada, com o resultado.
+	result_label.reparent(stats, false)
+	result_label.visible = false
+
+	breaches_panel.reparent(hud_column, false)
+
+	# Painel de brechas e avisos de brecha em vermelho. Os
+	# indicadores e as dicas deles herdam o tema do painel.
+	var danger_theme := _build_danger_theme()
+	breaches_panel.theme = danger_theme
+	breach_feedback.theme = danger_theme
+
+	_update_score_bar(0.0)
+
+	# A conta da jogada aparece no centro da tela e o
+	# resultado da rodada no painel do HUD. O texto do topo
+	# central ficou redundante.
+	score_label.visible = false
+
+	attack_label.add_theme_color_override(
+		"font_color",
+		UIPalette.PRIMARY
+	)
+	play_button.custom_minimum_size = ACTION_BUTTON_SIZE
+	next_round_button.custom_minimum_size = ACTION_BUTTON_SIZE
+
+	resized.connect(_layout_game_ui)
+	call_deferred("_layout_game_ui")
+
+	status_cursor_timer = Timer.new()
+	status_cursor_timer.wait_time = STATUS_CURSOR_BLINK
+	status_cursor_timer.autostart = true
+	status_cursor_timer.timeout.connect(_on_status_cursor_timeout)
+	add_child(status_cursor_timer)
+
+
+## Barra de texto da pontuacao ate o Indice de Risco, no
+## formato [#####···············]  25%.
+func _update_score_bar(score: float) -> void:
+	if score_bar_label == null:
+		return
+
+	var risk: float = round_controller.get_risk()
+	var ratio := 0.0
+
+	if risk > 0.0:
+		ratio = clampf(score / risk, 0.0, 1.0)
+
+	var filled: int = roundi(ratio * SCORE_BAR_LENGTH)
+
+	score_bar_label.text = "[%s%s] %3d%%" % [
+		"#".repeat(filled),
+		"·".repeat(SCORE_BAR_LENGTH - filled),
+		roundi(ratio * 100.0)
+	]
+
+
+
+func _refresh_attack_label() -> void:
+	# "_" e " " tem a mesma largura na fonte monoespacada,
+	# entao piscar o cursor nao desloca o texto.
+	var cursor := "_" if status_cursor_on else " "
+	attack_label.text = attack_status_text + cursor
+	attack_label.size = attack_label.get_minimum_size()
+
+
+## Reposiciona os elementos que dependem da largura da
+## janela. Roda no inicio e a cada redimensionamento.
+func _layout_game_ui() -> void:
+	# Linha de status alinhada com a coluna do HUD.
+	attack_label.position = Vector2(HUD_MARGIN, HUD_MARGIN)
+	attack_label.size = attack_label.get_minimum_size()
+
+	# Mesa centralizada na largura real da janela. As cartas
+	# sao distribuidas em torno deste ponto.
+	played_cards.global_position = Vector2(
+		size.x / 2.0 - TABLE_CARD_HALF_WIDTH,
+		TABLE_TOP
+	)
+
+	# Jogar e Proxima rodada no mesmo lugar, a direita da
+	# mesa: um aparece durante a rodada, o outro no fim.
+	var action_position := Vector2(
+		size.x - ACTION_BUTTON_MARGIN - ACTION_BUTTON_SIZE.x,
+		TABLE_TOP
+			+ TABLE_CARD_HEIGHT / 2.0
+			- ACTION_BUTTON_SIZE.y / 2.0
+	)
+
+	for button: Button in [play_button, next_round_button]:
+		button.size = ACTION_BUTTON_SIZE
+		button.global_position = action_position
+
+
+func _on_status_cursor_timeout() -> void:
+	status_cursor_on = not status_cursor_on
+	_refresh_attack_label()
+
+
+## Tema vermelho para o que envolve brechas. So redefine
+## painel, texto e dica de ferramenta; fonte e o resto vem
+## do tema global.
+func _build_danger_theme() -> Theme:
+	var danger := Theme.new()
+
+	danger.set_stylebox(
+		"panel",
+		"PanelContainer",
+		_make_danger_box(UIPalette.DANGER_BACKGROUND, UIPalette.DANGER_DIM, 8.0)
+	)
+	danger.set_stylebox(
+		"panel",
+		"TooltipPanel",
+		_make_danger_box(UIPalette.BACKGROUND, UIPalette.DANGER, 10.0)
+	)
+	danger.set_color("font_color", "Label", UIPalette.DANGER)
+	danger.set_color("font_color", "TooltipLabel", UIPalette.DANGER)
+
+	return danger
+
+
+func _make_danger_box(
+	background: Color,
+	border: Color,
+	margin: float
+) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = background
+	box.border_color = border
+	box.set_border_width_all(1)
+	box.set_content_margin_all(margin)
+
+	return box
+
+
+# --- Fundo -------------------------------------------------
+
+func _setup_background() -> void:
+	var background := get_node_or_null("ColorRect") as ColorRect
+
+	if background != null:
+		background.color = UIPalette.BACKGROUND
+		background.material = UIPalette.make_background_material()
+
+	if not CRT_OVERLAY_ENABLED:
+		return
+
+	var overlay_layer := CanvasLayer.new()
+	overlay_layer.layer = CRT_OVERLAY_LAYER
+	add_child(overlay_layer)
+
+	var overlay := ColorRect.new()
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.material = UIPalette.make_crt_overlay_material()
+	overlay_layer.add_child(overlay)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

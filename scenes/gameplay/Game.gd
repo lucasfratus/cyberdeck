@@ -214,6 +214,27 @@ const DISCARD_DROP := 260.0
 const DISCARD_DURATION := 0.3
 const DISCARD_STAGGER := 0.05
 
+## Tela preta com o nome do cenario, entre a fala do
+## Assistente e a introducao do cenario. Fica abaixo dos
+## dialogos (camada 10) e acima do resto da partida.
+const SCENARIO_CARD_LAYER := 9
+const SCENARIO_CARD_TITLE_SIZE := 52
+const SCENARIO_CARD_TYPE_SPEED := 30.0
+const SCENARIO_CARD_HOLD := 1.3
+const SCENARIO_CARD_FADE := 0.3
+const SCENARIO_CARD_LINE_WIDTH := 360.0
+
+## Depois da introducao do cenario, a partida surge do preto.
+const FADE_FROM_BLACK_DURATION := 0.45
+
+var scenario_card: ColorRect
+var pending_fade_from_black := false
+var scenario_card_content: VBoxContainer
+var scenario_card_counter: Label
+var scenario_card_title: Label
+var scenario_card_line: ColorRect
+var scenario_card_subtitle: Label
+
 var round_banner: Control
 var round_banner_band: PanelContainer
 var round_banner_title: Label
@@ -308,6 +329,7 @@ func _ready() -> void:
 	_setup_menus()
 	_setup_score_popup()
 	_setup_round_banner()
+	_setup_scenario_card()
 	_setup_hud()
 	_setup_background()
 
@@ -544,7 +566,13 @@ func _start_scenario() -> void:
 		"scenario_id": str(current_scenario_data.id),
 	})
 
+	await _show_scenario_card()
 	await _show_scenario_intro()
+
+	# A tela fica preta ate a primeira rodada montar o HUD.
+	# Senao o fade mostraria os valores da rodada anterior.
+	_cover_with_black()
+	pending_fade_from_black = true
 
 	await _start_round()
 
@@ -1084,6 +1112,10 @@ func _start_round(is_retry := false) -> void:
 	_setup_deck()
 	_update_round_hud()
 
+	if pending_fade_from_black:
+		pending_fade_from_black = false
+		await _fade_from_black()
+
 	await _show_round_start_banner(is_retry)
 
 	# A mao so e distribuida depois da faixa da rodada.
@@ -1338,6 +1370,10 @@ func _show_scenario_intro() -> void:
 		
 	_hide_card_details()
 	dialogue_box.show_dialogue_data(intro_dialogue, 1.0, true)
+
+	# O dialogo tambem tem fundo preto: trocar um pelo outro
+	# no mesmo quadro nao deixa a partida aparecer no meio.
+	scenario_card.hide()
 
 	await dialogue_box.finished
 	
@@ -2030,6 +2066,151 @@ func _breach_ids(
 
 
 # --- Animacoes de pontuacao ---------------------------------
+
+# --- Tela de abertura do cenario ------------------------------
+
+func _setup_scenario_card() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = SCENARIO_CARD_LAYER
+	add_child(layer)
+
+	scenario_card = ColorRect.new()
+	scenario_card.color = Color.BLACK
+	scenario_card.mouse_filter = Control.MOUSE_FILTER_STOP
+	layer.add_child(scenario_card)
+	scenario_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scenario_card.add_child(center)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	scenario_card_content = VBoxContainer.new()
+	scenario_card_content.add_theme_constant_override("separation", 12)
+	scenario_card_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(scenario_card_content)
+
+	scenario_card_counter = Label.new()
+	scenario_card_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	scenario_card_counter.add_theme_color_override("font_color", UIPalette.DIM)
+	scenario_card_content.add_child(scenario_card_counter)
+
+	scenario_card_title = Label.new()
+	scenario_card_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	scenario_card_title.add_theme_font_size_override(
+		"font_size",
+		SCENARIO_CARD_TITLE_SIZE
+	)
+	scenario_card_title.add_theme_color_override("font_color", UIPalette.PRIMARY)
+	scenario_card_title.visible_characters_behavior = (
+		TextServer.VC_CHARS_AFTER_SHAPING
+	)
+	scenario_card_content.add_child(scenario_card_title)
+
+	# Linha que cresce a partir do centro, embaixo do titulo.
+	var line_holder := CenterContainer.new()
+	line_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scenario_card_content.add_child(line_holder)
+
+	scenario_card_line = ColorRect.new()
+	scenario_card_line.color = UIPalette.PRIMARY
+	scenario_card_line.custom_minimum_size = Vector2(SCENARIO_CARD_LINE_WIDTH, 2.0)
+	scenario_card_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	line_holder.add_child(scenario_card_line)
+
+	scenario_card_subtitle = Label.new()
+	scenario_card_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	scenario_card_subtitle.add_theme_color_override("font_color", UIPalette.TEXT)
+	scenario_card_content.add_child(scenario_card_subtitle)
+
+	scenario_card.hide()
+
+
+## Mostra "CENARIO 1 DE 2" e o nome do cenario sobre o preto.
+## A tela preta continua visivel no fim: a introducao do
+## cenario, que tambem tem fundo preto, entra no lugar dela.
+## Sem introducao, o _fade_from_black() seguinte a remove.
+func _show_scenario_card() -> void:
+	_hide_card_details()
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	var title := current_scenario_data.display_name.to_upper()
+	var subtitle := ""
+
+	if not current_scenario_data.rounds.is_empty():
+		subtitle = "Ameaça: %s   |   %d rodadas" % [
+			current_scenario_data.rounds[0].attack_name.to_upper(),
+			current_scenario_data.rounds.size(),
+		]
+
+	scenario_card_counter.text = "CENÁRIO %d DE %d" % [
+		current_scenario_index + 1,
+		scenarios.size(),
+	]
+	scenario_card_title.text = title
+	scenario_card_title.visible_characters = 0
+	scenario_card_subtitle.text = subtitle
+
+	scenario_card.color.a = 1.0
+	scenario_card_content.modulate.a = 1.0
+	scenario_card_counter.modulate.a = 0.0
+	scenario_card_subtitle.modulate.a = 0.0
+	# O CenterContainer reseta a escala dos filhos ao montar
+	# o layout, entao a linha cresce pela largura minima.
+	scenario_card_line.custom_minimum_size.x = 0.0
+	scenario_card.show()
+
+	var tween := create_tween()
+	tween.tween_property(scenario_card_counter, "modulate:a", 1.0, 0.25)
+	tween.tween_property(
+		scenario_card_title,
+		"visible_characters",
+		title.length(),
+		title.length() / SCENARIO_CARD_TYPE_SPEED
+	)
+	tween.tween_property(
+		scenario_card_line,
+		"custom_minimum_size:x",
+		SCENARIO_CARD_LINE_WIDTH,
+		0.3
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(scenario_card_subtitle, "modulate:a", 1.0, 0.3)
+	tween.tween_interval(SCENARIO_CARD_HOLD)
+	tween.tween_property(
+		scenario_card_content,
+		"modulate:a",
+		0.0,
+		SCENARIO_CARD_FADE
+	)
+
+	await tween.finished
+
+
+## Cobre a partida com preto, sem texto.
+func _cover_with_black() -> void:
+	scenario_card_content.modulate.a = 0.0
+	scenario_card.color.a = 1.0
+	scenario_card.show()
+
+
+## A partida aparece a partir do preto, depois de um dialogo
+## de tela cheia.
+func _fade_from_black() -> void:
+	if not scenario_card.visible:
+		_cover_with_black()
+
+	var tween := create_tween()
+	tween.tween_property(
+		scenario_card,
+		"color:a",
+		0.0,
+		FADE_FROM_BLACK_DURATION
+	)
+	tween.tween_callback(scenario_card.hide)
+
+	await tween.finished
+
 
 # --- Faixa de transicao das rodadas --------------------------
 

@@ -3,6 +3,11 @@
 [ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_hfven"]
 [ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_20mwt"]
 [ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_ebp6r"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/email.png" id="illus_1"]
+[ext_resource type="Texture2D" path="res://assets/logo/carta_logo.png" id="illus_2"]
+[ext_resource type="Texture2D" path="res://assets/icons/breaches/breach.png" id="illus_3"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/encyclopedia.png" id="illus_4"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/help.png" id="illus_5"]
 
 [sub_resource type="Resource" id="Resource_20mwt"]
 script = ExtResource("1_hfven")
@@ -16,6 +21,7 @@ script = ExtResource("1_hfven")
 speaker = "Assistente"
 text = "Este sistema costumava conectar pessoas, informações e serviços. Agora, algumas regiões estão sendo afetadas por anomalias que imitam comunicações legítimas e exploram comportamentos inseguros."
 portrait = ExtResource("2_20mwt")
+illustration = ExtResource("illus_1")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_ap0rh"]
@@ -23,6 +29,7 @@ script = ExtResource("1_hfven")
 speaker = "Assistente"
 text = "A sua função será analisar cada situação e escolher práticas capazes de estabilizar os setores comprometidos."
 portrait = ExtResource("2_20mwt")
+illustration = ExtResource("illus_2")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_ebp6r"]
@@ -30,6 +37,7 @@ script = ExtResource("1_hfven")
 speaker = "Assistente"
 text = "Mas tenha cuidado: algumas decisões podem criar brechas. E aquilo que permanece aberto em um setor pode voltar a causar problemas mais adiante."
 portrait = ExtResource("2_20mwt")
+illustration = ExtResource("illus_3")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_enc01"]
@@ -37,6 +45,7 @@ script = ExtResource("1_hfven")
 speaker = "Assistente"
 text = "Tudo o que descobrirmos sobre as ameaças fica registrado na Enciclopédia. Lá você entende como cada ameaça age, encontra materiais de referência e vê quais práticas protegem e quais abrem brechas."
 portrait = ExtResource("2_20mwt")
+illustration = ExtResource("illus_4")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_enc02"]
@@ -44,6 +53,7 @@ script = ExtResource("1_hfven")
 speaker = "Assistente"
 text = "Se tiver dúvidas no meio de uma missão, use os ícones no canto superior direito da tela ou pressione Esc. Por eles você chega à Enciclopédia e às regras em Como jogar."
 portrait = ExtResource("2_20mwt")
+illustration = ExtResource("illus_5")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_ual65"]

@@ -22,6 +22,13 @@ var dialogue_active := false
 var dialogue_sequence: Array[Dictionary] = []
 var current_dialogue_index := 0
 
+## Id do DialogueData em exibicao, para o registro da sessao.
+var current_dialogue_id := ""
+
+## Botao para rever a fala anterior. Criado em codigo, ao
+## lado do Continuar.
+var back_button: Button
+
 const PANEL_SIDE_MARGIN := 70.0
 const PANEL_EDGE_MARGIN := 40.0
 const PANEL_HEIGHT := 180.0
@@ -51,6 +58,39 @@ var character_holder: CenterContainer
 var character_sprite: TextureRect
 var character_tween: Tween
 
+## Ilustracao ao lado do personagem, em um quadro.
+const ILLUSTRATION_SIZE := Vector2(160.0, 160.0)
+const ILLUSTRATION_GAP := 32.0
+const ILLUSTRATION_POP_DURATION := 0.25
+const ILLUSTRATION_SLIDE_DURATION := 0.3
+
+var illustration_panel: PanelContainer
+var illustration_rect: TextureRect
+var illustration_tween: Tween
+
+## Voz do Assistente: um som curto tocado enquanto o texto e
+## digitado. Pode ser trocado pelo inspetor.
+@export var voice_sound: AudioStream = preload(
+	"res://assets/audio/dialogue_blip.wav"
+)
+
+## Intervalo minimo entre dois sons, em milissegundos. Sem
+## ele, a 55 caracteres por segundo, os sons se atropelam.
+const VOICE_MIN_INTERVAL_MS := 60
+const VOICE_VOLUME_DB := -10.0
+
+## Variacao aleatoria do tom a cada som, para a voz nao
+## soar como um bipe repetido.
+const VOICE_PITCH_MIN := 0.92
+const VOICE_PITCH_MAX := 1.08
+
+## Coloque false para desligar a voz.
+const VOICE_ENABLED := true
+
+var voice_player: AudioStreamPlayer
+var last_voiced_character := 0
+var last_voice_msec := 0
+
 signal line_changed(highlight_target: DialogueLineData.HighlightTarget)
 
 func _ready() -> void:
@@ -67,6 +107,9 @@ func _ready() -> void:
 	dialogue_panel.gui_input.connect(_on_dialogue_panel_gui_input)
 
 	_build_character()
+	_build_illustration()
+	_build_back_button()
+	_build_voice()
 
 	hide()
 
@@ -78,6 +121,7 @@ func show_dialogue(
 ) -> void:
 	_set_dialogue_position(DialogueData.Position.BOTTOM)
 	_hide_character()
+	current_dialogue_id = ""
 
 	show_sequence([
 		{
@@ -118,7 +162,8 @@ func show_dialogue_data(
 			"speaker": line.speaker,
 			"text": line.text,
 			"portrait": line.portrait,
-			"highlight_target": line.highlight_target
+			"highlight_target": line.highlight_target,
+			"illustration": line.illustration,
 		})
 
 	if sequence.is_empty():
@@ -129,6 +174,7 @@ func show_dialogue_data(
 		return
 
 	_set_dialogue_position(dialogue_data.position)
+	current_dialogue_id = dialogue_data.id
 
 	if show_character:
 		_show_character(dialogue_data.position)
@@ -154,7 +200,9 @@ func show_sequence(sequence: Array[Dictionary]) -> void:
 	continue_button.grab_focus()
 
 
-func _show_current_line() -> void:
+## skip_typing mostra a fala inteira de uma vez. Usado ao
+## voltar para uma fala que o jogador ja leu.
+func _show_current_line(skip_typing := false) -> void:
 	if current_dialogue_index >= dialogue_sequence.size():
 		close_dialogue()
 		return
@@ -168,7 +216,13 @@ func _show_current_line() -> void:
 	dialogue_text.text = str(
 		current_line.get("text", "")
 	)
-	_start_typing()
+
+	if skip_typing:
+		_complete_typing()
+	else:
+		_start_typing()
+
+	_show_line_illustration(current_line.get("illustration", null))
 
 	var portrait_texture: Texture2D = current_line.get(
 		"portrait",
@@ -190,6 +244,49 @@ func _show_current_line() -> void:
 		continue_button.text = "Concluir"
 	else:
 		continue_button.text = "Continuar"
+
+	# Na primeira fala nao ha para onde voltar.
+	if back_button != null:
+		back_button.disabled = current_dialogue_index == 0
+
+
+## Volta para a fala anterior da mesma sequencia.
+func go_back() -> void:
+	if not dialogue_active or current_dialogue_index <= 0:
+		return
+
+	current_dialogue_index -= 1
+	_show_current_line(true)
+	continue_button.grab_focus()
+
+	SessionLogger.log_event("dialogue_back", {
+		"dialogue": current_dialogue_id,
+		"line": current_dialogue_index,
+	})
+
+
+func _build_back_button() -> void:
+	# O Continuar esta sozinho no fim do VBox. Uma linha nova
+	# no lugar dele guarda os dois botoes, Voltar a esquerda.
+	var content := continue_button.get_parent()
+	var button_row := HBoxContainer.new()
+	button_row.alignment = BoxContainer.ALIGNMENT_END
+	button_row.add_theme_constant_override("separation", 8)
+	button_row.size_flags_vertical = continue_button.size_flags_vertical
+	content.add_child(button_row)
+	content.move_child(button_row, continue_button.get_index())
+
+	back_button = Button.new()
+	back_button.text = "Voltar"
+	back_button.custom_minimum_size = continue_button.custom_minimum_size
+	back_button.tooltip_text = "Rever a fala anterior (seta para a esquerda)"
+
+	# Sem foco: o Enter continua indo para o Continuar.
+	back_button.focus_mode = Control.FOCUS_NONE
+	back_button.pressed.connect(go_back)
+	button_row.add_child(back_button)
+
+	continue_button.reparent(button_row, false)
 
 
 func advance_dialogue() -> void:
@@ -265,6 +362,7 @@ func _start_typing() -> void:
 		return
 
 	dialogue_text.visible_characters = 0
+	last_voiced_character = 0
 
 	typing_tween = create_tween()
 	typing_tween.tween_property(
@@ -298,6 +396,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled()
 		advance_dialogue()
+
+
+## A seta para a esquerda e tratada em _input, antes da
+## interface: senao o Godot a usaria para mover o foco entre
+## botoes e ela nunca chegaria ate aqui.
+func _input(event: InputEvent) -> void:
+	if not dialogue_active:
+		return
+
+	if event.is_action_pressed("ui_left"):
+		get_viewport().set_input_as_handled()
+		go_back()
 
 
 func _set_dialogue_position(
@@ -409,6 +519,12 @@ func _hide_character() -> void:
 	if character_holder != null:
 		character_holder.hide()
 
+	if illustration_tween != null and illustration_tween.is_valid():
+		illustration_tween.kill()
+
+	if illustration_panel != null:
+		illustration_panel.hide()
+
 
 ## Sobe e desce em loop. TRANS_SINE deixa o movimento mais
 ## lento perto dos extremos, como uma flutuacao.
@@ -441,3 +557,158 @@ func _stop_character_bob() -> void:
 
 	if character_sprite != null:
 		character_sprite.position = Vector2.ZERO
+
+
+# --- Ilustracao ao lado do Assistente -------------------------
+
+func _build_illustration() -> void:
+	var character_frame := character_sprite.get_parent() as Control
+
+	# Filho do quadro do personagem, fora do layout: aparece
+	# a direita dele sem tirar o personagem do centro.
+	illustration_panel = PanelContainer.new()
+	illustration_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var box := StyleBoxFlat.new()
+	box.bg_color = UIPalette.PANEL
+	box.border_color = UIPalette.PRIMARY
+	box.set_border_width_all(2)
+	box.set_content_margin_all(12.0)
+	illustration_panel.add_theme_stylebox_override("panel", box)
+
+	character_frame.add_child(illustration_panel)
+	illustration_panel.custom_minimum_size = ILLUSTRATION_SIZE
+	illustration_panel.size = ILLUSTRATION_SIZE
+	illustration_panel.position = Vector2(
+		CHARACTER_SIZE.x + ILLUSTRATION_GAP,
+		(CHARACTER_SIZE.y - ILLUSTRATION_SIZE.y) / 2.0
+	)
+	illustration_panel.pivot_offset = ILLUSTRATION_SIZE / 2.0
+
+	illustration_rect = TextureRect.new()
+	illustration_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	illustration_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	illustration_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	illustration_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	illustration_panel.add_child(illustration_rect)
+
+	illustration_panel.hide()
+
+
+## Troca a ilustracao da fala. Sem ilustracao, ou fora dos
+## dialogos de tela cheia, o quadro some.
+##
+## Com ilustracao, o personagem desliza para a esquerda e o
+## par (personagem e quadro) fica centralizado. Sem ela, o
+## personagem volta sozinho para o centro.
+func _show_line_illustration(texture: Texture2D) -> void:
+	if illustration_panel == null:
+		return
+
+	var wanted := texture != null and character_holder.visible
+
+	# A mesma imagem da fala anterior continua parada.
+	if wanted and illustration_panel.visible and illustration_rect.texture == texture:
+		return
+
+	if illustration_tween != null and illustration_tween.is_valid():
+		illustration_tween.kill()
+
+	if not wanted:
+		if illustration_panel.visible:
+			illustration_tween = create_tween()
+			illustration_tween.tween_property(
+				illustration_panel,
+				"modulate:a",
+				0.0,
+				ILLUSTRATION_POP_DURATION * 0.5
+			)
+			illustration_tween.parallel().tween_property(
+				character_sprite,
+				"position:x",
+				0.0,
+				ILLUSTRATION_SLIDE_DURATION
+			).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			illustration_tween.tween_callback(illustration_panel.hide)
+		else:
+			character_sprite.position.x = 0.0
+		return
+
+	illustration_rect.texture = texture
+
+	# Pixel art pequena amplia sem filtro; imagens grandes
+	# reduzidas ficam melhores com o filtro linear.
+	if texture.get_width() <= 128:
+		illustration_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	else:
+		illustration_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+
+	# Metade do espaco extra (vao + quadro) vai para cada lado.
+	var shift := -(ILLUSTRATION_GAP + ILLUSTRATION_SIZE.x) / 2.0
+
+	illustration_panel.position.x = (
+		CHARACTER_SIZE.x + ILLUSTRATION_GAP + shift
+	)
+	illustration_panel.scale = Vector2.ONE * 0.6
+	illustration_panel.modulate.a = 0.0
+	illustration_panel.show()
+
+	illustration_tween = create_tween()
+	illustration_tween.tween_property(
+		character_sprite,
+		"position:x",
+		shift,
+		ILLUSTRATION_SLIDE_DURATION
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	illustration_tween.parallel().tween_property(
+		illustration_panel,
+		"scale",
+		Vector2.ONE,
+		ILLUSTRATION_POP_DURATION
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	illustration_tween.parallel().tween_property(
+		illustration_panel,
+		"modulate:a",
+		1.0,
+		ILLUSTRATION_POP_DURATION * 0.6
+	)
+
+
+# --- Voz ------------------------------------------------------
+
+func _build_voice() -> void:
+	voice_player = AudioStreamPlayer.new()
+	voice_player.stream = voice_sound
+	voice_player.volume_db = VOICE_VOLUME_DB
+	add_child(voice_player)
+
+
+## Toca a voz conforme as letras aparecem. Espacos e
+## pontuacao ficam em silencio, o que da o ritmo das pausas.
+func _process(_delta: float) -> void:
+	if not VOICE_ENABLED or voice_player == null or voice_sound == null:
+		return
+
+	if not is_typing():
+		return
+
+	var shown: int = dialogue_text.visible_characters
+
+	if shown <= last_voiced_character:
+		return
+
+	last_voiced_character = shown
+
+	var now := Time.get_ticks_msec()
+
+	if now - last_voice_msec < VOICE_MIN_INTERVAL_MS:
+		return
+
+	var character := dialogue_text.text.substr(shown - 1, 1)
+
+	if character.strip_edges().is_empty() or character in ".,;:!?…":
+		return
+
+	last_voice_msec = now
+	voice_player.pitch_scale = randf_range(VOICE_PITCH_MIN, VOICE_PITCH_MAX)
+	voice_player.play()

@@ -5,12 +5,15 @@
 [ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="2_q8emf"]
 [ext_resource type="Texture2D" path="res://assets/icons/ui/email.png" id="illus_1"]
 [ext_resource type="Texture2D" path="res://assets/logo/carta_logo.png" id="illus_2"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/network.png" id="illus_3"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/anomaly.png" id="illus_4"]
 
 [sub_resource type="Resource" id="Resource_4ucfp"]
 script = ExtResource("1_axjjj")
 speaker = "Assistente"
 text = "Conexão estabelecida. Estamos entrando no primeiro setor, o de Comunicações."
 portrait = ExtResource("2_4ucfp")
+illustration = ExtResource("illus_3")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_mir3d"]
@@ -26,6 +29,7 @@ script = ExtResource("1_axjjj")
 speaker = "Assistente"
 text = "As anomalias aprenderam a imitar nomes, endereços e até o modo como pessoas conhecidas escrevem. Elas tentam despertar urgência, curiosidade ou medo antes que alguém perceba a falsificação."
 portrait = ExtResource("2_4ucfp")
+illustration = ExtResource("illus_4")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 
 [sub_resource type="Resource" id="Resource_q8emf"]

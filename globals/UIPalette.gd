@@ -22,6 +22,9 @@ const BACKGROUND_SHADER := preload(
 const CRT_OVERLAY_SHADER := preload(
 	"res://assets/shaders/crt_overlay.gdshader"
 )
+const NETWORK_BACKGROUND_SHADER := preload(
+	"res://assets/shaders/network_background.gdshader"
+)
 
 
 ## Material do fundo animado. Aplicar em um ColorRect que
@@ -29,6 +32,14 @@ const CRT_OVERLAY_SHADER := preload(
 static func make_background_material() -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = BACKGROUND_SHADER
+	return material
+
+
+## Fundo azul da "Rede", usado nos dialogos fora da partida
+## e na tela de abertura do cenario.
+static func make_network_background_material() -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = NETWORK_BACKGROUND_SHADER
 	return material
 
 

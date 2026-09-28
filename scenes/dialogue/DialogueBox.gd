@@ -64,6 +64,10 @@ const ILLUSTRATION_GAP := 32.0
 const ILLUSTRATION_POP_DURATION := 0.25
 const ILLUSTRATION_SLIDE_DURATION := 0.3
 
+## Fundo da Rede atras dos dialogos de tela cheia. Fica por
+## cima do Blocker, que continua preto por baixo.
+var backdrop: ColorRect
+
 var illustration_panel: PanelContainer
 var illustration_rect: TextureRect
 var illustration_tween: Tween
@@ -108,6 +112,10 @@ func _ready() -> void:
 
 	_build_character()
 	_build_illustration()
+
+	# Depois do personagem: o fundo e colocado logo acima do
+	# Blocker e empurra o personagem para cima dele.
+	_build_backdrop()
 	_build_back_button()
 	_build_voice()
 
@@ -445,6 +453,17 @@ func set_blocker_alpha(alpha: float) -> void:
 	blocker.color = color
 
 
+func _build_backdrop() -> void:
+	backdrop = ColorRect.new()
+	backdrop.color = Color.BLACK
+	backdrop.material = UIPalette.make_network_background_material()
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(backdrop)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	move_child(backdrop, blocker.get_index() + 1)
+	backdrop.hide()
+
+
 func _build_character() -> void:
 	# O holder ocupa o espaco livre fora da caixa de dialogo
 	# e centraliza o frame nas duas direcoes. O sprite se
@@ -472,11 +491,12 @@ func _build_character() -> void:
 	character_sprite.size = CHARACTER_SIZE
 	character_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# O placeholder e pixel art: sem filtro, os pixels ficam
-	# nitidos ao ampliar. Para uma arte desenhada, trocar
-	# por TEXTURE_FILTER_LINEAR.
+	# A imagem do Assistente tem 512 px e aparece com 256: a
+	# reducao pela metade com filtro linear mistura cada 2x2
+	# pixels e deixa as bordas suaves. Com NEAREST, metade dos
+	# pixels seria descartada e o contorno ficaria serrilhado.
 	character_sprite.texture_filter = (
-		CanvasItem.TEXTURE_FILTER_NEAREST
+		CanvasItem.TEXTURE_FILTER_LINEAR
 	)
 
 	character_frame.add_child(character_sprite)
@@ -510,6 +530,7 @@ func _show_character(
 			character_holder.offset_bottom = -panel_space
 
 	character_holder.show()
+	backdrop.show()
 	_start_character_bob()
 
 
@@ -518,6 +539,9 @@ func _hide_character() -> void:
 
 	if character_holder != null:
 		character_holder.hide()
+
+	if backdrop != null:
+		backdrop.hide()
 
 	if illustration_tween != null and illustration_tween.is_valid():
 		illustration_tween.kill()
@@ -573,7 +597,9 @@ func _build_illustration() -> void:
 	box.bg_color = UIPalette.PANEL
 	box.border_color = UIPalette.PRIMARY
 	box.set_border_width_all(2)
-	box.set_content_margin_all(12.0)
+	# 160 - 2 x 16 = 128 px de imagem: os icones de 16 e 32 px
+	# ficam ampliados em multiplos inteiros (8x e 4x).
+	box.set_content_margin_all(16.0)
 	illustration_panel.add_theme_stylebox_override("panel", box)
 
 	character_frame.add_child(illustration_panel)

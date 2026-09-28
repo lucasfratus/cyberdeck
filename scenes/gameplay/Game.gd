@@ -2080,6 +2080,15 @@ func _setup_scenario_card() -> void:
 	layer.add_child(scenario_card)
 	scenario_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
+	# O mesmo fundo da Rede dos dialogos de tela cheia. O
+	# shader usa o TIME global, entao a troca entre a tela e o
+	# dialogo nao da salto na animacao.
+	var backdrop := ColorRect.new()
+	backdrop.material = UIPalette.make_network_background_material()
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scenario_card.add_child(backdrop)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
 	var center := CenterContainer.new()
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	scenario_card.add_child(center)
@@ -2092,7 +2101,7 @@ func _setup_scenario_card() -> void:
 
 	scenario_card_counter = Label.new()
 	scenario_card_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	scenario_card_counter.add_theme_color_override("font_color", UIPalette.DIM)
+	scenario_card_counter.add_theme_color_override("font_color", UIPalette.TEXT)
 	scenario_card_content.add_child(scenario_card_counter)
 
 	scenario_card_title = Label.new()
@@ -2152,7 +2161,7 @@ func _show_scenario_card() -> void:
 	scenario_card_title.visible_characters = 0
 	scenario_card_subtitle.text = subtitle
 
-	scenario_card.color.a = 1.0
+	scenario_card.modulate.a = 1.0
 	scenario_card_content.modulate.a = 1.0
 	scenario_card_counter.modulate.a = 0.0
 	scenario_card_subtitle.modulate.a = 0.0
@@ -2190,7 +2199,7 @@ func _show_scenario_card() -> void:
 ## Cobre a partida com preto, sem texto.
 func _cover_with_black() -> void:
 	scenario_card_content.modulate.a = 0.0
-	scenario_card.color.a = 1.0
+	scenario_card.modulate.a = 1.0
 	scenario_card.show()
 
 
@@ -2201,9 +2210,10 @@ func _fade_from_black() -> void:
 		_cover_with_black()
 
 	var tween := create_tween()
+	# modulate apaga a tela inteira, fundo da Rede incluido.
 	tween.tween_property(
 		scenario_card,
-		"color:a",
+		"modulate:a",
 		0.0,
 		FADE_FROM_BLACK_DURATION
 	)

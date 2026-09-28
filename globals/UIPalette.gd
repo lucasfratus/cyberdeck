@@ -87,6 +87,7 @@ const ICON_SCORE: Texture2D = preload("res://assets/icons/ui/score.png")
 const ICON_PLAYS: Texture2D = preload("res://assets/icons/ui/plays.png")
 const ICON_SKULL: Texture2D = preload("res://assets/icons/ui/skull.png")
 const ICON_FOLDER: Texture2D = preload("res://assets/icons/ui/folder.png")
+const ICON_DEV: Texture2D = preload("res://assets/icons/ui/dev.png")
 
 ## Usado quando a brecha nao tem icone proprio no .tres.
 const ICON_BREACH: Texture2D = preload("res://assets/icons/breaches/breach.png")

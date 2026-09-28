@@ -284,11 +284,17 @@ const ROUND_SCORE_DURATION := 0.5
 var details_view_started_msec := 0
 
 
-var scenarios: Array[ScenarioData] = [
+## Ordem dos cenarios. O menu de desenvolvedor le esta lista
+## para montar os atalhos.
+const SCENARIO_LIST: Array[ScenarioData] = [
 	PHISHING_SCENARIO,
 	PASSWORD_SCENARIO,
 	ADWARE_SCENARIO
 ]
+
+const DEV_OPTIONS := preload("res://globals/DevOptions.gd")
+
+var scenarios: Array[ScenarioData] = SCENARIO_LIST.duplicate()
 
 var current_scenario_index := 0
 var current_round_index := 0
@@ -569,6 +575,14 @@ func _start_game() -> void:
 		push_error("Nenhum cenário foi configurado.")
 		return
 
+	# Atalho do menu de desenvolvedor: so em build de depuracao.
+	if OS.is_debug_build():
+		var dev_start: Dictionary = DEV_OPTIONS.take_start()
+
+		if not dev_start.is_empty():
+			await _start_game_from_dev_menu(dev_start)
+			return
+
 	current_scenario_index = 0
 	current_round_index = 0
 
@@ -589,6 +603,76 @@ func _start_game() -> void:
 	await _start_scenario()
 	
 	
+## Comeca a partida no ponto escolhido no menu de
+## desenvolvedor: introducao do cenario, uma rodada ou o chefe.
+func _start_game_from_dev_menu(request: Dictionary) -> void:
+	current_scenario_index = clampi(
+		int(request.get("scenario_index", 0)), 0, scenarios.size() - 1
+	)
+	current_scenario_data = scenarios[current_scenario_index]
+
+	var rounds := current_scenario_data.rounds
+
+	if rounds.is_empty():
+		push_error(
+			"O cenário '%s' não possui rodadas."
+			% current_scenario_data.id
+		)
+		return
+
+	first_breach_tutorial_shown = false
+	ad_popups_tutorial_shown = false
+
+	SessionLogger.log_event("dev_start", request)
+
+	if not bool(request.get("skip_game_intro", true)):
+		await _show_game_intro()
+
+	# Abre as brechas que as cartas do cenario podem abrir,
+	# para testar a ultima rodada e os anuncios sem jogar as
+	# rodadas anteriores.
+	if bool(request.get("open_breaches", false)):
+		for card_id in current_scenario_data.deck:
+			var card: CardData = CardDatabase.get_card(card_id)
+
+			if card != null and card.opens_breach != null:
+				round_controller.open_breach(card.opens_breach)
+
+	var start: String = str(request.get("start", DEV_OPTIONS.START_INTRO))
+
+	match start:
+		DEV_OPTIONS.START_ROUND:
+			current_round_index = clampi(
+				int(request.get("round_index", 0)), 0, rounds.size() - 1
+			)
+			current_round_data = rounds[current_round_index]
+
+			SessionLogger.log_event("scenario_start", {
+				"scenario_id": str(current_scenario_data.id),
+			})
+
+			_cover_with_black()
+			pending_fade_from_black = true
+			await _start_round()
+
+		DEV_OPTIONS.START_BOSS:
+			# Posiciona na ultima rodada: avancar a progressao a
+			# partir dela leva ao chefe, ao resumo e a ligacao.
+			current_round_index = rounds.size() - 1
+			current_round_data = rounds[current_round_index]
+
+			SessionLogger.log_event("scenario_start", {
+				"scenario_id": str(current_scenario_data.id),
+			})
+
+			await _advance_progression()
+
+		_:
+			current_round_index = 0
+			current_round_data = rounds[0]
+			await _start_scenario()
+
+
 func _start_scenario() -> void:
 	scenario_seen_card_ids.clear()
 	scenario_new_card_ids.clear()

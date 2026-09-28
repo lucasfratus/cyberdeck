@@ -29,6 +29,21 @@ const CORNER_MARGIN := 16.0
 const PANEL_WIDTH := 320.0
 const BUTTON_HEIGHT := 44.0
 
+## Janela do nome, aberta ao apertar Jogar (so depuracao).
+const NAME_PROMPT_WIDTH := 460.0
+const NAME_MAX_LENGTH := 40
+const NAME_HELP_TEXT := (
+	"O nome identifica o registro desta partida na avaliação do "
+	+ "TCC. O registro fica salvo apenas neste computador, com as "
+	+ "suas jogadas e respostas, e não aparece durante o jogo."
+)
+
+## Menu de desenvolvedor: atalhos para comecar em qualquer
+## ponto de qualquer cenario (so depuracao).
+const DEV_OPTIONS := preload("res://globals/DevOptions.gd")
+const DEV_SESSION_CODE := "dev"
+const OVERLAY_DIM := Color(0.0, 0.0, 0.0, 0.7)
+
 ## Invasao da E.V.E: de tempos em tempos a logo falha e vira
 ## "INVADIDO POR E.V.E", e o menu inteiro fica vermelho.
 ## O fundo muda de cor devagar, sem piscar, para nao incomodar
@@ -63,6 +78,11 @@ var _corner_button: Button
 var _override_swaps: Array = []
 var _help_screen: Control
 var _participant_code_input: LineEdit
+var _name_prompt: Control
+var _dev_menu: Control
+var _dev_button: Button
+var _dev_skip_intro: CheckBox
+var _dev_open_breaches: CheckBox
 
 
 func _ready() -> void:
@@ -145,21 +165,6 @@ func _build_interface() -> void:
 	spacer.custom_minimum_size = Vector2(0.0, 16.0)
 	box.add_child(spacer)
 
-	# Ferramentas da avaliacao: so em build de depuracao.
-	if OS.is_debug_build():
-		_participant_code_input = LineEdit.new()
-		_participant_code_input.placeholder_text = (
-			"Código do participante (ex.: P01)"
-		)
-		_participant_code_input.custom_minimum_size = Vector2(
-			0.0,
-			BUTTON_HEIGHT
-		)
-		_participant_code_input.text_submitted.connect(
-			func(_text: String) -> void: _on_play_pressed()
-		)
-		box.add_child(_participant_code_input)
-
 	box.add_child(_build_button("Jogar", _on_play_pressed))
 
 	box.add_child(
@@ -178,8 +183,10 @@ func _build_interface() -> void:
 		)
 	)
 
+	# Ferramentas da avaliacao: so em build de depuracao.
 	if OS.is_debug_build():
 		_build_sessions_corner_button()
+		_build_dev_corner_button()
 
 	# No navegador nao existe "sair", a aba e que fecha.
 	if not OS.has_feature("web"):
@@ -202,6 +209,12 @@ func _build_interface() -> void:
 		Control.PRESET_FULL_RECT
 	)
 	_help_screen.closed.connect(_on_help_closed)
+
+	if OS.is_debug_build():
+		_name_prompt = _build_name_prompt()
+		add_child(_name_prompt)
+		_dev_menu = _build_dev_menu()
+		add_child(_dev_menu)
 
 
 # --- Invasao da E.V.E ----------------------------------------
@@ -296,6 +309,9 @@ func _set_invaded(on: bool) -> void:
 
 	if _corner_button != null:
 		_corner_button.theme = _invaded_theme if on else null
+
+	if _dev_button != null:
+		_dev_button.theme = _invaded_theme if on else null
 
 	for swap: Array in _override_swaps:
 		var button: Button = swap[0]
@@ -415,13 +431,271 @@ func _build_button(
 
 
 func _on_play_pressed() -> void:
-	var participant_code := ""
+	# Na build final nao ha registro de participante: Jogar
+	# comeca direto.
+	if _name_prompt == null:
+		_start_game("")
+		return
 
-	if _participant_code_input != null:
-		participant_code = _participant_code_input.text
+	_participant_code_input.clear()
+	_name_prompt.show()
+	_participant_code_input.grab_focus()
 
+
+func _on_name_confirmed() -> void:
+	_start_game(_participant_code_input.text)
+
+
+func _start_game(participant_code: String) -> void:
 	SessionLogger.start_session(participant_code)
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+
+
+## Esc fecha a janela aberta por cima do menu.
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+
+	for overlay: Control in [_name_prompt, _dev_menu]:
+		if overlay != null and overlay.visible:
+			overlay.hide()
+			get_viewport().set_input_as_handled()
+			return
+
+
+# --- Janelas por cima do menu ---------------------------------
+
+## Fundo escurecido que bloqueia o menu, com um painel no meio.
+## Devolve [camada, conteudo do painel].
+func _build_overlay(panel_width: float) -> Array:
+	var overlay := Control.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.hide()
+
+	var dim := ColorRect.new()
+	dim.color = OVERLAY_DIM
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(dim)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(center)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(panel_width, 0.0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = UIPalette.PANEL
+	style.border_color = UIPalette.DIM
+	style.set_border_width_all(2)
+	style.set_content_margin_all(24)
+	panel.add_theme_stylebox_override("panel", style)
+	center.add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	panel.add_child(content)
+
+	return [overlay, content]
+
+
+func _make_overlay_title(text: String) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_color_override("font_color", UIPalette.PRIMARY)
+	return label
+
+
+func _make_overlay_note(text: String) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", UIPalette.TEXT.darkened(0.15))
+	return label
+
+
+## O tema pinta a caixa marcada de verde cheio, e o texto
+## claro some em cima dela. Aqui so o quadradinho muda.
+func _style_checkbox(box: CheckBox) -> void:
+	for state in ["normal", "pressed", "hover", "hover_pressed", "focus"]:
+		box.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+
+	box.add_theme_color_override("font_color", UIPalette.TEXT)
+	box.add_theme_color_override("font_pressed_color", UIPalette.TEXT)
+	box.add_theme_color_override("font_hover_color", UIPalette.PRIMARY)
+	box.add_theme_color_override("font_hover_pressed_color", UIPalette.PRIMARY)
+	box.focus_mode = Control.FOCUS_NONE
+
+
+func _build_name_prompt() -> Control:
+	var parts := _build_overlay(NAME_PROMPT_WIDTH)
+	var overlay: Control = parts[0]
+	var content: VBoxContainer = parts[1]
+
+	content.add_child(_make_overlay_title("Antes de começar"))
+
+	var field_label := Label.new()
+	field_label.text = "Nome"
+	content.add_child(field_label)
+
+	_participant_code_input = LineEdit.new()
+	_participant_code_input.placeholder_text = "Digite o seu nome"
+	_participant_code_input.max_length = NAME_MAX_LENGTH
+	_participant_code_input.custom_minimum_size = Vector2(0.0, BUTTON_HEIGHT)
+	_participant_code_input.text_submitted.connect(
+		func(_text: String) -> void: _on_name_confirmed()
+	)
+	content.add_child(_participant_code_input)
+
+	# Explicacao logo abaixo do campo.
+	content.add_child(_make_overlay_note(NAME_HELP_TEXT))
+
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 12)
+	buttons.alignment = BoxContainer.ALIGNMENT_END
+	content.add_child(buttons)
+
+	var back := _build_button("Voltar", overlay.hide)
+	back.custom_minimum_size.x = 120.0
+	buttons.add_child(back)
+
+	var start := _build_button("Começar", _on_name_confirmed)
+	start.custom_minimum_size.x = 140.0
+	buttons.add_child(start)
+
+	return overlay
+
+
+func _build_dev_corner_button() -> void:
+	var button := Button.new()
+	_dev_button = button
+	button.icon = UIPalette.ICON_DEV
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.tooltip_text = "Menu de desenvolvedor"
+	button.focus_mode = Control.FOCUS_NONE
+	button.pressed.connect(func() -> void: _dev_menu.show())
+	add_child(button)
+
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	button.offset_left = CORNER_MARGIN
+	button.offset_top = -CORNER_MARGIN - CORNER_BUTTON_SIZE.y
+	button.offset_right = CORNER_MARGIN + CORNER_BUTTON_SIZE.x
+	button.offset_bottom = -CORNER_MARGIN
+	button.grow_vertical = Control.GROW_DIRECTION_BEGIN
+
+
+func _build_dev_menu() -> Control:
+	var parts := _build_overlay(0.0)
+	var overlay: Control = parts[0]
+	var content: VBoxContainer = parts[1]
+
+	content.add_child(_make_overlay_title("Menu de desenvolvedor"))
+	content.add_child(_make_overlay_note(
+		"Começa a partida direto no ponto escolhido. As partidas "
+		+ "abertas aqui ficam registradas com o nome \"%s\"."
+		% DEV_SESSION_CODE
+	))
+
+	# A lista vem do Game, para o menu acompanhar cenarios novos.
+	var scenario_list: Array = load(
+		"res://scenes/gameplay/Game.gd"
+	).SCENARIO_LIST
+
+	var grid := GridContainer.new()
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	content.add_child(grid)
+
+	var max_rounds := 0
+
+	for scenario: ScenarioData in scenario_list:
+		max_rounds = maxi(max_rounds, scenario.rounds.size())
+
+	# Colunas: nome, introducao, uma por rodada e o chefe.
+	grid.columns = max_rounds + 3
+
+	for i in range(scenario_list.size()):
+		var scenario: ScenarioData = scenario_list[i]
+
+		var name_label := Label.new()
+		name_label.text = "%d. %s" % [i + 1, scenario.display_name]
+		name_label.custom_minimum_size.x = 200.0
+		grid.add_child(name_label)
+
+		grid.add_child(_build_dev_button(
+			"Introdução", i, DEV_OPTIONS.START_INTRO, 0
+		))
+
+		for r in range(max_rounds):
+			if r < scenario.rounds.size():
+				grid.add_child(_build_dev_button(
+					"Rodada %d" % (r + 1), i, DEV_OPTIONS.START_ROUND, r
+				))
+			else:
+				grid.add_child(Control.new())
+
+		var boss_button := _build_dev_button(
+			"Chefe", i, DEV_OPTIONS.START_BOSS, 0
+		)
+		boss_button.disabled = scenario.boss == null
+		grid.add_child(boss_button)
+
+	_dev_skip_intro = CheckBox.new()
+	_dev_skip_intro.text = "Pular a apresentação do Assistente"
+	_dev_skip_intro.button_pressed = true
+	_style_checkbox(_dev_skip_intro)
+	content.add_child(_dev_skip_intro)
+
+	_dev_open_breaches = CheckBox.new()
+	_dev_open_breaches.text = (
+		"Começar com as brechas do cenário abertas"
+	)
+	_style_checkbox(_dev_open_breaches)
+	content.add_child(_dev_open_breaches)
+
+	var close_row := HBoxContainer.new()
+	close_row.alignment = BoxContainer.ALIGNMENT_END
+	content.add_child(close_row)
+
+	var close := _build_button("Fechar", overlay.hide)
+	close.custom_minimum_size.x = 120.0
+	close_row.add_child(close)
+
+	return overlay
+
+
+func _build_dev_button(
+	text: String,
+	scenario_index: int,
+	start: String,
+	round_index: int
+) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0.0, 36.0)
+	button.pressed.connect(
+		_on_dev_start_pressed.bind(scenario_index, start, round_index)
+	)
+	return button
+
+
+func _on_dev_start_pressed(
+	scenario_index: int,
+	start: String,
+	round_index: int
+) -> void:
+	DEV_OPTIONS.request_start(
+		scenario_index,
+		start,
+		round_index,
+		_dev_skip_intro.button_pressed,
+		_dev_open_breaches.button_pressed
+	)
+	_start_game(DEV_SESSION_CODE)
 
 
 func _on_open_sessions_pressed() -> void:

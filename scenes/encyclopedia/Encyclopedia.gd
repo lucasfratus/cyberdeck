@@ -1,9 +1,11 @@
 extends Control
 class_name Encyclopedia
 
-## Tela de consulta das cartas, agrupadas por tema de
-## seguranca. Cartas que o jogador ainda nao encontrou
-## aparecem com os campos preenchidos por "?".
+## Tela de consulta dividida em capitulos, um por ameaca.
+## Cada capitulo explica a ameaca, traz links de referencia
+## e mostra as cartas ligadas a ela. A aba "Todas as cartas"
+## reune a colecao inteira por tema. Cartas que o jogador
+## ainda nao encontrou aparecem com os campos em "?".
 
 signal closed
 
@@ -23,12 +25,37 @@ const DETAILS_COLUMN_WIDTH := 420.0
 const HOVER_MARGIN_HORIZONTAL := 12
 const HOVER_MARGIN_VERTICAL := 16
 
+const ChapterData := preload(
+	"res://scenes/encyclopedia/EncyclopediaChapterData.gd"
+)
+
+## Ordem das abas. Para um capitulo novo, criar o .tres em
+## data/encyclopedia/ e acrescentar o caminho aqui.
+const CHAPTER_PATHS: Array[String] = [
+	"res://data/encyclopedia/01_phishing.tres",
+	"res://data/encyclopedia/02_senhas.tres",
+]
+
+const ALL_CARDS_TAB_TITLE := "Todas as cartas"
+const BODY_FONT_SIZE := 16
+const GOOD_PRACTICE_TEXT := "Boa prática"
+const INSECURE_PRACTICE_TEXT := "Prática insegura"
+const BADGE_HEIGHT := 22.0
+
+var _chapters: Array[ChapterData] = []
+
+## Indice da aba aberta. O ultimo indice e "Todas as cartas".
+var _selected_tab := 0
+var _tab_buttons: Array[Button] = []
+
+var _scroll: ScrollContainer
 var _sections: VBoxContainer
 var _details_panel: CardDetailsPanel
 var _counter_label: Label
 
 
 func _ready() -> void:
+	_load_chapters()
 	_build_interface()
 	refresh()
 
@@ -45,7 +72,41 @@ func refresh() -> void:
 	if _details_panel != null:
 		_details_panel.hide_card()
 
-	_populate_sections()
+	_update_counter()
+
+	for i in range(_tab_buttons.size()):
+		_tab_buttons[i].set_pressed_no_signal(i == _selected_tab)
+
+	if _selected_tab < _chapters.size():
+		_populate_chapter(_chapters[_selected_tab])
+	else:
+		_populate_sections()
+
+	if _scroll != null:
+		_scroll.scroll_vertical = 0
+
+
+## Abre no capitulo do cenario informado. Usado pela pausa,
+## para a enciclopedia comecar na ameaca que o jogador esta
+## enfrentando. Sem capitulo correspondente, mantem a aba.
+func select_chapter_for_scenario(scenario_id: StringName) -> void:
+	for i in range(_chapters.size()):
+		if _chapters[i].scenario_id == scenario_id:
+			_selected_tab = i
+			return
+
+
+func _load_chapters() -> void:
+	_chapters.clear()
+
+	for path: String in CHAPTER_PATHS:
+		var chapter := load(path) as ChapterData
+
+		if chapter == null:
+			push_warning("Capitulo da enciclopedia nao encontrado: %s" % path)
+			continue
+
+		_chapters.append(chapter)
 
 
 func _build_interface() -> void:
@@ -78,8 +139,10 @@ func _build_interface() -> void:
 	columns_box.add_child(left_column)
 
 	left_column.add_child(_build_header())
+	left_column.add_child(_build_tabs())
 
 	var scroll := ScrollContainer.new()
+	_scroll = scroll
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = (
 		ScrollContainer.SCROLL_MODE_DISABLED
@@ -136,6 +199,10 @@ func _build_header() -> Control:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 16)
 
+	header.add_child(
+		UIPalette.make_pixel_icon(UIPalette.ICON_ENCYCLOPEDIA, 32.0)
+	)
+
 	var title_label := Label.new()
 	title_label.text = "Enciclopédia"
 	title_label.add_theme_font_size_override("font_size", 32)
@@ -177,12 +244,48 @@ func _build_header() -> Control:
 	return header
 
 
-func _on_reset_confirmed() -> void:
-	CardCollection.clear_collection()
+func _build_tabs() -> Control:
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 8)
+
+	var group := ButtonGroup.new()
+	var titles: Array[String] = []
+
+	for chapter in _chapters:
+		titles.append(chapter.tab_title)
+
+	titles.append(ALL_CARDS_TAB_TITLE)
+
+	for i in range(titles.size()):
+		var button := Button.new()
+		button.text = titles[i]
+		button.toggle_mode = true
+		button.button_group = group
+		button.pressed.connect(_on_tab_pressed.bind(i))
+		tabs.add_child(button)
+		_tab_buttons.append(button)
+
+	return tabs
+
+
+func _on_tab_pressed(index: int) -> void:
+	if index == _selected_tab:
+		return
+
+	_selected_tab = index
+
+	if index < _chapters.size():
+		SessionLogger.log_event("encyclopedia_chapter_viewed", {
+			"chapter": str(_chapters[index].id),
+		})
+
 	refresh()
 
 
-func _populate_sections() -> void:
+func _update_counter() -> void:
+	if _counter_label == null:
+		return
+
 	var all_cards: Array[CardData] = CardDatabase.get_all_cards()
 	var unlocked_amount := 0
 
@@ -190,11 +293,146 @@ func _populate_sections() -> void:
 		if CardCollection.is_unlocked(str(card_data.id)):
 			unlocked_amount += 1
 
-	if _counter_label != null:
-		_counter_label.text = (
-			"%d de %d cartas encontradas"
-			% [unlocked_amount, all_cards.size()]
+	_counter_label.text = (
+		"%d de %d cartas encontradas"
+		% [unlocked_amount, all_cards.size()]
+	)
+
+
+func _populate_chapter(chapter: ChapterData) -> void:
+	var title_label := Label.new()
+	title_label.text = chapter.title
+	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title_label.add_theme_font_size_override("font_size", 24)
+	title_label.add_theme_color_override("font_color", UIPalette.PRIMARY)
+	_sections.add_child(title_label)
+
+	if not chapter.subtitle.is_empty():
+		var subtitle_label := Label.new()
+		subtitle_label.text = chapter.subtitle
+		subtitle_label.add_theme_color_override("font_color", UIPalette.DISABLED)
+		_sections.add_child(subtitle_label)
+
+	var body := RichTextLabel.new()
+	UIPalette.style_rich_text(body, BODY_FONT_SIZE)
+	body.text = chapter.description
+	_sections.add_child(body)
+
+	var link_lines: Array[String] = []
+
+	for entry: String in chapter.links:
+		var parts := entry.split("|", true, 1)
+
+		if parts.size() < 2:
+			continue
+
+		var link_title := parts[0].strip_edges()
+		var url := parts[1].strip_edges()
+
+		link_lines.append(
+			"• [url=%s][color=#%s]%s[/color][/url]"
+			% [url, UIPalette.PRIMARY.to_html(false), link_title]
 		)
+
+	if not link_lines.is_empty():
+		_sections.add_child(_build_section_heading("Para saber mais"))
+
+		var links_label := RichTextLabel.new()
+		UIPalette.style_rich_text(links_label, BODY_FONT_SIZE)
+		links_label.text = "\n".join(link_lines)
+		links_label.meta_clicked.connect(_on_link_clicked)
+		_sections.add_child(links_label)
+
+	_sections.add_child(_build_section_heading("Práticas deste capítulo"))
+
+	var grid := _build_card_grid()
+	_sections.add_child(grid)
+
+	for card_id: String in chapter.card_ids:
+		var card_data: CardData = CardDatabase.get_card(card_id)
+
+		if card_data == null:
+			push_warning("Carta '%s' do capitulo nao existe." % card_id)
+			continue
+
+		_add_card_cell(grid, card_data, true)
+
+
+func _build_section_heading(text: String) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", UIPalette.PRIMARY)
+	return label
+
+
+func _build_card_grid() -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = COLUMNS
+	grid.add_theme_constant_override("h_separation", CARD_SEPARATION)
+	grid.add_theme_constant_override("v_separation", CARD_SEPARATION)
+	return grid
+
+
+## Adiciona a carta ao grid. Com show_badge, uma etiqueta
+## acima dela diz se e boa pratica ou pratica insegura, mas
+## so depois de a carta ter sido encontrada.
+func _add_card_cell(
+	grid: GridContainer,
+	card_data: CardData,
+	show_badge: bool
+) -> void:
+	var locked: bool = not CardCollection.is_unlocked(str(card_data.id))
+
+	var cell := VBoxContainer.new()
+	cell.add_theme_constant_override("separation", 4)
+	cell.mouse_filter = Control.MOUSE_FILTER_PASS
+	grid.add_child(cell)
+
+	if show_badge:
+		var badge := Label.new()
+		badge.custom_minimum_size = Vector2(0.0, BADGE_HEIGHT)
+		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+		if locked:
+			badge.text = "?"
+			badge.add_theme_color_override("font_color", UIPalette.DISABLED)
+		elif card_data.opens_breach != null:
+			badge.text = INSECURE_PRACTICE_TEXT
+			badge.add_theme_color_override("font_color", UIPalette.DANGER)
+		else:
+			badge.text = GOOD_PRACTICE_TEXT
+			badge.add_theme_color_override("font_color", UIPalette.PRIMARY)
+
+		cell.add_child(badge)
+
+	var card: Card = CardFactory.instantiate_card(str(card_data.id), locked)
+
+	if card == null:
+		return
+
+	card.details_requested.connect(_on_card_details_requested.bind(locked))
+	card.details_hidden.connect(_on_card_details_hidden)
+	cell.add_child(card)
+
+	# Deixa a roda do mouse chegar no ScrollContainer.
+	card.set_mouse_passthrough(true)
+
+
+func _on_link_clicked(meta: Variant) -> void:
+	var url := str(meta)
+
+	SessionLogger.log_event("reference_link_opened", {"url": url})
+	OS.shell_open(url)
+
+
+func _on_reset_confirmed() -> void:
+	CardCollection.clear_collection()
+	refresh()
+
+
+func _populate_sections() -> void:
+	var all_cards: Array[CardData] = CardDatabase.get_all_cards()
 
 	for category: int in CardCategory.display_order():
 		var cards_in_category: Array[CardData] = []
@@ -215,43 +453,11 @@ func _populate_sections() -> void:
 			)
 		)
 
-		var grid := GridContainer.new()
-		grid.columns = COLUMNS
-		grid.add_theme_constant_override(
-			"h_separation",
-			CARD_SEPARATION
-		)
-		grid.add_theme_constant_override(
-			"v_separation",
-			CARD_SEPARATION
-		)
+		var grid := _build_card_grid()
 		_sections.add_child(grid)
 
 		for card_data: CardData in cards_in_category:
-			var locked: bool = not CardCollection.is_unlocked(
-				str(card_data.id)
-			)
-
-			var card: Card = CardFactory.instantiate_card(
-				str(card_data.id),
-				locked
-			)
-
-			if card == null:
-				continue
-
-			card.details_requested.connect(
-				_on_card_details_requested.bind(locked)
-			)
-
-			card.details_hidden.connect(
-				_on_card_details_hidden
-			)
-
-			grid.add_child(card)
-
-			# Deixa a roda do mouse chegar no ScrollContainer.
-			card.set_mouse_passthrough(true)
+			_add_card_cell(grid, card_data, false)
 
 
 func _build_section_title(

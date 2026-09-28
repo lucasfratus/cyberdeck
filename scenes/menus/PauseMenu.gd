@@ -7,6 +7,7 @@ class_name PauseMenu
 
 signal resume_requested
 signal encyclopedia_requested
+signal help_requested
 signal main_menu_requested
 
 const PANEL_WIDTH := 320.0
@@ -55,7 +56,19 @@ func _build_interface() -> void:
 	)
 
 	box.add_child(
-		_build_button("Enciclopédia", _on_encyclopedia_pressed)
+		_build_button(
+			"Como jogar",
+			_on_help_pressed,
+			UIPalette.ICON_HELP
+		)
+	)
+
+	box.add_child(
+		_build_button(
+			"Enciclopédia",
+			_on_encyclopedia_pressed,
+			UIPalette.ICON_ENCYCLOPEDIA
+		)
 	)
 
 	box.add_child(
@@ -65,10 +78,15 @@ func _build_interface() -> void:
 
 func _build_button(
 	text: String,
-	handler: Callable
+	handler: Callable,
+	icon: Texture2D = null
 ) -> Button:
 	var button := Button.new()
 	button.text = text
+
+	if icon != null:
+		UIPalette.set_button_icon(button, icon)
+
 	button.custom_minimum_size = Vector2(0.0, BUTTON_HEIGHT)
 	button.pressed.connect(handler)
 
@@ -77,6 +95,10 @@ func _build_button(
 
 func _on_resume_pressed() -> void:
 	resume_requested.emit()
+
+
+func _on_help_pressed() -> void:
+	help_requested.emit()
 
 
 func _on_encyclopedia_pressed() -> void:

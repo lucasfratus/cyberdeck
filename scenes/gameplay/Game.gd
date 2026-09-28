@@ -24,7 +24,7 @@ const MAX_PLAYS := 3
 	$CardDetailsLayer/CardDetailsPanel
 @onready var breaches_panel: PanelContainer = \
 	$HUD/BreachesPanel
-@onready var breach_list: HBoxContainer = \
+@onready var breach_list: BoxContainer = \
 	$HUD/BreachesPanel/MarginContainer/Content/BreachList
 @onready var breach_feedback: PanelContainer = \
 	$BreachFeedbackLayer/BreachFeedback
@@ -67,11 +67,24 @@ const ENCYCLOPEDIA_SCENE := preload(
 	"res://scenes/encyclopedia/Encyclopedia.tscn"
 )
 
+## Sem class_name, por isso carregado como script.
+const HELP_SCREEN_SCRIPT := preload(
+	"res://scenes/menus/HelpScreen.gd"
+)
+
 const MAIN_MENU_SCENE_PATH := "res://scenes/menus/MainMenu.tscn"
 
 var menu_layer: CanvasLayer
 var pause_menu: PauseMenu
 var encyclopedia: Encyclopedia
+var help_screen: Control
+
+## Se a enciclopedia ou a ajuda foi aberta pelo menu de
+## pausa (true) ou pelos botoes do HUD (false).
+var overlay_returns_to_pause := true
+
+## Botoes de atalho no canto superior direito do HUD.
+var hud_shortcuts: HBoxContainer
 
 const SCENARIO_SUMMARY_SCENE := preload(
 	"res://scenes/menus/ScenarioSummary.tscn"
@@ -158,7 +171,6 @@ const SCORE_LABEL_WIDTH := 900.0
 ## pulso (primeira fase) precisam caber no ResolvePlayTimer,
 ## que espera 1,5 s.
 const SCORE_APPEAR_DURATION := 0.15
-const SCORE_PROTECTION_DURATION := 0.35
 const SCORE_MULTIPLIER_DURATION := 0.3
 const SCORE_TOTAL_DURATION := 0.45
 const SCORE_PULSE_DURATION := 0.2
@@ -166,6 +178,59 @@ const SCORE_PENALTY_HOLD := 0.35
 const SCORE_PENALTY_DURATION := 0.4
 const SCORE_FLY_DURATION := 0.45
 const SCORE_FADE_DURATION := 0.1
+
+## Contagem carta a carta. Cada carta treme, brilha em verde
+## (boa pratica) ou vermelho (pratica insegura) e solta um
+## icone que sobe com a Protecao que ela somou.
+const SCORE_CARD_COUNT_DURATION := 0.25
+const SCORE_CARD_GAP := 0.12
+
+## Inclinacao maxima do tremor, em graus. A pratica insegura
+## treme mais forte.
+const CARD_SHAKE_ANGLE := 4.0
+const CARD_SHAKE_ANGLE_INSECURE := 8.0
+const CARD_POP_SCALE := 1.06
+
+## Brilho em volta da carta: aneis por fora dela, do mais
+## forte (colado na carta) ao mais fraco.
+const CARD_GLOW_RINGS: Array[float] = [0.95, 0.55, 0.3, 0.12]
+const CARD_GLOW_RING_WIDTH := 3
+const CARD_GLOW_HOLD := 0.45
+const CARD_GLOW_FADE := 0.35
+
+## Faixa de transicao no meio da tela: anuncia a rodada que
+## comeca e o resultado da que terminou.
+const ROUND_BANNER_HEIGHT := 128.0
+const ROUND_BANNER_Z_INDEX := 150
+const ROUND_BANNER_OPEN_DURATION := 0.2
+const ROUND_BANNER_TYPE_SPEED := 40.0
+const ROUND_BANNER_HOLD := 0.9
+const ROUND_BANNER_CLOSE_DURATION := 0.18
+const ROUND_BANNER_TITLE_SIZE := 44
+
+## Cartas que sobraram na mao descem e somem ao fim da
+## rodada, uma depois da outra.
+const DISCARD_DROP := 260.0
+const DISCARD_DURATION := 0.3
+const DISCARD_STAGGER := 0.05
+
+var round_banner: Control
+var round_banner_band: PanelContainer
+var round_banner_title: Label
+var round_banner_subtitle: Label
+var round_banner_style: StyleBoxFlat
+
+## Depois de contabilizada, a carta escurece e fica assim
+## ate sair da mesa. O escurecimento comeca enquanto o
+## brilho some.
+const COUNTED_CARD_COLOR := Color(0.35, 0.4, 0.37)
+const COUNTED_CARD_DIM_DURATION := 0.3
+
+const PRACTICE_FLOAT_RISE := 56.0
+const PRACTICE_FLOAT_DURATION := 0.8
+const PRACTICE_FLOAT_FADE := 0.35
+const PRACTICE_FLOAT_FONT_SIZE := 28
+const PRACTICE_FLOAT_Z_INDEX := 100
 const ROUND_SCORE_DURATION := 0.5
 var details_view_started_msec := 0
 
@@ -218,6 +283,12 @@ const TABLE_CARD_HEIGHT := 252.0
 const ACTION_BUTTON_SIZE := Vector2(170.0, 44.0)
 const ACTION_BUTTON_MARGIN := 20.0
 const HUD_COLUMN_WIDTH := 300.0
+
+## Icones do HUD: 32 px e o tamanho em que os icones foram
+## salvos, entao cada pixel da arte aparece como bloco 2x2.
+const HUD_ICON_SIZE := 32.0
+const HUD_ICON_SEPARATION := 8
+const HUD_SHORTCUT_SIZE := Vector2(44.0, 44.0)
 const SCORE_BAR_LENGTH := 20
 
 var hud_column: VBoxContainer
@@ -236,6 +307,7 @@ func _ready() -> void:
 	_connect_signals()
 	_setup_menus()
 	_setup_score_popup()
+	_setup_round_banner()
 	_setup_hud()
 	_setup_background()
 
@@ -269,6 +341,9 @@ func _setup_menus() -> void:
 	pause_menu.encyclopedia_requested.connect(
 		_on_encyclopedia_requested
 	)
+	pause_menu.help_requested.connect(
+		_on_help_requested
+	)
 	pause_menu.main_menu_requested.connect(
 		_on_main_menu_requested
 	)
@@ -282,6 +357,14 @@ func _setup_menus() -> void:
 	encyclopedia.closed.connect(_on_encyclopedia_closed)
 	encyclopedia.hide()
 
+	help_screen = HELP_SCREEN_SCRIPT.new()
+	menu_layer.add_child(help_screen)
+	help_screen.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+	help_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	help_screen.closed.connect(_on_help_closed)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
@@ -293,8 +376,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if scenario_summary != null and scenario_summary.visible:
 		return
 
-	# A enciclopedia e o menu de pausa tratam o ESC deles.
+	# A enciclopedia, a ajuda e o menu de pausa tratam o
+	# ESC deles.
 	if encyclopedia != null and encyclopedia.visible:
+		return
+
+	if help_screen != null and help_screen.visible:
 		return
 
 	if pause_menu.visible:
@@ -324,14 +411,78 @@ func _on_encyclopedia_requested() -> void:
 	SessionLogger.log_event("encyclopedia_opened", {
 		"from": "pause",
 	})
+	overlay_returns_to_pause = true
 	pause_menu.hide()
+	_show_encyclopedia()
+
+
+func _on_hud_encyclopedia_pressed() -> void:
+	if get_tree().paused:
+		return
+
+	SessionLogger.log_event("encyclopedia_opened", {
+		"from": "hud",
+	})
+	_pause_for_overlay()
+	_show_encyclopedia()
+
+
+func _show_encyclopedia() -> void:
+	# Abre no capitulo do cenario em andamento.
+	if current_scenario_data != null:
+		encyclopedia.select_chapter_for_scenario(
+			current_scenario_data.id
+		)
+
 	encyclopedia.refresh()
 	encyclopedia.show()
 
 
 func _on_encyclopedia_closed() -> void:
 	encyclopedia.hide()
-	pause_menu.show()
+	_return_from_overlay()
+
+
+func _on_help_requested() -> void:
+	SessionLogger.log_event("help_opened", {
+		"from": "pause",
+	})
+	overlay_returns_to_pause = true
+	pause_menu.hide()
+	help_screen.show()
+
+
+func _on_hud_help_pressed() -> void:
+	if get_tree().paused:
+		return
+
+	SessionLogger.log_event("help_opened", {
+		"from": "hud",
+	})
+	_pause_for_overlay()
+	help_screen.show()
+
+
+func _on_help_closed() -> void:
+	help_screen.hide()
+	_return_from_overlay()
+
+
+## Pausa a partida para abrir a enciclopedia ou a ajuda
+## pelos botoes do HUD, sem passar pelo menu de pausa.
+func _pause_for_overlay() -> void:
+	overlay_returns_to_pause = false
+	_hide_card_details()
+	get_tree().paused = true
+
+
+## Ao fechar a enciclopedia ou a ajuda, volta para onde o
+## jogador estava: o menu de pausa ou direto a partida.
+func _return_from_overlay() -> void:
+	if overlay_returns_to_pause:
+		pause_menu.show()
+	else:
+		get_tree().paused = false
 
 
 func _on_main_menu_requested() -> void:
@@ -350,7 +501,7 @@ func _show_game_intro() -> void:
 	play_button.disabled = true
 	
 	dialogue_box.show_dialogue_data(
-		GAME_INTRO_DIALOGUE, 1.0
+		GAME_INTRO_DIALOGUE, 1.0, true
 	)
 
 	await dialogue_box.finished
@@ -633,7 +784,11 @@ func _on_next_round_button_pressed() -> void:
 
 	var victory := round_controller.has_won()
 
-	_discard_remaining_hand()
+	# Some na hora: evita um segundo clique durante a
+	# transicao para a proxima rodada.
+	next_round_button.visible = false
+
+	await _discard_remaining_hand()
 
 	if victory:
 		await _advance_progression()
@@ -644,7 +799,7 @@ func _on_next_round_button_pressed() -> void:
 
 		_update_breaches_hud()
 
-		await _start_round()
+		await _start_round(true)
 	
 
 func _on_selection_changed(_cards: Array[Card]) -> void:
@@ -732,7 +887,8 @@ func _update_score_display(cards: Array[Card]) -> void:
 	_animate_play_score(
 		int(result["protection"]),
 		float(result["vulnerability"]),
-		float(result["total"])
+		float(result["total"]),
+		cards
 	)
 	
 	
@@ -895,7 +1051,7 @@ func _resolve_played_cards() -> void:
 	_update_play_button_state()
 
 
-func _start_round() -> void:
+func _start_round(is_retry := false) -> void:
 	# Uma contagem da rodada anterior nao pode sobrescrever
 	# o placar zerado da nova rodada.
 	_kill_score_tween()
@@ -926,8 +1082,12 @@ func _start_round() -> void:
 	play_button.disabled = true
 
 	_setup_deck()
-	_fill_hand()
 	_update_round_hud()
+
+	await _show_round_start_banner(is_retry)
+
+	# A mao so e distribuida depois da faixa da rodada.
+	_fill_hand()
 
 	await _show_round_start_dialogue()
 
@@ -1063,7 +1223,8 @@ func _finish_round(victory: bool) -> void:
 
 	hand.clear_selection()
 	hand.set_interaction_enabled(false)
-	
+
+	await _show_round_result_banner(victory)
 	await _show_round_result_dialogue(victory)
 	
 	if victory:
@@ -1097,13 +1258,53 @@ func _finish_round(victory: bool) -> void:
 
 
 func _discard_remaining_hand() -> void:
-	var remaining_cards := hand.take_all_cards()
+	_hide_card_details()
 
-	for card in remaining_cards:
+	# Guarda onde cada carta estava antes de sair da mao.
+	var positions: Array[Vector2] = []
+
+	for card in hand.get_cards():
+		positions.append(card.global_position)
+
+	var remaining_cards := hand.take_all_cards()
+	var total_time := 0.0
+
+	for i in range(remaining_cards.size()):
+		var card := remaining_cards[i]
+
 		if card.data != null:
 			player_deck.discard(str(card.data.id))
 
-		card.queue_free()
+		# Fora da mao, a carta vai para a raiz so para a
+		# animacao de saida.
+		add_child(card)
+		card.set_interaction_enabled(false)
+		card.scale = Vector2.ONE
+
+		if i < positions.size():
+			card.global_position = positions[i]
+
+		var delay := i * DISCARD_STAGGER
+		var tween := card.create_tween()
+		tween.tween_interval(delay)
+		tween.tween_property(
+			card,
+			"position:y",
+			card.position.y + DISCARD_DROP,
+			DISCARD_DURATION
+		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween.parallel().tween_property(
+			card,
+			"modulate:a",
+			0.0,
+			DISCARD_DURATION
+		)
+		tween.tween_callback(card.queue_free)
+
+		total_time = maxf(total_time, delay + DISCARD_DURATION)
+
+	if total_time > 0.0:
+		await get_tree().create_timer(total_time).timeout
 		
 		
 func _finish_game() -> void:
@@ -1136,7 +1337,7 @@ func _show_scenario_intro() -> void:
 		return
 		
 	_hide_card_details()
-	dialogue_box.show_dialogue_data(intro_dialogue, 1.0)
+	dialogue_box.show_dialogue_data(intro_dialogue, 1.0, true)
 
 	await dialogue_box.finished
 	
@@ -1260,14 +1461,16 @@ func _on_dialogue_highlight_changed(
 		DialogueLineData.HighlightTarget.ATTACK:
 			_highlight_control(attack_label)
 
+		# As linhas do HUD incluem o icone: destaca a linha
+		# inteira, que e o pai do rotulo.
 		DialogueLineData.HighlightTarget.RISK:
-			_highlight_control(risk_label)
+			_highlight_control(risk_label.get_parent() as Control)
 
 		DialogueLineData.HighlightTarget.ROUND_SCORE:
-			_highlight_control(round_score_label)
+			_highlight_control(round_score_label.get_parent() as Control)
 
 		DialogueLineData.HighlightTarget.PLAYS:
-			_highlight_control(plays_label)
+			_highlight_control(plays_label.get_parent() as Control)
 
 		DialogueLineData.HighlightTarget.PLAY_BUTTON:
 			_highlight_control(play_button)
@@ -1442,12 +1645,24 @@ func _create_breach_indicator(
 		]
 	)
 
-	breach_label.text = "[!] %s" % breach.display_name
+	breach_label.text = breach.display_name
 	breach_label.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
 	)
 
-	breach_indicator.add_child(breach_label)
+	var breach_icon: Texture2D = breach.icon
+
+	if breach_icon == null:
+		breach_icon = UIPalette.ICON_BREACH
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(UIPalette.make_pixel_icon(breach_icon, HUD_ICON_SIZE))
+	breach_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(breach_label)
+
+	breach_indicator.add_child(row)
 
 	return breach_indicator
 
@@ -1816,6 +2031,151 @@ func _breach_ids(
 
 # --- Animacoes de pontuacao ---------------------------------
 
+# --- Faixa de transicao das rodadas --------------------------
+
+func _setup_round_banner() -> void:
+	round_banner = Control.new()
+	round_banner.z_index = ROUND_BANNER_Z_INDEX
+	round_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(round_banner)
+	round_banner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	round_banner_style = StyleBoxFlat.new()
+	round_banner_style.bg_color = Color(UIPalette.PANEL, 0.96)
+	round_banner_style.border_width_top = 2
+	round_banner_style.border_width_bottom = 2
+	round_banner_style.border_color = UIPalette.PRIMARY
+
+	round_banner_band = PanelContainer.new()
+	round_banner_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	round_banner_band.add_theme_stylebox_override("panel", round_banner_style)
+	round_banner.add_child(round_banner_band)
+	round_banner_band.set_anchors_and_offsets_preset(Control.PRESET_HCENTER_WIDE)
+	round_banner_band.offset_top = -ROUND_BANNER_HEIGHT / 2.0
+	round_banner_band.offset_bottom = ROUND_BANNER_HEIGHT / 2.0
+
+	var content := VBoxContainer.new()
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	content.add_theme_constant_override("separation", 6)
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	round_banner_band.add_child(content)
+
+	round_banner_title = Label.new()
+	round_banner_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	round_banner_title.add_theme_font_size_override(
+		"font_size",
+		ROUND_BANNER_TITLE_SIZE
+	)
+	round_banner_title.visible_characters_behavior = (
+		TextServer.VC_CHARS_AFTER_SHAPING
+	)
+	content.add_child(round_banner_title)
+
+	round_banner_subtitle = Label.new()
+	round_banner_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	round_banner_subtitle.add_theme_color_override("font_color", UIPalette.TEXT)
+	content.add_child(round_banner_subtitle)
+
+	round_banner.hide()
+
+
+## Abre a faixa, digita o titulo, espera e fecha. Aguardar
+## esta funcao segura o fluxo da rodada ate a faixa sumir.
+func _play_round_banner(
+	title: String,
+	subtitle: String,
+	color: Color
+) -> void:
+	_hide_card_details()
+
+	round_banner_style.border_color = color
+	round_banner_title.add_theme_color_override("font_color", color)
+	round_banner_title.text = title
+	round_banner_title.visible_characters = 0
+	round_banner_subtitle.text = subtitle
+	round_banner_subtitle.modulate.a = 0.0
+
+	round_banner_band.pivot_offset = round_banner_band.size / 2.0
+	round_banner_band.scale = Vector2(1.0, 0.0)
+	round_banner.modulate.a = 1.0
+	round_banner.show()
+
+	var type_duration := title.length() / ROUND_BANNER_TYPE_SPEED
+
+	var tween := create_tween()
+	tween.tween_property(
+		round_banner_band,
+		"scale:y",
+		1.0,
+		ROUND_BANNER_OPEN_DURATION
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		round_banner_title,
+		"visible_characters",
+		title.length(),
+		type_duration
+	)
+	tween.tween_property(
+		round_banner_subtitle,
+		"modulate:a",
+		1.0,
+		0.2
+	)
+	tween.tween_interval(ROUND_BANNER_HOLD)
+	tween.tween_property(
+		round_banner_band,
+		"scale:y",
+		0.0,
+		ROUND_BANNER_CLOSE_DURATION
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(
+		round_banner,
+		"modulate:a",
+		0.0,
+		ROUND_BANNER_CLOSE_DURATION
+	)
+	tween.tween_callback(round_banner.hide)
+
+	await tween.finished
+
+
+func _show_round_start_banner(is_retry: bool) -> void:
+	var title := "RODADA %d/%d" % [
+		current_round_index + 1,
+		current_scenario_data.rounds.size(),
+	]
+
+	var subtitle := "Ameaça: %s   |   Índice de Risco: %.0f" % [
+		current_round_data.attack_name.to_upper(),
+		round_controller.get_risk(),
+	]
+
+	if is_retry:
+		subtitle = "Nova tentativa   |   " + subtitle
+
+	await _play_round_banner(title, subtitle, UIPalette.PRIMARY)
+
+
+func _show_round_result_banner(victory: bool) -> void:
+	var subtitle := "Pontuação %.0f   |   Índice de Risco %.0f" % [
+		round_controller.score,
+		round_controller.get_risk(),
+	]
+
+	if victory:
+		await _play_round_banner(
+			"AMEAÇA CONTIDA",
+			subtitle,
+			UIPalette.PRIMARY
+		)
+	else:
+		await _play_round_banner(
+			"AMEAÇA NÃO CONTIDA",
+			subtitle,
+			UIPalette.DANGER
+		)
+
+
 func _setup_score_popup() -> void:
 	score_popup_root = CenterContainer.new()
 	score_popup_root.z_index = SCORE_POPUP_Z_INDEX
@@ -1889,7 +2249,8 @@ func _reset_score_popup() -> void:
 func _animate_play_score(
 	protection: int,
 	multiplier: float,
-	total: float
+	total: float,
+	cards: Array[Card]
 ) -> void:
 	_kill_score_tween()
 
@@ -1919,11 +2280,30 @@ func _animate_play_score(
 		SCORE_APPEAR_DURATION
 	)
 
-	score_tween.tween_method(
-		_show_popup_protection,
-		0.0,
-		float(protection),
-		SCORE_PROTECTION_DURATION
+	# A Protecao entra carta a carta, da esquerda para a
+	# direita, com o sinal de boa pratica ou pratica insegura.
+	var running_protection := 0.0
+
+	for card in cards:
+		if card == null or card.data == null:
+			continue
+
+		var card_protection := float(card.data.protection)
+
+		score_tween.tween_callback(_signal_card_practice.bind(card))
+		score_tween.tween_method(
+			_show_popup_protection,
+			running_protection,
+			running_protection + card_protection,
+			SCORE_CARD_COUNT_DURATION
+		)
+		score_tween.tween_interval(SCORE_CARD_GAP)
+
+		running_protection += card_protection
+
+	# Garante o valor exato mesmo se alguma carta foi pulada.
+	score_tween.tween_callback(
+		_show_popup_protection.bind(float(protection))
 	)
 
 	score_tween.tween_method(
@@ -2025,6 +2405,145 @@ func _animate_play_resolution(
 	)
 
 
+## Sinal visual de cada carta na contagem: tremor, brilho e
+## icone subindo. Caveira vermelha para pratica insegura
+## (a carta abre brecha), escudo verde para boa pratica.
+func _signal_card_practice(card: Card) -> void:
+	if not is_instance_valid(card) or card.data == null:
+		return
+
+	var insecure: bool = card.data.opens_breach != null
+	var color: Color = UIPalette.PRIMARY
+
+	if insecure:
+		color = UIPalette.DANGER
+
+	_shake_card(card, insecure)
+	_flash_card_glow(card, color)
+	_spawn_practice_float(card, insecure, color)
+	_dim_counted_card(card)
+
+
+func _dim_counted_card(card: Card) -> void:
+	var dim := card.create_tween()
+	dim.tween_interval(CARD_GLOW_HOLD)
+	dim.tween_property(
+		card,
+		"modulate",
+		COUNTED_CARD_COLOR,
+		COUNTED_CARD_DIM_DURATION
+	)
+
+
+func _shake_card(card: Card, insecure: bool) -> void:
+	var angle := CARD_SHAKE_ANGLE
+
+	if insecure:
+		angle = CARD_SHAKE_ANGLE_INSECURE
+
+	card.pivot_offset = card.size / 2.0
+
+	var shake := card.create_tween()
+	shake.tween_property(card, "rotation_degrees", -angle, 0.05)
+	shake.tween_property(card, "rotation_degrees", angle, 0.08)
+	shake.tween_property(card, "rotation_degrees", -angle * 0.5, 0.07)
+	shake.tween_property(card, "rotation_degrees", 0.0, 0.06)
+
+	var pop := card.create_tween()
+	pop.tween_property(card, "scale", Vector2.ONE * CARD_POP_SCALE, 0.08)
+	pop.tween_property(card, "scale", Vector2.ONE, 0.18)
+
+
+func _flash_card_glow(card: Card, color: Color) -> void:
+	# Aneis concentricos por fora da carta, cada um mais
+	# transparente que o anterior: um brilho em degraus, no
+	# estilo pixel art. Sem preenchimento, entao nada cobre
+	# a carta, nem as areas transparentes da ilustracao.
+	var glow := Control.new()
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(glow)
+	glow.position = Vector2.ZERO
+	glow.size = card.size
+
+	for i in range(CARD_GLOW_RINGS.size()):
+		var box := StyleBoxFlat.new()
+		box.draw_center = false
+		box.border_color = Color(color, CARD_GLOW_RINGS[i])
+		box.set_border_width_all(CARD_GLOW_RING_WIDTH)
+		box.set_expand_margin_all(
+			float(CARD_GLOW_RING_WIDTH * (i + 1))
+		)
+		box.set_corner_radius_all(4 + CARD_GLOW_RING_WIDTH * i)
+
+		var ring := Panel.new()
+		ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ring.add_theme_stylebox_override("panel", box)
+		glow.add_child(ring)
+		ring.position = Vector2.ZERO
+		ring.size = card.size
+
+	glow.modulate.a = 0.0
+
+	var tween := glow.create_tween()
+	tween.tween_property(glow, "modulate:a", 1.0, 0.08)
+	tween.tween_interval(CARD_GLOW_HOLD)
+	tween.tween_property(glow, "modulate:a", 0.0, CARD_GLOW_FADE)
+	tween.tween_callback(glow.queue_free)
+
+
+## Icone e valor que sobem a partir do meio da carta. Ficam
+## dentro da area da carta para nao cobrir a conta no topo.
+func _spawn_practice_float(
+	card: Card,
+	insecure: bool,
+	color: Color
+) -> void:
+	var icon_texture: Texture2D = UIPalette.ICON_SCORE
+
+	if insecure:
+		icon_texture = UIPalette.ICON_SKULL
+
+	var float_box := HBoxContainer.new()
+	float_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	float_box.add_theme_constant_override("separation", 4)
+	float_box.z_index = PRACTICE_FLOAT_Z_INDEX
+	float_box.add_child(UIPalette.make_pixel_icon(icon_texture, 32.0))
+
+	var value_label := Label.new()
+	value_label.text = "+%d" % card.data.protection
+	value_label.add_theme_font_size_override(
+		"font_size",
+		PRACTICE_FLOAT_FONT_SIZE
+	)
+	value_label.add_theme_color_override("font_color", color)
+	value_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	value_label.add_theme_constant_override("outline_size", 8)
+	float_box.add_child(value_label)
+
+	played_cards.add_child(float_box)
+	float_box.size = float_box.get_combined_minimum_size()
+
+	var start := card.position + Vector2(
+		(card.size.x - float_box.size.x) / 2.0,
+		card.size.y * 0.35
+	)
+
+	float_box.position = start
+
+	var rise := float_box.create_tween()
+	rise.tween_property(
+		float_box,
+		"position:y",
+		start.y - PRACTICE_FLOAT_RISE,
+		PRACTICE_FLOAT_DURATION
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+	var fade := float_box.create_tween()
+	fade.tween_interval(PRACTICE_FLOAT_DURATION - PRACTICE_FLOAT_FADE)
+	fade.tween_property(float_box, "modulate:a", 0.0, PRACTICE_FLOAT_FADE)
+	fade.tween_callback(float_box.queue_free)
+
+
 func _show_popup_modifier(text: String, color: Color) -> void:
 	score_popup_modifier.text = text
 	score_popup_modifier.add_theme_color_override("font_color", color)
@@ -2107,23 +2626,36 @@ func _setup_hud() -> void:
 	stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stats_panel.add_child(stats)
 
-	risk_label.reparent(stats, false)
-	round_score_label.reparent(stats, false)
+	_add_hud_row(stats, risk_label, UIPalette.ICON_RISK)
+	_add_hud_row(stats, round_score_label, UIPalette.ICON_SCORE)
 
 	score_bar_label = Label.new()
 	score_bar_label.add_theme_color_override(
 		"font_color",
 		UIPalette.PRIMARY
 	)
-	stats.add_child(score_bar_label)
 
-	plays_label.reparent(stats, false)
+	# Sem icone, mas com o mesmo recuo das outras linhas.
+	_add_hud_row(stats, score_bar_label, null)
+
+	_add_hud_row(stats, plays_label, UIPalette.ICON_PLAYS)
 
 	# So aparece no fim da rodada, com o resultado.
 	result_label.reparent(stats, false)
 	result_label.visible = false
 
 	breaches_panel.reparent(hud_column, false)
+
+	# Uma brecha por linha: com icone, duas lado a lado
+	# alargavam o painel ate a mesa. O HBoxContainer da cena
+	# nao pode mudar de orientacao, entao e trocado aqui.
+	var stacked_list := VBoxContainer.new()
+	stacked_list.name = breach_list.name
+	stacked_list.add_theme_constant_override("separation", 8)
+	stacked_list.mouse_filter = breach_list.mouse_filter
+	breach_list.replace_by(stacked_list)
+	breach_list.queue_free()
+	breach_list = stacked_list
 
 	# Painel de brechas e avisos de brecha em vermelho. Os
 	# indicadores e as dicas deles herdam o tema do painel.
@@ -2132,6 +2664,8 @@ func _setup_hud() -> void:
 	breach_feedback.theme = danger_theme
 
 	_update_score_bar(0.0)
+
+	_build_hud_shortcuts(hud)
 
 	# A conta da jogada aparece no centro da tela e o
 	# resultado da rodada no painel do HUD. O texto do topo
@@ -2187,6 +2721,80 @@ func _refresh_attack_label() -> void:
 
 ## Reposiciona os elementos que dependem da largura da
 ## janela. Roda no inicio e a cada redimensionamento.
+## Coloca o rotulo em uma linha com o icone a esquerda.
+## Sem icone, deixa um espaco vazio do mesmo tamanho, para
+## o texto ficar alinhado com as outras linhas.
+func _add_hud_row(
+	parent: Container,
+	label: Label,
+	icon: Texture2D
+) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(
+		"separation",
+		HUD_ICON_SEPARATION
+	)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(row)
+
+	if icon != null:
+		row.add_child(UIPalette.make_pixel_icon(icon, HUD_ICON_SIZE))
+	else:
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(HUD_ICON_SIZE, 0.0)
+		spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(spacer)
+
+	if label.get_parent() == null:
+		row.add_child(label)
+	else:
+		label.reparent(row, false)
+
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+
+## Botoes de icone para abrir a enciclopedia e a ajuda sem
+## precisar saber do Esc.
+func _build_hud_shortcuts(hud: Control) -> void:
+	hud_shortcuts = HBoxContainer.new()
+	hud_shortcuts.add_theme_constant_override("separation", 8)
+	hud.add_child(hud_shortcuts)
+
+	hud_shortcuts.add_child(
+		_build_hud_shortcut(
+			UIPalette.ICON_HELP,
+			"Como jogar",
+			_on_hud_help_pressed
+		)
+	)
+	hud_shortcuts.add_child(
+		_build_hud_shortcut(
+			UIPalette.ICON_ENCYCLOPEDIA,
+			"Enciclopédia",
+			_on_hud_encyclopedia_pressed
+		)
+	)
+
+
+func _build_hud_shortcut(
+	icon: Texture2D,
+	tooltip: String,
+	handler: Callable
+) -> Button:
+	var button := Button.new()
+	button.icon = icon
+	button.tooltip_text = tooltip
+	button.custom_minimum_size = HUD_SHORTCUT_SIZE
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	# Sem foco: senao o Enter usado para avancar os
+	# dialogos acionaria o ultimo botao clicado.
+	button.focus_mode = Control.FOCUS_NONE
+
+	button.pressed.connect(handler)
+	return button
+
+
 func _layout_game_ui() -> void:
 	# Linha de status alinhada com a coluna do HUD.
 	attack_label.position = Vector2(HUD_MARGIN, HUD_MARGIN)
@@ -2211,6 +2819,14 @@ func _layout_game_ui() -> void:
 	for button: Button in [play_button, next_round_button]:
 		button.size = ACTION_BUTTON_SIZE
 		button.global_position = action_position
+
+	# Atalhos no canto superior direito.
+	if hud_shortcuts != null:
+		hud_shortcuts.size = hud_shortcuts.get_combined_minimum_size()
+		hud_shortcuts.position = Vector2(
+			size.x - HUD_MARGIN - hud_shortcuts.size.x,
+			HUD_MARGIN
+		)
 
 
 func _on_status_cursor_timeout() -> void:
@@ -2260,6 +2876,11 @@ func _setup_background() -> void:
 	var background := get_node_or_null("ColorRect") as ColorRect
 
 	if background != null:
+		# Na cena o ColorRect tem tamanho fixo de 1152x648.
+		# Ancorado na tela toda, acompanha o redimensionamento.
+		background.set_anchors_and_offsets_preset(
+			Control.PRESET_FULL_RECT
+		)
 		background.color = UIPalette.BACKGROUND
 		background.material = UIPalette.make_background_material()
 

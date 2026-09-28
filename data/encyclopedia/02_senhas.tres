@@ -1,0 +1,24 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scenes/encyclopedia/EncyclopediaChapterData.gd" id="1_chapter"]
+
+[resource]
+script = ExtResource("1_chapter")
+id = &"senhas"
+scenario_id = &"password_scenario"
+tab_title = "Senhas"
+title = "Capítulo 2: Senhas e vazamento de credenciais"
+subtitle = "Setor de Acesso  |  cenário Senhas"
+description = "[b]O que é[/b]
+Quando um serviço sofre um vazamento, listas com e-mails e senhas passam a circular entre atacantes. Eles testam essas combinações automaticamente em outros serviços, porque muita gente usa a mesma senha em vários lugares.
+
+[b]Por que reutilizar senha é arriscado[/b]
+Se a mesma senha protege o e-mail, o banco e as redes sociais, um vazamento em qualquer um deles expõe todos. O vazamento acontece no serviço, fora do controle do usuário, e a senha repetida leva o estrago para as outras contas.
+
+[b]Como se proteger[/b]
+• Use uma senha diferente para cada serviço. Um gerenciador de senhas ajuda a guardá-las.
+• Prefira senhas longas, como frases, difíceis de adivinhar e fáceis de lembrar.
+• Ative a verificação em duas etapas: mesmo com a senha correta, o atacante precisa de uma segunda confirmação.
+• Ao saber de um vazamento, troque a senha vazada em todos os serviços onde ela era usada."
+card_ids = Array[String](["senhas_exclusivas", "senha_forte", "autenticacao_2fa", "reutilizar_senha"])
+links = Array[String](["Autenticação (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/autenticacao/fasciculo-autenticacao.pdf", "Vazamento de Dados (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/vazamento-de-dados/fasciculo-vazamento-de-dados.pdf"])

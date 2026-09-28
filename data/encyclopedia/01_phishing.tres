@@ -1,0 +1,29 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scenes/encyclopedia/EncyclopediaChapterData.gd" id="1_chapter"]
+
+[resource]
+script = ExtResource("1_chapter")
+id = &"phishing"
+scenario_id = &"phishing_scenario"
+tab_title = "Phishing"
+title = "Capítulo 1: Phishing e códigos maliciosos"
+subtitle = "Setor de Comunicações  |  cenário E-mail suspeito"
+description = "[b]O que é[/b]
+Phishing é uma tentativa de enganar a pessoa por meio de uma mensagem que se passa por alguém confiável: um banco, uma loja, um serviço conhecido ou até um contato próximo. O objetivo é fazer a vítima clicar em um link, abrir um anexo ou informar dados como senhas e números de cartão.
+
+[b]Como reconhecer[/b]
+• Pressa, ameaça ou recompensa: \"sua conta será bloqueada hoje\", \"você ganhou um prêmio\".
+• Remetente diferente do esperado: o nome é conhecido, mas o endereço de e-mail é estranho.
+• Links que, com o mouse por cima, mostram um endereço diferente do texto.
+• Anexos que você não esperava receber, mesmo vindos de contatos conhecidos.
+
+[b]Por que o anexo é perigoso[/b]
+Arquivos anexados podem conter códigos maliciosos: programas que se instalam no dispositivo para roubar dados ou dar acesso remoto a um atacante. Um antivírus atualizado detecta e remove boa parte deles, mas depende de atualizações constantes para reconhecer ameaças novas.
+
+[b]Como se proteger[/b]
+• Confirme a origem da mensagem por outro canal antes de clicar ou abrir arquivos.
+• Digite o endereço do site no navegador em vez de seguir o link recebido.
+• Mantenha o antivírus e o sistema atualizados."
+card_ids = Array[String](["verificar_remetente", "antivirus_atualizado", "senha_forte", "autenticacao_2fa", "link_suspeito", "abrir_anexo"])
+links = Array[String](["Golpes: Não se Deixe Enganar (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/golpes/fasciculo-golpes.pdf", "Códigos Maliciosos (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/codigos-maliciosos/fasciculo-codigos-maliciosos.pdf", "Golpes: Caiu? Veja o que Fazer (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/golpes-o-que-fazer/fasciculo-golpes-o-que-fazer.pdf"])

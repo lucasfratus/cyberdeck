@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_v07du")
-id = "tutorial_last_lay"
+id = "tutorial_last_play"
 trigger_type = 1
 dialogue = ExtResource("1_ti5vh")
 metadata/_custom_type_script = "uid://cgww5fdyjvwnp"

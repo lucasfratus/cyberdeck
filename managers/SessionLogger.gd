@@ -162,6 +162,9 @@ func _build_summary() -> Dictionary:
 	var scenarios_completed := 0
 	var pauses := 0
 	var encyclopedia_opens := 0
+	var chapters_viewed := 0
+	var reference_links_opened := 0
+	var help_opens := 0
 
 	for event: Dictionary in _events:
 		var event_type: String = str(event.get("type", ""))
@@ -192,6 +195,15 @@ func _build_summary() -> Dictionary:
 			"encyclopedia_opened":
 				encyclopedia_opens += 1
 
+			"encyclopedia_chapter_viewed":
+				chapters_viewed += 1
+
+			"reference_link_opened":
+				reference_links_opened += 1
+
+			"help_opened":
+				help_opens += 1
+
 	var details_views := 0
 	var details_seconds := 0.0
 
@@ -210,6 +222,9 @@ func _build_summary() -> Dictionary:
 		"breaches_closed": breaches_closed,
 		"pauses": pauses,
 		"encyclopedia_opens": encyclopedia_opens,
+		"encyclopedia_chapters_viewed": chapters_viewed,
+		"reference_links_opened": reference_links_opened,
+		"help_opens": help_opens,
 		"card_details_views": details_views,
 		"card_details_seconds": snappedf(details_seconds, 0.01),
 	}

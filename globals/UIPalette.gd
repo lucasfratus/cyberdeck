@@ -37,3 +37,90 @@ static func make_crt_overlay_material() -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = CRT_OVERLAY_SHADER
 	return material
+
+const TEXT_FONT := preload(
+	"res://assets/fonts/AtkinsonHyperlegibleMono-Regular.ttf"
+)
+const TEXT_FONT_BOLD := preload(
+	"res://assets/fonts/AtkinsonHyperlegibleMono-Bold.ttf"
+)
+
+
+## Prepara um RichTextLabel para texto corrido da interface:
+## cor do tema, fonte monoespacada com negrito de verdade para
+## o [b] do BBCode, quebra por palavra e altura pelo conteudo.
+## Deixa a roda do mouse passar, para a rolagem funcionar
+## com o cursor sobre o texto.
+static func style_rich_text(label: RichTextLabel, font_size: int) -> void:
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.scroll_active = false
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.mouse_filter = Control.MOUSE_FILTER_PASS
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	label.add_theme_color_override("default_color", TEXT)
+	label.add_theme_font_override("normal_font", TEXT_FONT)
+	label.add_theme_font_override("bold_font", TEXT_FONT_BOLD)
+	label.add_theme_font_size_override("normal_font_size", font_size)
+	label.add_theme_font_size_override("bold_font_size", font_size)
+
+
+## Icones em pixel art. Foram desenhados em 16x16 e salvos
+## em 32x32 (cada pixel virou um bloco 2x2). Exibir em 16 ou
+## 32 px mantem todos os pixels do mesmo tamanho.
+const ICON_ENCYCLOPEDIA: Texture2D = preload("res://assets/icons/ui/encyclopedia.png")
+const ICON_HELP: Texture2D = preload("res://assets/icons/ui/help.png")
+const ICON_RISK: Texture2D = preload("res://assets/icons/ui/risk.png")
+const ICON_SCORE: Texture2D = preload("res://assets/icons/ui/score.png")
+const ICON_PLAYS: Texture2D = preload("res://assets/icons/ui/plays.png")
+const ICON_SKULL: Texture2D = preload("res://assets/icons/ui/skull.png")
+const ICON_FOLDER: Texture2D = preload("res://assets/icons/ui/folder.png")
+
+## Usado quando a brecha nao tem icone proprio no .tres.
+const ICON_BREACH: Texture2D = preload("res://assets/icons/breaches/breach.png")
+
+
+## TextureRect para um icone em pixel art. O filtro nearest
+## amplia sem borrar: cada pixel vira um bloco nitido.
+static func make_pixel_icon(
+	texture: Texture2D,
+	icon_size: float
+) -> TextureRect:
+	var icon := TextureRect.new()
+	icon.texture = texture
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = Vector2(icon_size, icon_size)
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return icon
+
+
+## Coloca o icone na borda esquerda do botao sem tirar o
+## texto do centro. O Godot centraliza o texto no espaco que
+## sobra ao lado do icone; uma margem igual do lado direito
+## devolve o texto ao centro do botao.
+static func set_button_icon(button: Button, icon: Texture2D) -> void:
+	button.icon = icon
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+
+	var extra: float = (
+		icon.get_width()
+		+ button.get_theme_constant("h_separation")
+	)
+
+	for state: String in [
+		"normal", "hover", "pressed", "disabled", "focus"
+	]:
+		var box := button.get_theme_stylebox(state)
+
+		if box == null:
+			continue
+
+		box = box.duplicate()
+		box.content_margin_right = (
+			max(box.content_margin_right, 0.0) + extra
+		)
+		button.add_theme_stylebox_override(state, box)

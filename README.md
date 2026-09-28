@@ -8,9 +8,9 @@
 
 ## Sobre
 
-No Cyberdeck, o jogador enfrenta ameaças digitais escolhendo cartas que representam práticas de segurança. Algumas cartas são boas práticas. Outras são atalhos inseguros que rendem mais pontos na hora, mas abrem **brechas de segurança** que continuam causando prejuízo nas jogadas e rodadas seguintes.
+No Cyberdeck, o jogador enfrenta ameaças digitais como phishing e vazamento de credenciais escolhendo cartas que representam práticas de segurança. Algumas cartas são boas práticas. Outras são atalhos inseguros que rendem mais pontos na hora, mas abrem **brechas de segurança** que continuam causando prejuízo nas jogadas e rodadas seguintes.
 
-A ideia central do jogo é mostrar que a consequência de uma decisão insegura pode não aparecer no mesmo momento em que ela é tomada.
+A ideia central do jogo é mostrar que a consequência de uma decisão insegura raramente aparece no mesmo momento em que ela é tomada.
 
 O projeto é desenvolvido como Trabalho de Conclusão de Curso do Bacharelado em Ciência da Computação da Universidade Estadual de Maringá (UEM), com o título *Gamificação na Segurança Digital: Desenvolvimento e Avaliação de um Jogo Eletrônico para Conscientização de Usuários*. O design partiu de uma Revisão Sistemática da Literatura sobre jogos sérios em segurança digital.
 
@@ -68,7 +68,8 @@ Cada rodada tem um baralho próprio. As cartas novas vão sendo apresentadas aos
 
 - **Tutorial guiado** por um assistente, com destaque visual nos elementos da interface que estão sendo explicados.
 - **Painel educativo**: ao passar o mouse sobre uma carta, aparece uma explicação sobre a prática que ela representa.
-- **Enciclopédia**, acessível pelo menu principal e pelo menu de pausa. Reúne as cartas encontradas, agrupadas por tema. As que ainda não apareceram ficam bloqueadas, com as informações substituídas por `?`.
+- **Enciclopédia**, acessível pelo menu principal e pelo menu de pausa, dividida em capítulos por ameaça. Cada capítulo explica como a ameaça funciona, traz links para as cartilhas do CERT.br e mostra as cartas relacionadas, indicando quais são boas práticas e quais abrem brechas. Uma aba final reúne todas as cartas por categoria. As cartas que ainda não apareceram ficam bloqueadas, com as informações substituídas por `?`.
+- **Tela Como jogar**, no menu principal e no menu de pausa, com as regras, a fórmula de pontuação e os controles.
 - **Revisão ao fim de cada cenário**, com as práticas que apareceram nele e a indicação das cartas novas.
 - **Registro de métricas de sessão**, usado na avaliação experimental (detalhes abaixo).
 
@@ -102,7 +103,7 @@ Em build de depuração, que inclui a execução pelo editor e as exportações 
 - **Abrir pasta das sessões**, que abre a pasta onde os registros são gravados.
 - **Limpar coleção**, na enciclopédia, que apaga o registro de cartas encontradas para o próximo participante começar do zero.
 
-Cada sessão gera um arquivo JSON em `user://sessions/`, gravado de novo a cada evento. O arquivo registra o início e o fim de cenários e rodadas, cada jogada com as cartas usadas, as práticas inseguras, a pontuação e as brechas abertas ou fechadas, o tempo de leitura dos painéis educativos e as aberturas da pausa e da enciclopédia. No topo do arquivo, um bloco `summary` traz os totais já calculados.
+Cada sessão gera um arquivo JSON em `user://sessions/`, gravado de novo a cada evento. O arquivo registra o início e o fim de cenários e rodadas, cada jogada com as cartas usadas, as práticas inseguras, a pontuação e as brechas abertas ou fechadas, o tempo de leitura dos painéis educativos as aberturas da pausa, da enciclopédia e da tela Como jogar, os capítulos consultados e os links de referência abertos. No topo do arquivo, um bloco `summary` traz os totais já calculados.
 
 ## Estrutura do projeto
 
@@ -115,9 +116,12 @@ managers/      autoloads: banco de cartas, coleção de cartas encontradas e reg
 scenes/        cenas e scripts: partida, cartas, mão, diálogos, enciclopédia e menus
 tests/         cenas de teste dos componentes de cartas, mão e baralho
 ```
+
+O conteúdo fica separado da lógica. Cartas, brechas, rodadas, cenários e diálogos são Resources (`.tres`) editáveis pelo inspetor do Godot. Para adicionar uma carta ou uma rodada, não é preciso alterar código.
+
 ## Créditos
 
-Desenvolvido por **Lucas de Oliveira Fratus**, sob orientação do **Prof. Dr. Alisson Renan Svaigen** e **Prof. Me. Felippe Fernandes da Silva**, no Departamento de Informática da Universidade Estadual de Maringá.
+Desenvolvido por **Lucas de Oliveira Fratus**, sob orientação do **Prof. Dr. Alisson Renan Svaigen**, no Departamento de Informática da Universidade Estadual de Maringá.
 
 - Motor: [Godot Engine](https://godotengine.org/)
 - Fontes: Atkinson Hyperlegible e Atkinson Hyperlegible Mono, do Braille Institute. A licença da versão Mono (SIL Open Font License 1.1) está em `assets/fonts/OFL-AtkinsonHyperlegibleMono.txt`.

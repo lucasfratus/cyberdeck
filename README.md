@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Jogo de cartas educativo sobre decisões de segurança digital para usuários não especialistas.
+  Um jogo de cartas educativo sobre decisões de segurança digital para usuários não especialistas.
 </p>
 
 ## Sobre

@@ -6,8 +6,6 @@
   Jogo de cartas educativo sobre decisões de segurança digital para usuários não especialistas.
 </p>
 
----
-
 ## Sobre
 
 No Cyberdeck, o jogador enfrenta ameaças digitais escolhendo cartas que representam práticas de segurança. Algumas cartas são boas práticas. Outras são atalhos inseguros que rendem mais pontos na hora, mas abrem **brechas de segurança** que continuam causando prejuízo nas jogadas e rodadas seguintes.

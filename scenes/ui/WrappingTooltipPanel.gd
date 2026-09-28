@@ -17,6 +17,11 @@ func _make_custom_tooltip(for_text: String) -> Object:
 	label.scroll_active = false
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.custom_minimum_size = Vector2(TOOLTIP_WIDTH, 0.0)
-	label.add_theme_color_override("default_color", UIPalette.TEXT)
+	# Usa a cor do tema de quem mostra a dica: verde no HUD,
+	# vermelho dentro do painel de brechas.
+	label.add_theme_color_override(
+		"default_color",
+		get_theme_color("font_color", "TooltipLabel")
+	)
 
 	return label

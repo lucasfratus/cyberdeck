@@ -55,6 +55,7 @@ func _build_interface() -> void:
 		Control.PRESET_FULL_RECT
 	)
 	background.color = UIPalette.BACKGROUND
+	background.material = UIPalette.make_background_material()
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var margin := MarginContainer.new()

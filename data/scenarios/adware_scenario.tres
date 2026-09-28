@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ScenarioData" format=3]
+
+[ext_resource type="Resource" path="res://data/dialogue/adware_intro.tres" id="1_intro"]
+[ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="2_round"]
+[ext_resource type="Script" uid="uid://wmsuml7vxiif" path="res://gameplay/ScenarioData.gd" id="3_scenario"]
+[ext_resource type="Resource" path="res://data/rounds/adware_r1.tres" id="4_r1"]
+[ext_resource type="Resource" path="res://data/rounds/adware_r2.tres" id="5_r2"]
+[ext_resource type="Resource" path="res://data/rounds/adware_r3.tres" id="6_r3"]
+[ext_resource type="Resource" path="res://data/bosses/anunciante.tres" id="7_boss"]
+
+[resource]
+script = ExtResource("3_scenario")
+id = &"adware_scenario"
+intro_dialogue_id = &"adware_intro"
+display_name = "Programa gratuito"
+intro_dialogue = ExtResource("1_intro")
+rounds = Array[ExtResource("2_round")]([ExtResource("4_r1"), ExtResource("5_r2"), ExtResource("6_r3")])
+boss = ExtResource("7_boss")
+deck = Array[String](["instalacao_personalizada", "revisar_extensoes", "bloquear_notificacoes", "antivirus_atualizado", "instalacao_rapida", "botao_baixar_falso", "permitir_notificacoes"])
+metadata/_custom_type_script = "uid://wmsuml7vxiif"

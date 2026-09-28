@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="RoundData" format=3]
+
+[ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_round"]
+[ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="2_event"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_data"]
+[ext_resource type="Resource" path="res://data/dialogue/adware/adware_r3_start.tres" id="4_start"]
+[ext_resource type="Resource" path="res://data/dialogue/adware/adware_round_victory.tres" id="6_victory"]
+[ext_resource type="Resource" path="res://data/dialogue/adware/adware_round_defeat.tres" id="7_defeat"]
+
+[resource]
+script = ExtResource("1_round")
+id = &"adware_r3"
+attack_name = "adware"
+base_risk = 360.0
+start_dialogues = Array[ExtResource("3_data")]([ExtResource("4_start")])
+victory_dialogue = ExtResource("6_victory")
+defeat_dialogue = ExtResource("7_defeat")
+deck = Array[String](["revisar_extensoes", "revisar_extensoes", "antivirus_atualizado", "antivirus_atualizado", "instalacao_personalizada", "instalacao_personalizada", "bloquear_notificacoes", "instalacao_rapida"])
+exploited_breach_ids = Array[String](["navegador_sequestrado", "dispositivo_comprometido"])
+risk_increase_per_exploited_breach = 40.0
+metadata/_custom_type_script = "uid://b2puoy2xliopq"

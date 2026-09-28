@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RoundData" format=3]
+
+[ext_resource type="Script" uid="uid://b2puoy2xliopq" path="res://gameplay/RoundData.gd" id="1_round"]
+[ext_resource type="Script" uid="uid://cgww5fdyjvwnp" path="res://scenes/dialogue/RoundDialogueEventData.gd" id="2_event"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_data"]
+[ext_resource type="Resource" path="res://data/dialogue/adware/adware_r2_start.tres" id="4_start"]
+[ext_resource type="Resource" path="res://data/dialogue/adware/adware_quick_install_event.tres" id="5_mid0"]
+[ext_resource type="Resource" path="res://data/dialogue/adware/adware_notifications_event.tres" id="5_mid1"]
+
+[resource]
+script = ExtResource("1_round")
+id = &"adware_r2"
+attack_name = "instalador com extras"
+base_risk = 320.0
+start_dialogues = Array[ExtResource("3_data")]([ExtResource("4_start")])
+mid_dialogues = Array[ExtResource("2_event")]([ExtResource("5_mid0"), ExtResource("5_mid1")])
+deck = Array[String](["instalacao_personalizada", "instalacao_personalizada", "revisar_extensoes", "revisar_extensoes", "bloquear_notificacoes", "bloquear_notificacoes", "instalacao_rapida", "permitir_notificacoes"])
+metadata/_custom_type_script = "uid://b2puoy2xliopq"

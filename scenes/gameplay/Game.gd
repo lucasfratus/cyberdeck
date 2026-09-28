@@ -55,6 +55,10 @@ const PASSWORD_SCENARIO: ScenarioData = preload(
 	"res://data/scenarios/password_scenario.tres"
 )
 
+const ADWARE_SCENARIO: ScenarioData = preload(
+	"res://data/scenarios/adware_scenario.tres"
+)
+
 const FIRST_BREACH_DIALOGUE: DialogueData = preload(
 	"res://data/dialogue/events/tutorial/tutorial_first_breach.tres"
 )
@@ -239,6 +243,18 @@ const BOSS_BATTLE_SCRIPT := preload("res://scenes/boss/BossBattle.gd")
 const BOSS_BATTLE_LAYER := 8
 var boss_battle: Control
 
+## Janelas de anuncio enquanto o navegador estiver sequestrado.
+## Acima da partida e abaixo dos detalhes da carta (5) e do
+## aviso de brechas (6), que continuam legiveis por cima delas.
+const AD_POPUPS_SCRIPT := preload("res://scenes/gameplay/AdPopups.gd")
+const AD_POPUPS_LAYER := 4
+const AD_POPUPS_BREACH_ID := "navegador_sequestrado"
+const AD_POPUPS_TUTORIAL: DialogueData = preload(
+	"res://data/dialogue/events/tutorial/tutorial_ad_popups.tres"
+)
+var ad_popups: Control
+var ad_popups_tutorial_shown := false
+
 var scenario_card: ColorRect
 var pending_fade_from_black := false
 var scenario_card_content: VBoxContainer
@@ -270,7 +286,8 @@ var details_view_started_msec := 0
 
 var scenarios: Array[ScenarioData] = [
 	PHISHING_SCENARIO,
-	PASSWORD_SCENARIO
+	PASSWORD_SCENARIO,
+	ADWARE_SCENARIO
 ]
 
 var current_scenario_index := 0
@@ -347,6 +364,7 @@ func _ready() -> void:
 	_setup_scenario_card()
 	_setup_codec_call()
 	_setup_boss_battle()
+	_setup_ad_popups()
 	_setup_hud()
 	_setup_background()
 
@@ -565,6 +583,7 @@ func _start_game() -> void:
 
 	current_round_data = current_scenario_data.rounds[current_round_index]
 	first_breach_tutorial_shown = false
+	ad_popups_tutorial_shown = false
 	
 	await _show_game_intro()
 	await _start_scenario()
@@ -1039,6 +1058,7 @@ func _resolve_played_cards() -> void:
 	
 	if not newly_opened_breaches.is_empty():
 		await _show_first_breach_tutorial()
+		await _show_ad_popups_tutorial(newly_opened_breaches)
 
 	if not breach_feedback_messages.is_empty():
 		_show_breach_feedback(
@@ -1283,6 +1303,10 @@ func _advance_progression() -> void:
 	
 func _finish_round(victory: bool) -> void:
 	_log_round_end(victory)
+
+	# Os anuncios somem entre as rodadas. Se a brecha continuar
+	# aberta, eles voltam na rodada seguinte.
+	ad_popups.close_all()
 
 	is_resolving_play = false
 	play_button.disabled = true
@@ -1687,6 +1711,8 @@ func _update_breaches_hud() -> void:
 		breaches_panel.visible = true
 	elif breach_list.get_child_count() == 0:
 		breaches_panel.visible = false
+
+	ad_popups.set_active(AD_POPUPS_BREACH_ID in active_ids)
 
 
 func _create_breach_indicator(
@@ -2121,8 +2147,76 @@ func _play_boss_battle(boss: Resource) -> void:
 	# Sem consulta durante a luta: o botao da pausa fica
 	# desativado, e os atalhos do HUD ficam atras da batalha.
 	pause_menu.set_encyclopedia_locked(true)
+	ad_popups.set_active(false)
 	await boss_battle.play(boss, dialogue_box)
 	pause_menu.set_encyclopedia_locked(false)
+
+
+# --- Anuncios do navegador sequestrado --------------------------
+
+func _setup_ad_popups() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = AD_POPUPS_LAYER
+	add_child(layer)
+
+	ad_popups = AD_POPUPS_SCRIPT.new()
+	layer.add_child(ad_popups)
+	ad_popups.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ad_popups.setup(_can_show_ad_popups)
+	ad_popups.ad_clicked.connect(_on_ad_popup_clicked)
+
+
+## Janelas novas so surgem no turno do jogador: sem dialogo,
+## sem pausa e com a mao liberada para jogar.
+func _can_show_ad_popups() -> bool:
+	if get_tree().paused:
+		return false
+
+	if is_resolving_play or round_controller.finished:
+		return false
+
+	if dialogue_box.is_dialogue_active():
+		return false
+
+	var cards := hand.get_cards()
+
+	if cards.is_empty():
+		return false
+
+	return cards[0].is_interaction_enabled()
+
+
+func _on_ad_popup_clicked() -> void:
+	_show_breach_feedback(
+		"Clicar no anúncio abriu mais uma janela. Feche pelo X."
+	)
+
+
+## Na primeira vez que o navegador e sequestrado, o Assistente
+## explica as janelas antes de elas aparecerem.
+func _show_ad_popups_tutorial(
+	opened: Array[SecurityBreachData]
+) -> void:
+	if ad_popups_tutorial_shown:
+		return
+
+	var hijacked := false
+
+	for breach in opened:
+		if breach != null and breach.id == AD_POPUPS_BREACH_ID:
+			hijacked = true
+
+	if not hijacked:
+		return
+
+	ad_popups_tutorial_shown = true
+
+	_hide_card_details()
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	dialogue_box.show_dialogue_data(AD_POPUPS_TUTORIAL)
+	await dialogue_box.finished
 
 
 # --- Chamada entre os antagonistas -----------------------------

@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_line"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_portrait"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_data"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/network.png" id="illus_1"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/anomaly.png" id="illus_2"]
+[ext_resource type="Texture2D" path="res://assets/icons/breaches/hijacked_browser.png" id="illus_3"]
+[ext_resource type="Texture2D" path="res://assets/icons/categories/malware.png" id="illus_4"]
+[ext_resource type="Texture2D" path="res://assets/logo/carta_logo.png" id="illus_5"]
+
+[sub_resource type="Resource" id="Line_00"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "Conexão estabelecida com o setor de Downloads. É por aqui que os programas entram na Rede."
+portrait = ExtResource("2_portrait")
+illustration = ExtResource("illus_1")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_01"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "A Chave-Mestra caiu, mas a anomalia mudou de tática. Ninguém está forçando a entrada. Agora ela oferece presentes."
+portrait = ExtResource("2_portrait")
+illustration = ExtResource("illus_2")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_02"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "Programas gratuitos, extensões úteis, vídeos liberados com um clique. Tudo chega com alguma coisa escondida junto."
+portrait = ExtResource("2_portrait")
+illustration = ExtResource("illus_3")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_03"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "Esses extras se chamam adware: programas que enchem a tela de anúncios, trocam o buscador e acompanham o que você faz na internet."
+portrait = ExtResource("2_portrait")
+illustration = ExtResource("illus_4")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_04"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "Neste setor, nada entra sem que alguém leia o que está aceitando."
+portrait = ExtResource("2_portrait")
+illustration = ExtResource("illus_5")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("3_data")
+id = "adware_intro"
+lines = Array[ExtResource("1_line")]([SubResource("Line_00"), SubResource("Line_01"), SubResource("Line_02"), SubResource("Line_03"), SubResource("Line_04")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://vogbtycql062" path="res://assets/icons/categories/malware.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/instalacao_personalizada.png" id="3_illus"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"instalacao_personalizada"
+title = "Instalação Personalizada"
+description = "Escolha o que instalar e desmarque os programas extras oferecidos."
+educational_description = "Muitos instaladores gratuitos trazem programas extras já marcados, como barras de busca e \"aceleradores\". A opção personalizada, ou avançada, mostra esses itens e permite desmarcá-los. Leia cada tela antes de clicar em Avançar."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+category = 6
+protection = 30
+vulnerability = 1.3
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

@@ -170,6 +170,9 @@ func _build_summary() -> Dictionary:
 	var boss_correct := 0
 	var boss_wrong := 0
 	var boss_defeats := 0
+	var ad_popups_shown := 0
+	var ad_popups_closed := 0
+	var ad_popups_clicked := 0
 
 	for event: Dictionary in _events:
 		var event_type: String = str(event.get("type", ""))
@@ -221,6 +224,15 @@ func _build_summary() -> Dictionary:
 			"boss_defeat":
 				boss_defeats += 1
 
+			"ad_popup_shown":
+				ad_popups_shown += 1
+
+			"ad_popup_closed":
+				ad_popups_closed += 1
+
+			"ad_popup_clicked":
+				ad_popups_clicked += 1
+
 			"cutscene_end":
 				if bool(event.get("skipped", false)):
 					cutscenes_skipped += 1
@@ -251,6 +263,9 @@ func _build_summary() -> Dictionary:
 		"boss_answers_correct": boss_correct,
 		"boss_answers_wrong": boss_wrong,
 		"boss_defeats": boss_defeats,
+		"ad_popups_shown": ad_popups_shown,
+		"ad_popups_closed": ad_popups_closed,
+		"ad_popups_clicked": ad_popups_clicked,
 		"card_details_views": details_views,
 		"card_details_seconds": snappedf(details_seconds, 0.01),
 	}

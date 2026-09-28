@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://vogbtycql062" path="res://assets/icons/categories/malware.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/revisar_extensoes.png" id="3_illus"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"revisar_extensoes"
+title = "Revisar Extensões"
+description = "Confira as extensões do navegador e remova as que você não reconhece."
+educational_description = "Adware costuma se instalar como extensão do navegador, trocando a página inicial e o buscador e colocando anúncios nas páginas. Revise a lista de extensões de tempos em tempos e remova as que você não instalou ou não usa. Instale extensões apenas da loja oficial do navegador."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+category = 6
+protection = 25
+vulnerability = 1.2
+closes_breach_ids = Array[String](["navegador_sequestrado"])
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

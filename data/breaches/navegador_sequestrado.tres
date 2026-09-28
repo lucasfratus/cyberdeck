@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SecurityBreachData" format=3]
+
+[ext_resource type="Script" uid="uid://cvwsw4croxvns" path="res://scenes/breaches/SecurityBreachData.gd" id="1_breach"]
+[ext_resource type="Texture2D" path="res://assets/icons/breaches/hijacked_browser.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_breach")
+id = "navegador_sequestrado"
+display_name = "Navegador sequestrado"
+description = "Programas extras e permissões aceitas sem leitura passam a controlar o navegador: exibem anúncios, trocam o buscador e enfraquecem as defesas seguintes."
+icon = ExtResource("2_icon")
+score_penalty_ratio = 0.3
+metadata/_custom_type_script = "uid://cvwsw4croxvns"

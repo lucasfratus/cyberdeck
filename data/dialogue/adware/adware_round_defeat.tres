@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3]
+
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_line"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_portrait"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="3_data"]
+
+[sub_resource type="Resource" id="Line_00"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "Os anúncios tomaram conta do setor. Precisamos recomeçar a rodada."
+portrait = ExtResource("2_portrait")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_01"]
+script = ExtResource("1_line")
+speaker = "Assistente"
+text = "Desta vez, repare quais cartas fecham o navegador sequestrado antes de buscar a pontuação mais alta."
+portrait = ExtResource("2_portrait")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[resource]
+script = ExtResource("3_data")
+id = "adware_round_defeat"
+lines = Array[ExtResource("1_line")]([SubResource("Line_00"), SubResource("Line_01")])
+metadata/_custom_type_script = "uid://knobenf0qolu"

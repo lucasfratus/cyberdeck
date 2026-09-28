@@ -34,6 +34,7 @@ const ChapterData := preload(
 const CHAPTER_PATHS: Array[String] = [
 	"res://data/encyclopedia/01_phishing.tres",
 	"res://data/encyclopedia/02_senhas.tres",
+	"res://data/encyclopedia/03_adware.tres",
 ]
 
 const ALL_CARDS_TAB_TITLE := "Todas as cartas"

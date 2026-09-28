@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://vogbtycql062" path="res://assets/icons/categories/malware.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/permitir_notificacoes.png" id="3_illus"]
+[ext_resource type="Resource" path="res://data/breaches/navegador_sequestrado.tres" id="4_breach"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"permitir_notificacoes"
+title = "Permitir Notificações"
+description = "O site libera o vídeo assim que recebe a permissão."
+educational_description = "Pedir permissão de notificações para \"liberar\" um vídeo ou para provar que você não é um robô é um truque comum. Depois de permitido, o site passa a enviar anúncios e alertas falsos direto para a tela. Na dúvida, escolha Bloquear."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+category = 6
+protection = 15
+vulnerability = 1.8
+opens_breach = ExtResource("4_breach")
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

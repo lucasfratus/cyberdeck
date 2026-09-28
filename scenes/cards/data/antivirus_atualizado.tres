@@ -14,5 +14,5 @@ illustration = ExtResource("1_0ahpe")
 category_icon = ExtResource("1_g42ut")
 category = 6
 protection = 40
-closes_breach_ids = Array[String](["dispositivo_comprometido"])
+closes_breach_ids = Array[String](["dispositivo_comprometido", "navegador_sequestrado"])
 metadata/_custom_type_script = "uid://canwsgyh34f2f"

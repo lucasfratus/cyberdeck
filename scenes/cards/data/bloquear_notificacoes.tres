@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://vogbtycql062" path="res://assets/icons/categories/malware.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/bloquear_notificacoes.png" id="3_illus"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"bloquear_notificacoes"
+title = "Bloquear Notificações"
+description = "Recuse os pedidos de sites para enviar notificações."
+educational_description = "Sites maliciosos pedem permissão para enviar notificações e depois usam esse canal para mostrar anúncios e alertas falsos, mesmo com o site fechado. Permita notificações só de sites que você usa e conhece. Permissões já dadas podem ser removidas nas configurações do navegador."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+category = 6
+protection = 20
+vulnerability = 1.5
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

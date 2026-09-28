@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://vogbtycql062" path="res://assets/icons/categories/malware.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/instalacao_rapida.png" id="3_illus"]
+[ext_resource type="Resource" path="res://data/breaches/navegador_sequestrado.tres" id="4_breach"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"instalacao_rapida"
+title = "Instalação Rápida"
+description = "Um clique e o programa fica pronto, sem telas para ler."
+educational_description = "A instalação rápida, ou recomendada, aceita tudo o que vem marcado, incluindo programas extras que mostram anúncios, trocam o buscador ou coletam dados de navegação. Prefira a instalação personalizada e desmarque o que você não pediu."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+category = 6
+protection = 10
+vulnerability = 2.0
+opens_breach = ExtResource("4_breach")
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

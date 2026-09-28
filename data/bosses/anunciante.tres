@@ -1,0 +1,206 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scenes/boss/BossData.gd" id="1_boss"]
+[ext_resource type="Script" path="res://scenes/boss/BossQuestionData.gd" id="2_question"]
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="3_line"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="4_dialogue"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/boss_ad.png" id="5_sprite"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="6_assistant"]
+[ext_resource type="AudioStream" path="res://assets/audio/voice_grunt.wav" id="7_voice"]
+
+[sub_resource type="Resource" id="Line_01"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ali. Todos os anúncios do setor estão se empilhando em uma forma só."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_02"]
+script = ExtResource("3_line")
+speaker = "O Anunciante"
+text = "PARABÉNS! Você foi selecionado para um prêmio exclusivo! Clique para resgatar!"
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_03"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Essa anomalia vive de cliques. Cada janela aceita sem leitura deixa ela maior."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_04"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "A regra é a mesma: acerte e eu ataco, erre e ela revida. A Enciclopédia fica bloqueada durante a luta."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_05"]
+script = ExtResource("3_line")
+speaker = "O Anunciante"
+text = "Oferta por tempo limitado. Não feche esta janela!"
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_intro"]
+script = ExtResource("4_dialogue")
+id = "anunciante_intro"
+lines = Array[ExtResource("3_line")]([SubResource("Line_01"), SubResource("Line_02"), SubResource("Line_03"), SubResource("Line_04"), SubResource("Line_05")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_06"]
+script = ExtResource("3_line")
+speaker = "O Anunciante"
+text = "Espere! Tenho um desconto... uma extensão grátis... um vídeo..."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_07"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela está ficando sem ofertas. Continue lendo antes de aceitar!"
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_phase"]
+script = ExtResource("4_dialogue")
+id = "anunciante_phase"
+lines = Array[ExtResource("3_line")]([SubResource("Line_06"), SubResource("Line_07")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_08"]
+script = ExtResource("3_line")
+speaker = "O Anunciante"
+text = "Esta... oferta... expirou..."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_09"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Anomalia neutralizada. O setor de Downloads voltou ao normal."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_10"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela só crescia com cliques apressados. Ler cada tela bastou para desmontá-la."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_victory"]
+script = ExtResource("4_dialogue")
+id = "anunciante_victory"
+lines = Array[ExtResource("3_line")]([SubResource("Line_08"), SubResource("Line_09"), SubResource("Line_10")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_11"]
+script = ExtResource("3_line")
+speaker = "O Anunciante"
+text = "Obrigado por aceitar os termos!"
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.6
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_12"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela me cobriu de janelas. Vamos de novo. Leia cada pergunta como leria um instalador."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_defeat"]
+script = ExtResource("4_dialogue")
+id = "anunciante_defeat"
+lines = Array[ExtResource("3_line")]([SubResource("Line_11"), SubResource("Line_12")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Question_01"]
+script = ExtResource("2_question")
+id = &"anunciante_q01"
+prompt = "O que é adware?"
+options = Array[String](["Um programa que faz cópias de segurança dos arquivos.", "Um programa que mostra anúncios sem pedir e pode vigiar a navegação.", "Uma atualização oficial do sistema operacional.", "Um tipo de senha usada em lojas on-line."])
+correct_index = 1
+explanation = "Adware é um tipo de código malicioso que mostra propaganda, troca o buscador ou a página inicial e pode coletar dados de navegação. Ele costuma chegar junto de programas gratuitos."
+
+[sub_resource type="Resource" id="Question_02"]
+script = ExtResource("2_question")
+id = &"anunciante_q02"
+prompt = "O instalador de um programa gratuito oferece as opções Rápida (recomendada) e Personalizada. Qual escolher?"
+options = Array[String](["Rápida, porque é a recomendada.", "Tanto faz, as duas instalam a mesma coisa.", "Personalizada, para ver e desmarcar os programas extras.", "Nenhuma, basta fechar o instalador pelo X."])
+correct_index = 2
+explanation = "A instalação rápida costuma aceitar todos os extras que vêm marcados. A personalizada mostra o que chega junto e permite recusar."
+
+[sub_resource type="Resource" id="Question_03"]
+script = ExtResource("2_question")
+id = &"anunciante_q03"
+prompt = "Uma página de downloads mostra vários botões Baixar de cores diferentes. Qual é o cuidado mais seguro?"
+options = Array[String](["Clicar no botão maior, que costuma ser o certo.", "Clicar em todos para garantir.", "Baixar o programa do site oficial do desenvolvedor ou de uma loja oficial.", "Desativar o antivírus para o download não ser bloqueado."])
+correct_index = 2
+explanation = "Muitos desses botões são anúncios disfarçados. O site oficial ou a loja oficial evitam a dúvida, e o antivírus deve continuar ligado."
+
+[sub_resource type="Resource" id="Question_04"]
+script = ExtResource("2_question")
+id = &"anunciante_q04"
+prompt = "Um site diz que você precisa clicar em Permitir notificações para assistir a um vídeo. O que isso costuma indicar?"
+options = Array[String](["Que o vídeo é exclusivo para assinantes.", "Um truque para mandar anúncios e alertas falsos para a sua tela depois.", "Que o navegador está desatualizado.", "Que o site é oficial."])
+correct_index = 1
+explanation = "Vídeos não dependem de notificações para tocar. Depois de permitidas, elas viram um canal de anúncios que continua ativo mesmo com o site fechado."
+
+[sub_resource type="Resource" id="Question_05"]
+script = ExtResource("2_question")
+id = &"anunciante_q05"
+prompt = "A página inicial e o buscador do navegador mudaram sozinhos, e aparecem anúncios em todo site. O que verificar primeiro?"
+options = Array[String](["As extensões instaladas no navegador.", "A velocidade da internet.", "O brilho da tela.", "A data e a hora do computador."])
+correct_index = 0
+explanation = "Adware costuma se instalar como extensão. Remova as que você não reconhece e faça uma verificação com o antivírus."
+
+[sub_resource type="Resource" id="Question_06"]
+script = ExtResource("2_question")
+id = &"anunciante_q06"
+prompt = "Onde é mais seguro conseguir extensões para o navegador?"
+options = Array[String](["Em links recebidos por mensagem.", "Em janelas que aparecem oferecendo extensões grátis.", "Em qualquer site com boas avaliações.", "Na loja oficial do navegador, conferindo quem publicou e as permissões."])
+correct_index = 3
+explanation = "A loja oficial revisa as extensões publicadas. Mesmo lá, vale conferir quem publicou e desconfiar de extensões que pedem acesso a todos os sites sem motivo."
+
+[sub_resource type="Resource" id="Question_07"]
+script = ExtResource("2_question")
+id = &"anunciante_q07"
+prompt = "Uma janela pisca na tela: \"Seu computador está infectado! Baixe este limpador agora.\" O que fazer?"
+options = Array[String](["Baixar o limpador imediatamente.", "Fechar a janela e fazer uma verificação com o antivírus que você já tem.", "Ligar para o número que aparece na janela.", "Clicar em OK para a janela sumir."])
+correct_index = 1
+explanation = "Alertas falsos de vírus são um truque comum para instalar adware ou coisa pior. Não clique em nada dentro da janela. Feche-a e use o seu próprio antivírus."
+
+[sub_resource type="Resource" id="Question_08"]
+script = ExtResource("2_question")
+id = &"anunciante_q08"
+prompt = "Por que manter o antivírus atualizado ajuda contra adware?"
+options = Array[String](["Porque ele deixa a internet mais rápida.", "Porque ele bloqueia todos os anúncios da internet.", "Porque as atualizações ensinam a ele a reconhecer adwares novos.", "Porque ele impede a instalação de qualquer programa."])
+correct_index = 2
+explanation = "Novos adwares surgem o tempo todo. As atualizações trazem as assinaturas que permitem ao antivírus reconhecê-los e removê-los."
+
+[resource]
+script = ExtResource("1_boss")
+id = &"anunciante"
+display_name = "O Anunciante"
+sprite = ExtResource("5_sprite")
+max_hp = 100
+damage_per_correct = 25
+assistant_max_hp = 100
+damage_per_wrong = 34
+questions = Array[Resource]([SubResource("Question_01"), SubResource("Question_02"), SubResource("Question_03"), SubResource("Question_04"), SubResource("Question_05"), SubResource("Question_06"), SubResource("Question_07"), SubResource("Question_08")])
+intro_dialogue = SubResource("Dialogue_intro")
+phase_dialogue = SubResource("Dialogue_phase")
+victory_dialogue = SubResource("Dialogue_victory")
+defeat_dialogue = SubResource("Dialogue_defeat")

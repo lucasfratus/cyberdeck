@@ -1,0 +1,30 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scenes/encyclopedia/EncyclopediaChapterData.gd" id="1_chapter"]
+
+[resource]
+script = ExtResource("1_chapter")
+id = &"adware"
+scenario_id = &"adware_scenario"
+tab_title = "Adware"
+title = "Capítulo 3: Adware e programas indesejados"
+subtitle = "Setor de Downloads  |  cenário Programa gratuito"
+description = "[b]O que é[/b]
+Adware é um tipo de código malicioso que mostra propaganda sem que você peça. Ele pode trocar a página inicial e o buscador do navegador, abrir janelas de anúncios e coletar dados sobre os sites que você visita.
+
+[b]Como ele chega[/b]
+Quase sempre junto de algo que parece útil: um programa gratuito, uma extensão do navegador, um vídeo que só abre depois de uma permissão. O próprio usuário aceita a instalação, muitas vezes sem perceber, porque os extras vêm marcados por padrão.
+
+[b]Como se proteger[/b]
+• Baixe programas do site oficial do desenvolvedor ou de lojas oficiais.
+• Escolha a instalação personalizada e desmarque barras de busca, \"aceleradores\" e outros extras que você não pediu.
+• Revise as extensões do navegador de tempos em tempos e remova as que você não reconhece.
+• Mantenha o antivírus atualizado e faça verificações periódicas.
+
+[b]Armadilhas comuns[/b]
+• Páginas de download mostram vários botões Baixar. Muitos são anúncios disfarçados que levam a outros programas.
+• A instalação rápida, ou recomendada, aceita tudo o que vem marcado.
+• Sites pedem permissão de notificações para liberar um vídeo ou provar que você não é um robô. Depois usam esse canal para mandar anúncios e alertas falsos.
+• Janelas que dizem que o computador está infectado e oferecem um limpador costumam ser o próprio adware tentando entrar."
+card_ids = Array[String](["instalacao_personalizada", "revisar_extensoes", "bloquear_notificacoes", "antivirus_atualizado", "instalacao_rapida", "botao_baixar_falso", "permitir_notificacoes"])
+links = Array[String](["Códigos Maliciosos (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/codigos-maliciosos/fasciculo-codigos-maliciosos.pdf", "Computadores (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/computadores/fasciculo-computadores.pdf"])

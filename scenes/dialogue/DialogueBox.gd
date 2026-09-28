@@ -33,6 +33,11 @@ const PANEL_SIDE_MARGIN := 70.0
 const PANEL_EDGE_MARGIN := 40.0
 const PANEL_HEIGHT := 180.0
 
+## Cores do texto das falas. Mais claras que o verde padrao
+## da interface, que fica apagado em textos longos.
+const DIALOGUE_TEXT_COLOR := Color(0.9, 1.0, 0.93)
+const SPEAKER_COLOR := Color(0.78, 0.7, 1.0)
+
 ## Velocidade da digitacao das falas, em caracteres por
 ## segundo. Uma fala de 200 caracteres leva cerca de 3,6 s.
 const CHARACTERS_PER_SECOND := 55.0
@@ -111,6 +116,8 @@ func _ready() -> void:
 	# Clicar em qualquer parte da caixa tambem avanca.
 	dialogue_panel.gui_input.connect(_on_dialogue_panel_gui_input)
 
+	_improve_contrast()
+
 	_build_character()
 	_build_illustration()
 
@@ -121,6 +128,21 @@ func _ready() -> void:
 	_build_voice()
 
 	hide()
+
+
+## Texto mais claro e uma borda na caixa, para a fala se
+## destacar do fundo em qualquer tela.
+func _improve_contrast() -> void:
+	dialogue_text.add_theme_color_override("font_color", DIALOGUE_TEXT_COLOR)
+	speaker_label.add_theme_color_override("font_color", SPEAKER_COLOR)
+
+	var box := dialogue_panel.get_theme_stylebox("panel")
+	if box is StyleBoxFlat:
+		box = box.duplicate()
+		box.bg_color = Color(0.0, 0.0, 0.0, 0.97)
+		box.border_color = UIPalette.DIM
+		box.set_border_width_all(2)
+		dialogue_panel.add_theme_stylebox_override("panel", box)
 
 
 func show_dialogue(

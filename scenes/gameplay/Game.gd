@@ -299,8 +299,11 @@ const GAME_DETAILS_PANEL_WIDTH := 520.0
 ## cartas; se atrapalhar a leitura, desligue aqui.
 const CRT_OVERLAY_ENABLED := true
 
-## Acima da partida e dos dialogos, abaixo dos menus (100).
-const CRT_OVERLAY_LAYER := 50
+## Acima da partida e da batalha, abaixo dos dialogos (10).
+## Por cima deles, o escurecimento das bordas deixava o texto
+## da caixa de dialogo, que fica perto da borda de baixo,
+## mais apagado.
+const CRT_OVERLAY_LAYER := 9
 
 const HUD_MARGIN := 10.0
 

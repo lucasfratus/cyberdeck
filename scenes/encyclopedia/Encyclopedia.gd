@@ -19,6 +19,10 @@ const SECTION_SEPARATION := 24
 const OUTER_MARGIN := 24
 const DETAILS_COLUMN_WIDTH := 420.0
 
+## Largura minima do painel de detalhes quando a janela e
+## estreita. Abaixo disso o texto justificado fica espacado.
+const DETAILS_COLUMN_MIN_WIDTH := 300.0
+
 ## Folga para a carta crescer no hover sem ser recortada
 ## pelo ScrollContainer. A carta tem 180x252 e cresce
 ## 8%, ou seja 7px na horizontal e 11px na vertical.
@@ -52,6 +56,8 @@ var _tab_buttons: Array[Button] = []
 var _scroll: ScrollContainer
 var _sections: VBoxContainer
 var _details_panel: CardDetailsPanel
+var _left_column: VBoxContainer
+var _details_column: Control
 var _counter_label: Label
 
 
@@ -135,6 +141,7 @@ func _build_interface() -> void:
 	margin.add_child(columns_box)
 
 	var left_column := VBoxContainer.new()
+	_left_column = left_column
 	left_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	left_column.add_theme_constant_override("separation", 16)
 	columns_box.add_child(left_column)
@@ -182,6 +189,7 @@ func _build_interface() -> void:
 	scroll_margin.add_child(_sections)
 
 	var details_column := Control.new()
+	_details_column = details_column
 	details_column.custom_minimum_size = Vector2(
 		DETAILS_COLUMN_WIDTH,
 		0.0
@@ -195,6 +203,32 @@ func _build_interface() -> void:
 	)
 	details_column.add_child(_details_panel)
 
+	resized.connect(_fit_details_column)
+	_fit_details_column.call_deferred()
+
+
+## Com a janela estreita, a coluna de detalhes de largura fixa
+## empurrava o painel para fora da tela e cortava o texto. A
+## coluna agora usa o espaco que sobra ao lado das cartas,
+## entre DETAILS_COLUMN_MIN_WIDTH e DETAILS_COLUMN_WIDTH.
+func _fit_details_column() -> void:
+	if _left_column == null or _details_panel == null:
+		return
+
+	var available := (
+		size.x
+		- OUTER_MARGIN * 3
+		- _left_column.get_combined_minimum_size().x
+	)
+	var width := clampf(
+		available,
+		DETAILS_COLUMN_MIN_WIDTH,
+		DETAILS_COLUMN_WIDTH
+	)
+
+	_details_column.custom_minimum_size.x = width
+	_details_panel.set_panel_width(width)
+
 
 func _build_header() -> Control:
 	var header := HBoxContainer.new()
@@ -204,16 +238,22 @@ func _build_header() -> Control:
 		UIPalette.make_pixel_icon(UIPalette.ICON_ENCYCLOPEDIA, 32.0)
 	)
 
+	# O contador fica embaixo do titulo, e nao ao lado: em uma
+	# linha so, o cabecalho ficava mais largo que a janela e
+	# empurrava o painel de detalhes para fora da tela.
+	var title_column := VBoxContainer.new()
+	title_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_column.add_theme_constant_override("separation", 0)
+	header.add_child(title_column)
+
 	var title_label := Label.new()
 	title_label.text = "Enciclopédia"
 	title_label.add_theme_font_size_override("font_size", 32)
-	header.add_child(title_label)
+	title_column.add_child(title_label)
 
 	_counter_label = Label.new()
-	_counter_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_counter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_counter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	header.add_child(_counter_label)
+	_counter_label.add_theme_font_size_override("font_size", 14)
+	title_column.add_child(_counter_label)
 
 	# So existe em build de depuracao: no editor e em
 	# exportacoes com "Export With Debug". Serve para zerar
@@ -235,11 +275,13 @@ func _build_header() -> Control:
 		reset_button.pressed.connect(
 			func() -> void: reset_dialog.popup_centered()
 		)
+		reset_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		header.add_child(reset_button)
 
 	var close_button := Button.new()
 	close_button.text = "Fechar"
 	close_button.pressed.connect(_on_close_pressed)
+	close_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(close_button)
 
 	return header

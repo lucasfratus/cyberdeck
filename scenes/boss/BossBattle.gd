@@ -110,6 +110,10 @@ func play(boss: Resource, dialogue_box: DialogueBox) -> void:
 	_assistant_sprite.texture = dialogue_box.character_texture
 
 	_reset_fight()
+	# O chefe, o nome e a barra comecam escondidos: a tela da
+	# batalha surge com fade, e so depois a entrada revela o
+	# chefe. Sem isto o sprite aparecia inteiro durante o fade.
+	_hide_boss_for_entrance()
 	modulate.a = 0.0
 	show()
 
@@ -278,14 +282,18 @@ func _build_entrance_overlay() -> void:
 
 
 ## Alerta, materializacao, impacto e barra de vida enchendo.
-func _boss_entrance() -> void:
-	var boss_name := str(_boss.display_name).to_upper()
-
+func _hide_boss_for_entrance() -> void:
 	_boss_sprite.modulate.a = 0.0
 	_boss_name_label.modulate.a = 0.0
 	_boss_bar.modulate.a = 0.0
 	_set_bar(_boss_bar, 0, int(_boss.max_hp), false)
 	_boss_material.set_shader_parameter("amount", 1.0)
+
+
+func _boss_entrance() -> void:
+	var boss_name := str(_boss.display_name).to_upper()
+
+	_hide_boss_for_entrance()
 
 	# 1. Alerta piscando. So a faixa pisca, e devagar (cerca de
 	# 3 vezes por segundo), para nao incomodar quem e sensivel

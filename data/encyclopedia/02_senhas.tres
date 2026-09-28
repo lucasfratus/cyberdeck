@@ -19,6 +19,11 @@ Se a mesma senha protege o e-mail, o banco e as redes sociais, um vazamento em q
 • Use uma senha diferente para cada serviço. Um gerenciador de senhas ajuda a guardá-las.
 • Prefira senhas longas, como frases, difíceis de adivinhar e fáceis de lembrar.
 • Ative a verificação em duas etapas: mesmo com a senha correta, o atacante precisa de uma segunda confirmação.
-• Ao saber de um vazamento, troque a senha vazada em todos os serviços onde ela era usada."
-card_ids = Array[String](["senhas_exclusivas", "senha_forte", "autenticacao_2fa", "reutilizar_senha"])
+• Ao saber de um vazamento, troque a senha vazada em todos os serviços onde ela era usada.
+
+[b]Armadilhas comuns[/b]
+• Datas de nascimento, nomes e times aparecem em redes sociais e são os primeiros palpites de quem ataca.
+• Senha anotada em papel colado no monitor fica à vista de quem passa e aparece em fotos e chamadas de vídeo.
+• O código de verificação que chega por SMS ou aplicativo não deve ser repassado a ninguém. Quem pede esse código por telefone ou mensagem está tentando entrar na sua conta."
+card_ids = Array[String](["senhas_exclusivas", "gerenciador_senhas", "trocar_senha_vazada", "senha_forte", "autenticacao_2fa", "proteger_codigo", "reutilizar_senha", "senha_data_nascimento", "senha_colada_monitor"])
 links = Array[String](["Autenticação (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/autenticacao/fasciculo-autenticacao.pdf", "Vazamento de Dados (Cartilha CERT.br) | https://cartilha.cert.br/fasciculos/vazamento-de-dados/fasciculo-vazamento-de-dados.pdf"])

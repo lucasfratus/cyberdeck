@@ -1,0 +1,197 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scenes/boss/BossData.gd" id="1_boss"]
+[ext_resource type="Script" path="res://scenes/boss/BossQuestionData.gd" id="2_question"]
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="3_line"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="4_dialogue"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/boss_key.png" id="5_sprite"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="6_assistant"]
+[ext_resource type="AudioStream" path="res://assets/audio/voice_grunt.wav" id="7_voice"]
+
+[sub_resource type="Resource" id="Line_01"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ali. A assinatura que vimos nos registros está tomando forma."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_02"]
+script = ExtResource("3_line")
+speaker = "A Chave-Mestra"
+text = "Uma chave. Todas as portas. Por que complicar?"
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 0.75
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_03"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Essa anomalia coleta senhas vazadas e testa cada uma em todas as contas que encontra pela frente."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_04"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Mesma regra de antes: acerte e eu ataco, erre e ela revida. A Enciclopédia fica bloqueada durante a luta."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_intro"]
+script = ExtResource("4_dialogue")
+id = "chave_mestra_intro"
+lines = Array[ExtResource("3_line")]([SubResource("Line_01"), SubResource("Line_02"), SubResource("Line_03"), SubResource("Line_04")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_05"]
+script = ExtResource("3_line")
+speaker = "A Chave-Mestra"
+text = "Tantas portas diferentes... tantas chaves diferentes..."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 0.75
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_06"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Senhas únicas são o ponto fraco dela. Continue!"
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_phase"]
+script = ExtResource("4_dialogue")
+id = "chave_mestra_phase"
+lines = Array[ExtResource("3_line")]([SubResource("Line_05"), SubResource("Line_06")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_07"]
+script = ExtResource("3_line")
+speaker = "A Chave-Mestra"
+text = "Nenhuma... porta... abre..."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 0.75
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_08"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ameaça neutralizada. Cada conta com a sua própria chave."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_09"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela dependia de uma única senha repetida. Sem isso, não tinha para onde ir."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_victory"]
+script = ExtResource("4_dialogue")
+id = "chave_mestra_victory"
+lines = Array[ExtResource("3_line")]([SubResource("Line_07"), SubResource("Line_08"), SubResource("Line_09")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_10"]
+script = ExtResource("3_line")
+speaker = "A Chave-Mestra"
+text = "Senha123. Sempre funciona."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 0.75
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_11"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Vamos de novo. Pense em como as senhas vazam e em como uma senha repetida espalha o estrago."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_defeat"]
+script = ExtResource("4_dialogue")
+id = "chave_mestra_defeat"
+lines = Array[ExtResource("3_line")]([SubResource("Line_10"), SubResource("Line_11")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Question_01"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q01"
+prompt = "Por que reutilizar a mesma senha em vários serviços é arriscado?"
+options = Array[String](["Porque a senha perde a validade mais rápido.", "Porque, se um serviço vazar a senha, todas as contas que usam essa senha ficam expostas.", "Porque os sites não aceitam senhas repetidas.", "Porque a senha fica mais fácil de esquecer."])
+correct_index = 1
+explanation = "Senhas vazadas são testadas automaticamente em outros serviços, um ataque chamado de credential stuffing (preenchimento de credenciais). Com senhas diferentes, um vazamento fica restrito a uma conta."
+
+[sub_resource type="Resource" id="Question_02"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q02"
+prompt = "Qual destas senhas é mais forte?"
+options = Array[String](["12345678", "Maria1990", "cafe-janela-trem-azul-47", "senha@123"])
+correct_index = 2
+explanation = "Uma senha longa, com várias palavras sem relação entre si e sem dados pessoais, é mais difícil de adivinhar. O comprimento pesa mais do que trocar letras por símbolos."
+
+[sub_resource type="Resource" id="Question_03"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q03"
+prompt = "O que a verificação em duas etapas acrescenta à conta?"
+options = Array[String](["Uma segunda senha igual à primeira.", "Uma confirmação extra, como um código no celular, que protege a conta mesmo se a senha vazar.", "Uma cópia de segurança da senha.", "Um aviso quando a senha expira."])
+correct_index = 1
+explanation = "Com a verificação em duas etapas, quem descobre a senha ainda precisa de algo que só você tem, como o celular ou uma chave física, para entrar na conta."
+
+[sub_resource type="Resource" id="Question_04"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q04"
+prompt = "Qual é a forma mais prática de ter uma senha diferente para cada conta?"
+options = Array[String](["Anotar todas em um papel colado no monitor.", "Usar um gerenciador de senhas.", "Usar a mesma senha com o nome do site no fim.", "Salvar as senhas em um arquivo chamado senhas.txt."])
+correct_index = 1
+explanation = "Um gerenciador de senhas cria e guarda senhas únicas, protegidas por uma senha mestra forte. Variações previsíveis, como a mesma senha com o nome do site, são as primeiras que um atacante testa."
+
+[sub_resource type="Resource" id="Question_05"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q05"
+prompt = "Você soube que um serviço em que tem conta sofreu um vazamento de dados. O que fazer primeiro?"
+options = Array[String](["Nada, se você não recebeu nenhum aviso pessoal.", "Trocar a senha desse serviço e de qualquer outro em que ela era usada.", "Apagar o aplicativo do celular.", "Esperar o serviço trocar a senha por você."])
+correct_index = 1
+explanation = "Depois de um vazamento, a senha pode estar em listas usadas por atacantes. Trocar a senha nesse serviço e em todos que a repetiam fecha as portas antes que alguém tente."
+
+[sub_resource type="Resource" id="Question_06"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q06"
+prompt = "Alguém liga dizendo ser do suporte técnico e pede o código que chegou por SMS no seu celular. O que fazer?"
+options = Array[String](["Informar, já que é do suporte.", "Não informar: esse código confirma o acesso à sua conta, e ninguém legítimo precisa dele.", "Informar só metade do código.", "Pedir que a pessoa ligue mais tarde."])
+correct_index = 1
+explanation = "O código de verificação é justamente a segunda etapa de proteção. Quem pede esse código está tentando entrar na sua conta."
+
+[sub_resource type="Resource" id="Question_07"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q07"
+prompt = "Qual destes elementos deixa uma senha mais fácil de adivinhar?"
+options = Array[String](["A sua data de nascimento.", "Palavras sem relação entre si.", "Um comprimento grande.", "Letras, números e símbolos misturados."])
+correct_index = 0
+explanation = "Datas, nomes de pessoas e de animais e times aparecem em redes sociais, e atacantes testam esses dados primeiro."
+
+[sub_resource type="Resource" id="Question_08"]
+script = ExtResource("2_question")
+id = &"chave_mestra_q08"
+prompt = "Onde é seguro digitar a sua senha?"
+options = Array[String](["Em qualquer página que peça login.", "Apenas no site ou no aplicativo oficial do serviço, conferindo o endereço.", "Em formulários enviados por e-mail.", "Em mensagens para o suporte."])
+correct_index = 1
+explanation = "Serviços legítimos não pedem senha por e-mail, mensagem ou formulário externo. Digite a senha só no endereço oficial, que você acessa por conta própria."
+
+[resource]
+script = ExtResource("1_boss")
+id = &"chave_mestra"
+display_name = "A Chave-Mestra"
+sprite = ExtResource("5_sprite")
+max_hp = 100
+damage_per_correct = 25
+assistant_max_hp = 100
+damage_per_wrong = 34
+questions = Array[Resource]([SubResource("Question_01"), SubResource("Question_02"), SubResource("Question_03"), SubResource("Question_04"), SubResource("Question_05"), SubResource("Question_06"), SubResource("Question_07"), SubResource("Question_08")])
+intro_dialogue = SubResource("Dialogue_intro")
+phase_dialogue = SubResource("Dialogue_phase")
+victory_dialogue = SubResource("Dialogue_victory")
+defeat_dialogue = SubResource("Dialogue_defeat")

@@ -92,6 +92,7 @@ const VOICE_PITCH_MAX := 1.08
 const VOICE_ENABLED := true
 
 var voice_player: AudioStreamPlayer
+var voice_base_pitch := 1.0
 var last_voiced_character := 0
 var last_voice_msec := 0
 
@@ -172,6 +173,8 @@ func show_dialogue_data(
 			"portrait": line.portrait,
 			"highlight_target": line.highlight_target,
 			"illustration": line.illustration,
+			"voice": line.voice,
+			"voice_pitch": line.voice_pitch,
 		})
 
 	if sequence.is_empty():
@@ -231,6 +234,12 @@ func _show_current_line(skip_typing := false) -> void:
 		_start_typing()
 
 	_show_line_illustration(current_line.get("illustration", null))
+
+	# Voz da fala: a da linha, se tiver, ou a padrao.
+	if voice_player != null:
+		var line_voice: AudioStream = current_line.get("voice", null)
+		voice_player.stream = line_voice if line_voice != null else voice_sound
+		voice_base_pitch = float(current_line.get("voice_pitch", 1.0))
 
 	var portrait_texture: Texture2D = current_line.get(
 		"portrait",
@@ -736,5 +745,5 @@ func _process(_delta: float) -> void:
 		return
 
 	last_voice_msec = now
-	voice_player.pitch_scale = randf_range(VOICE_PITCH_MIN, VOICE_PITCH_MAX)
+	voice_player.pitch_scale = voice_base_pitch * randf_range(VOICE_PITCH_MIN, VOICE_PITCH_MAX)
 	voice_player.play()

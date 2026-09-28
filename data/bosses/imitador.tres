@@ -1,0 +1,213 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scenes/boss/BossData.gd" id="1_boss"]
+[ext_resource type="Script" path="res://scenes/boss/BossQuestionData.gd" id="2_question"]
+[ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="3_line"]
+[ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="4_dialogue"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/anomaly.png" id="5_sprite"]
+[ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="6_assistant"]
+[ext_resource type="AudioStream" path="res://assets/audio/voice_grunt.wav" id="7_voice"]
+
+[sub_resource type="Resource" id="Line_01"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Espere. O sinal do setor estabilizou, mas alguma coisa ficou para trás."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_02"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "Olá! Aqui é o suporte oficial da Rede. Detectamos um problema na sua conta. Clique aqui para resolver."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_03"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Essa anomalia juntou os restos de todas as mensagens falsas deste setor. Ela imita qualquer remetente."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_04"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Não consigo enfrentá-la sozinho. Cada resposta certa sua me dá força para atacar. Cada erro abre espaço para ela revidar."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_05"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Durante o confronto, a Enciclopédia fica fora de alcance. Confie no que você aprendeu neste setor."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_06"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "URGENTE: sua resposta expira em 5 minutos."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_intro"]
+script = ExtResource("4_dialogue")
+id = "imitador_intro"
+lines = Array[ExtResource("3_line")]([SubResource("Line_01"), SubResource("Line_02"), SubResource("Line_03"), SubResource("Line_04"), SubResource("Line_05"), SubResource("Line_06")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_07"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "Espere... vamos conversar. Sou eu, o seu banco. Pode confiar."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_08"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela está perdendo a forma. Quanto mais você confere, menos ela consegue fingir. Continue!"
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_phase"]
+script = ExtResource("4_dialogue")
+id = "imitador_phase"
+lines = Array[ExtResource("3_line")]([SubResource("Line_07"), SubResource("Line_08")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_09"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "Remetente... não... verificado..."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_10"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Anomalia neutralizada. O setor de Comunicações está limpo."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_11"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela só existia porque as pessoas clicavam sem conferir. Você mostrou o contrário."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_victory"]
+script = ExtResource("4_dialogue")
+id = "imitador_victory"
+lines = Array[ExtResource("3_line")]([SubResource("Line_09"), SubResource("Line_10"), SubResource("Line_11")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Line_12"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "Obrigado por confirmar seus dados!"
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_13"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela me acertou demais. Vamos de novo, com calma. Leia cada pergunta como leria um e-mail suspeito."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_defeat"]
+script = ExtResource("4_dialogue")
+id = "imitador_defeat"
+lines = Array[ExtResource("3_line")]([SubResource("Line_12"), SubResource("Line_13")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
+[sub_resource type="Resource" id="Question_01"]
+script = ExtResource("2_question")
+id = &"imitador_q01"
+prompt = "Você recebe um e-mail do seu banco pedindo para confirmar seus dados pelo link da mensagem. O que fazer?"
+options = Array[String](["Clicar no link e conferir se a página parece a do banco.", "Responder o e-mail pedindo mais informações.", "Acessar o site ou o aplicativo do banco digitando o endereço você mesmo.", "Encaminhar a mensagem a um amigo para ver se ele recebeu também."])
+correct_index = 2
+explanation = "Bancos não pedem confirmação de dados por links em e-mail. Acessar o serviço pelo endereço que você já conhece evita páginas falsas, que podem ser idênticas à original."
+
+[sub_resource type="Resource" id="Question_02"]
+script = ExtResource("2_question")
+id = &"imitador_q02"
+prompt = "Qual destes sinais indica com mais segurança que um e-mail é phishing?"
+options = Array[String](["O e-mail tem o logotipo da empresa.", "O endereço do remetente usa um domínio parecido, mas diferente, como banc0.com.", "A mensagem chegou de manhã.", "O e-mail tem uma assinatura no final."])
+correct_index = 1
+explanation = "Logotipos e assinaturas são fáceis de copiar. O domínio do endereço do remetente é a pista mais confiável, e golpistas costumam trocar letras parecidas, como o O pelo zero."
+
+[sub_resource type="Resource" id="Question_03"]
+script = ExtResource("2_question")
+id = &"imitador_q03"
+prompt = "Chegou de um remetente desconhecido um anexo chamado fatura.pdf.exe. Qual é o risco?"
+options = Array[String](["Nenhum, porque é um PDF.", "É um programa disfarçado de documento, que pode instalar código malicioso ao ser aberto.", "Ele só é perigoso se for encaminhado.", "Ele pode, no máximo, ocupar espaço no disco."])
+correct_index = 1
+explanation = "A extensão que vale é a última: .exe indica um programa executável. Nomes com extensão dupla escondem programas maliciosos atrás de um nome de documento."
+
+[sub_resource type="Resource" id="Question_04"]
+script = ExtResource("2_question")
+id = &"imitador_q04"
+prompt = "Como conferir para onde um link realmente leva, sem clicar nele?"
+options = Array[String](["Lendo o texto azul do link.", "Passando o mouse sobre o link e lendo o endereço que aparece na tela.", "Confiando se a mensagem chegou em horário comercial.", "Copiando o link e pedindo ao remetente que confirme."])
+correct_index = 1
+explanation = "O texto de um link pode dizer qualquer coisa. O endereço real aparece ao passar o mouse sobre ele, ou ao pressionar e segurar o link no celular."
+
+[sub_resource type="Resource" id="Question_05"]
+script = ExtResource("2_question")
+id = &"imitador_q05"
+prompt = "Uma mensagem diz que sua conta será bloqueada em 1 hora se você não agir. Por que golpes usam esse tipo de urgência?"
+options = Array[String](["Para ajudar você a resolver o problema mais rápido.", "Para fazer você agir sem parar para verificar a mensagem.", "Porque serviços legítimos sempre trabalham com prazos curtos.", "Porque o e-mail expira depois desse tempo."])
+correct_index = 1
+explanation = "Pressa, medo e promessas de recompensa diminuem a atenção. Diante de uma mensagem urgente, pare e confirme a informação por outro canal."
+
+[sub_resource type="Resource" id="Question_06"]
+script = ExtResource("2_question")
+id = &"imitador_q06"
+prompt = "Você clicou em um link suspeito e digitou sua senha em uma página estranha. Qual deve ser a primeira atitude?"
+options = Array[String](["Esperar para ver se algo acontece.", "Trocar a senha da conta imediatamente, pelo site oficial.", "Apagar o e-mail para esquecer o assunto.", "Desligar o computador e ligar de novo."])
+correct_index = 1
+explanation = "Trocar a senha logo reduz o tempo em que o golpista pode usá-la. Se a mesma senha for usada em outros serviços, troque lá também, e ative a verificação em duas etapas."
+
+[sub_resource type="Resource" id="Question_07"]
+script = ExtResource("2_question")
+id = &"imitador_q07"
+prompt = "Qual programa ajuda a detectar e remover códigos maliciosos já instalados no dispositivo?"
+options = Array[String](["Um editor de texto.", "Um antivírus atualizado.", "O navegador em modo anônimo.", "Um gerenciador de downloads."])
+correct_index = 1
+explanation = "O antivírus reconhece ameaças conhecidas, e as atualizações ensinam a ele as novas. O modo anônimo do navegador só deixa de guardar o histórico; ele não protege contra programas maliciosos."
+
+[sub_resource type="Resource" id="Question_08"]
+script = ExtResource("2_question")
+id = &"imitador_q08"
+prompt = "Um colega manda uma mensagem pedindo, com urgência, que você compre cartões-presente para ele. O que fazer?"
+options = Array[String](["Comprar logo, porque ele é conhecido.", "Confirmar o pedido com ele por outro canal, como uma ligação.", "Responder a mensagem pedindo o número do cartão dele.", "Encaminhar a mensagem para outros colegas."])
+correct_index = 1
+explanation = "Golpistas se passam por pessoas conhecidas, usando contas invadidas ou números novos. Antes de qualquer pagamento, confirme por um canal que você já usava com a pessoa."
+
+[resource]
+script = ExtResource("1_boss")
+id = &"imitador"
+display_name = "O Imitador"
+sprite = ExtResource("5_sprite")
+max_hp = 100
+damage_per_correct = 25
+assistant_max_hp = 100
+damage_per_wrong = 34
+questions = Array[Resource]([SubResource("Question_01"), SubResource("Question_02"), SubResource("Question_03"), SubResource("Question_04"), SubResource("Question_05"), SubResource("Question_06"), SubResource("Question_07"), SubResource("Question_08")])
+intro_dialogue = SubResource("Dialogue_intro")
+phase_dialogue = SubResource("Dialogue_phase")
+victory_dialogue = SubResource("Dialogue_victory")
+defeat_dialogue = SubResource("Dialogue_defeat")

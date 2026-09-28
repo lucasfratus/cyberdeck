@@ -18,6 +18,11 @@ func load_cards():
 		var file := dir.get_next()
 		if file == "":
 			break
+		# Na exportacao, o Godot converte os .tres e deixa no
+		# lugar um arquivo .tres.remap. O load() com o nome
+		# original continua funcionando.
+		file = file.trim_suffix(".remap")
+
 		if file.ends_with(".tres"):
 			var card: CardData = load("res://scenes/cards/data/" + file)
 			if card != null:

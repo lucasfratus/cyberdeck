@@ -233,6 +233,12 @@ const CODEC_CALL_SCRIPT := preload("res://scenes/cutscenes/CodecCall.gd")
 const CODEC_CALL_LAYER := 20
 var codec_call: Control
 
+## Batalha contra o chefe do cenario. Abaixo da tela do
+## cenario (9) e dos dialogos (10), que aparecem por cima dela.
+const BOSS_BATTLE_SCRIPT := preload("res://scenes/boss/BossBattle.gd")
+const BOSS_BATTLE_LAYER := 8
+var boss_battle: Control
+
 var scenario_card: ColorRect
 var pending_fade_from_black := false
 var scenario_card_content: VBoxContainer
@@ -337,6 +343,7 @@ func _ready() -> void:
 	_setup_round_banner()
 	_setup_scenario_card()
 	_setup_codec_call()
+	_setup_boss_battle()
 	_setup_hud()
 	_setup_background()
 
@@ -1221,6 +1228,11 @@ func _advance_progression() -> void:
 		return
 
 	# O cenário atual terminou.
+	var boss: Resource = current_scenario_data.boss
+
+	if boss != null:
+		await _play_boss_battle(boss)
+
 	SessionLogger.log_event("scenario_end", {
 		"scenario_id": str(current_scenario_data.id),
 		"cards_seen": scenario_seen_card_ids.duplicate(),
@@ -1228,6 +1240,10 @@ func _advance_progression() -> void:
 	})
 
 	await _show_scenario_summary()
+
+	# O resumo cobria a batalha; ela sai agora.
+	if boss_battle.visible:
+		boss_battle.hide()
 
 	var ending_call: DialogueData = current_scenario_data.ending_call
 
@@ -2081,6 +2097,30 @@ func _breach_ids(
 
 
 # --- Animacoes de pontuacao ---------------------------------
+
+# --- Batalha contra o chefe -----------------------------------
+
+func _setup_boss_battle() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = BOSS_BATTLE_LAYER
+	add_child(layer)
+
+	boss_battle = BOSS_BATTLE_SCRIPT.new()
+	layer.add_child(boss_battle)
+	boss_battle.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+func _play_boss_battle(boss: Resource) -> void:
+	_hide_card_details()
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	# Sem consulta durante a luta: o botao da pausa fica
+	# desativado, e os atalhos do HUD ficam atras da batalha.
+	pause_menu.set_encyclopedia_locked(true)
+	await boss_battle.play(boss, dialogue_box)
+	pause_menu.set_encyclopedia_locked(false)
+
 
 # --- Chamada entre os antagonistas -----------------------------
 

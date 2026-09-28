@@ -10,6 +10,8 @@ signal encyclopedia_requested
 signal help_requested
 signal main_menu_requested
 
+var _encyclopedia_button: Button
+
 const PANEL_WIDTH := 320.0
 const BUTTON_HEIGHT := 40.0
 const INNER_MARGIN := 24
@@ -63,13 +65,12 @@ func _build_interface() -> void:
 		)
 	)
 
-	box.add_child(
-		_build_button(
-			"Enciclopédia",
-			_on_encyclopedia_pressed,
-			UIPalette.ICON_ENCYCLOPEDIA
-		)
+	_encyclopedia_button = _build_button(
+		"Enciclopédia",
+		_on_encyclopedia_pressed,
+		UIPalette.ICON_ENCYCLOPEDIA
 	)
+	box.add_child(_encyclopedia_button)
 
 	box.add_child(
 		_build_button("Menu principal", _on_main_menu_pressed)
@@ -99,6 +100,21 @@ func _on_resume_pressed() -> void:
 
 func _on_help_pressed() -> void:
 	help_requested.emit()
+
+
+## Durante a batalha contra o chefe a enciclopedia fica
+## bloqueada: o botao continua visivel, mas desativado.
+func set_encyclopedia_locked(locked: bool) -> void:
+	if _encyclopedia_button == null:
+		return
+
+	_encyclopedia_button.disabled = locked
+	_encyclopedia_button.text = (
+		"Enciclopédia (bloqueada)" if locked else "Enciclopédia"
+	)
+	_encyclopedia_button.tooltip_text = (
+		"Indisponível durante o confronto." if locked else ""
+	)
 
 
 func _on_encyclopedia_pressed() -> void:

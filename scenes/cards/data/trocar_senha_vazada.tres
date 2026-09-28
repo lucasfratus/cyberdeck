@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://cf41j70o1n7lq" path="res://assets/icons/categories/authentication.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/trocar_senha_vazada.png" id="3_illus"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"trocar_senha_vazada"
+title = "Trocar Senha Vazada"
+description = "Trocar a senha depois de um vazamento faz a credencial exposta deixar de funcionar."
+educational_description = "Quando um serviço sofre um vazamento, a senha passa a circular entre atacantes. Trocá-la nesse serviço e em todos os outros onde ela era usada faz com que a lista vazada perca a utilidade. Serviços como o Have I Been Pwned ajudam a descobrir se um e-mail apareceu em vazamentos conhecidos."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+protection = 30
+vulnerability = 1.2
+closes_breach_ids = Array[String](["exposed_credentials"])
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

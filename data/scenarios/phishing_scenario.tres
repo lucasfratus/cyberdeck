@@ -7,6 +7,7 @@
 [ext_resource type="Resource" uid="uid://hry0xv3hcptt" path="res://data/rounds/phishing_r2.tres" id="3_wrt42"]
 [ext_resource type="Resource" uid="uid://b015wg5ga2fxu" path="res://data/rounds/phishing_r3.tres" id="5_gxs75"]
 [ext_resource type="Resource" path="res://data/dialogue/cutscenes/call_after_phishing.tres" id="6_call"]
+[ext_resource type="Resource" path="res://data/bosses/imitador.tres" id="9_boss"]
 
 [resource]
 script = ExtResource("2_70x5n")
@@ -16,5 +17,6 @@ display_name = "E-mail suspeito"
 intro_dialogue = ExtResource("1_38gkg")
 rounds = Array[ExtResource("1_vta8w")]([ExtResource("2_wrt42"), ExtResource("3_wrt42"), ExtResource("5_gxs75")])
 ending_call = ExtResource("6_call")
+boss = ExtResource("9_boss")
 deck = Array[String](["senha_forte", "senha_forte", "autenticacao_2fa", "autenticacao_2fa", "verificar_remetente", "verificar_remetente", "antivirus_atualizado", "antivirus_atualizado", "link_suspeito", "abrir_anexo"])
 metadata/_custom_type_script = "uid://wmsuml7vxiif"

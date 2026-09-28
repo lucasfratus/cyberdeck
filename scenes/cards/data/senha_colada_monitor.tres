@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://cf41j70o1n7lq" path="res://assets/icons/categories/authentication.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://canwsgyh34f2f" path="res://scenes/cards/CardData.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/cards/illustrations/senha_colada_monitor.png" id="3_illus"]
+[ext_resource type="Resource" uid="uid://j37fmey6uhdd" path="res://data/breaches/exposed_credentials.tres" id="4_breach"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"senha_colada_monitor"
+title = "Anotar Senha no Monitor"
+description = "A senha fica sempre à mão, sem precisar decorar."
+educational_description = "Um papel colado no monitor fica à vista de quem passar pela mesa e aparece em fotos e chamadas de vídeo. Se for preciso anotar, guarde o papel em um lugar fechado, ou use um gerenciador de senhas."
+illustration = ExtResource("3_illus")
+category_icon = ExtResource("1_icon")
+protection = 15
+vulnerability = 1.8
+opens_breach = ExtResource("4_breach")
+metadata/_custom_type_script = "uid://canwsgyh34f2f"

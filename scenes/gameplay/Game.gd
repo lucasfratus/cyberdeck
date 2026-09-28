@@ -227,6 +227,12 @@ const SCENARIO_CARD_LINE_WIDTH := 360.0
 ## Depois da introducao do cenario, a partida surge do preto.
 const FADE_FROM_BLACK_DURATION := 0.45
 
+## Chamada entre os antagonistas, entre um cenario e outro.
+## Acima dos dialogos (10) e abaixo dos menus (100).
+const CODEC_CALL_SCRIPT := preload("res://scenes/cutscenes/CodecCall.gd")
+const CODEC_CALL_LAYER := 20
+var codec_call: Control
+
 var scenario_card: ColorRect
 var pending_fade_from_black := false
 var scenario_card_content: VBoxContainer
@@ -330,6 +336,7 @@ func _ready() -> void:
 	_setup_score_popup()
 	_setup_round_banner()
 	_setup_scenario_card()
+	_setup_codec_call()
 	_setup_hud()
 	_setup_background()
 
@@ -1221,10 +1228,18 @@ func _advance_progression() -> void:
 	})
 
 	await _show_scenario_summary()
+
+	var ending_call: DialogueData = current_scenario_data.ending_call
+
+	if ending_call != null:
+		await _play_codec_call(ending_call)
+
 	current_scenario_index += 1
 
 	# Não existem mais cenários.
 	if current_scenario_index >= scenarios.size():
+		if ending_call != null:
+			await _fade_from_black()
 		_finish_game()
 		return
 
@@ -2066,6 +2081,31 @@ func _breach_ids(
 
 
 # --- Animacoes de pontuacao ---------------------------------
+
+# --- Chamada entre os antagonistas -----------------------------
+
+func _setup_codec_call() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = CODEC_CALL_LAYER
+	add_child(layer)
+
+	codec_call = CODEC_CALL_SCRIPT.new()
+	layer.add_child(codec_call)
+	codec_call.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+func _play_codec_call(dialogue: DialogueData) -> void:
+	_hide_card_details()
+	hand.set_interaction_enabled(false)
+	play_button.disabled = true
+
+	await codec_call.play(dialogue)
+
+	# A chamada termina com a tela preta. A tela do cenario
+	# cobre a partida antes de a chamada sumir.
+	_cover_with_black()
+	codec_call.hide()
+
 
 # --- Tela de abertura do cenario ------------------------------
 

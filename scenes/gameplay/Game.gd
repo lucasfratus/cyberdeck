@@ -1478,6 +1478,11 @@ func _finish_round(victory: bool) -> void:
 	hand.clear_selection()
 	hand.set_interaction_enabled(false)
 
+	# Se a ultima jogada abriu ou corrigiu uma brecha, o aviso
+	# termina antes da faixa de resultado, para um nao cobrir
+	# o outro.
+	await _wait_for_breach_feedback()
+
 	await _show_round_result_banner(victory)
 	await _show_round_result_dialogue(victory)
 	
@@ -2061,6 +2066,15 @@ func _show_breach_feedback(message: String) -> void:
 	breach_feedback_tween.tween_callback(
 		breach_feedback.hide
 	)
+
+
+func _wait_for_breach_feedback() -> void:
+	if (
+		breach_feedback_tween != null
+		and breach_feedback_tween.is_valid()
+		and breach_feedback_tween.is_running()
+	):
+		await breach_feedback_tween.finished
 
 
 func _show_first_breach_tutorial() -> void:

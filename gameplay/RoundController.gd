@@ -13,10 +13,13 @@ var last_play_base_score := 0.0
 var last_breach_penalty := 0.0
 var last_play_final_score := 0.0
 
+## Nivel escolhido no menu. Nulo equivale ao Intermediario.
+var difficulty: DifficultyData
+
 func start(round_data: RoundData) -> void:
 	data = round_data
 	score = 0.0
-	plays_remaining = data.base_max_plays
+	plays_remaining = maxi(1, data.base_max_plays + _extra_plays())
 	finished = false
 	
 	last_play_base_score = 0.0
@@ -37,8 +40,11 @@ func start(round_data: RoundData) -> void:
 
 	effective_risk += (
 		data.risk_increase_per_exploited_breach
+		* _exploited_risk_multiplier()
 		* exploited_breaches.size()
 	)
+
+	effective_risk *= _risk_multiplier()
 	
 	print(
 	"[ATAQUE] Brechas exploradas: ",
@@ -118,6 +124,8 @@ func get_breach_penalty_ratio() -> float:
 	for breach in active_breaches:
 		total += breach.score_penalty_ratio
 
+	total *= _breach_penalty_multiplier()
+
 	return clampf(total, 0.0, 1.0)
 
 
@@ -161,5 +169,25 @@ func get_breach_exploitation_risk_increase() -> float:
 
 	return (
 		data.risk_increase_per_exploited_breach
+		* _exploited_risk_multiplier()
 		* exploited_breaches.size()
+		* _risk_multiplier()
 	)
+
+
+# --- Dificuldade ----------------------------------------------
+
+func _risk_multiplier() -> float:
+	return difficulty.risk_multiplier if difficulty != null else 1.0
+
+
+func _extra_plays() -> int:
+	return difficulty.extra_plays if difficulty != null else 0
+
+
+func _breach_penalty_multiplier() -> float:
+	return difficulty.breach_penalty_multiplier if difficulty != null else 1.0
+
+
+func _exploited_risk_multiplier() -> float:
+	return difficulty.exploited_risk_multiplier if difficulty != null else 1.0

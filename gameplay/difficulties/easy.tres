@@ -1,12 +1,18 @@
 [gd_resource type="Resource" script_class="DifficultyData" format=3 uid="uid://c6uavafrfipaq"]
 
 [ext_resource type="Script" uid="uid://8ax0cmx61ka2" path="res://gameplay/DifficultyData.gd" id="1_ih3se"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/difficulty_iniciante.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_ih3se")
-id = &"easy"
-display_name = "Fácil"
-risk_multiplier = 0.8
-extra_plays = 1
+id = &"iniciante"
+display_name = "Iniciante"
+icon = ExtResource("2_icon")
+description = "Para quem tem pouca familiaridade com jogos eletrônicos ou está conhecendo agora o tema de segurança digital. Há mais folga para errar e aprender com calma."
+rules_text = "Mão com 6 cartas e ameaças um pouco mais fracas. As brechas pesam metade e o chefe causa menos dano."
+risk_multiplier = 0.9
 hand_size_modifier = 1
+breach_penalty_multiplier = 0.5
+exploited_risk_multiplier = 0.5
+boss_damage_multiplier = 0.7
 metadata/_custom_type_script = "uid://8ax0cmx61ka2"

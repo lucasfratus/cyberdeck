@@ -6,6 +6,11 @@ const CARD_GAP := 16.0
 const CARD_SPACING := CARD_WIDTH + CARD_GAP
 const CARD_Y := 0.0
 
+## Folga minima entre a mao e as bordas da tela. Com mais
+## cartas (a mao do Iniciante tem 6), o espaco entre elas
+## diminui para a fileira caber na largura disponivel.
+const SIDE_MARGIN := 16.0
+
 ## Intervalo entre uma carta comprada e a proxima.
 const ENTRY_STAGGER := 0.07
 
@@ -23,10 +28,16 @@ func update_layout(
 	var entering_count := 0
 	var entry_time := 0.0
 
-	var total_width := (
-		CARD_WIDTH * cards.size()
-		+ CARD_GAP * (cards.size() - 1)
-	)
+	var spacing := CARD_SPACING
+
+	if cards.size() > 1:
+		var fit_spacing := (
+			(available_width - SIDE_MARGIN * 2.0 - CARD_WIDTH)
+			/ (cards.size() - 1)
+		)
+		spacing = minf(CARD_SPACING, fit_spacing)
+
+	var total_width := CARD_WIDTH + spacing * (cards.size() - 1)
 
 	var start_x := (available_width - total_width) / 2.0
 
@@ -34,7 +45,7 @@ func update_layout(
 		var card := cards[i]
 
 		var target_position := Vector2(
-			start_x + i * CARD_SPACING,
+			start_x + i * spacing,
 			CARD_Y
 		)
 

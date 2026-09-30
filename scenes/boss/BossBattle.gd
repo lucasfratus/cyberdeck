@@ -68,6 +68,10 @@ var _attempt := 0
 ## O resumo do cenario le estes numeros.
 var correct_answers := 0
 var wrong_answers := 0
+
+## Multiplica o dano de cada erro. O Game ajusta pela
+## dificuldade antes de chamar play().
+var wrong_damage_multiplier := 1.0
 var _awaiting_answer := false
 var _option_order: Array[int] = []
 var _current_question: Resource
@@ -724,8 +728,9 @@ func _assistant_attacks() -> void:
 
 func _boss_attacks() -> void:
 	await _shoot(_boss_sprite, _assistant_sprite, BOSS_COLOR)
-	_assistant_hp = maxi(0, _assistant_hp - int(_boss.damage_per_wrong))
-	_hurt(_assistant_sprite, int(_boss.damage_per_wrong))
+	var damage := maxi(1, roundi(int(_boss.damage_per_wrong) * wrong_damage_multiplier))
+	_assistant_hp = maxi(0, _assistant_hp - damage)
+	_hurt(_assistant_sprite, damage)
 	_set_bar(_assistant_bar, _assistant_hp, int(_boss.assistant_max_hp), true)
 
 

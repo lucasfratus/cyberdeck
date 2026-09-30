@@ -41,6 +41,12 @@ const NAME_HELP_TEXT := (
 ## Menu de desenvolvedor: atalhos para comecar em qualquer
 ## ponto de qualquer cenario (so depuracao).
 const DEV_OPTIONS := preload("res://globals/DevOptions.gd")
+
+## Escolha de dificuldade, depois do nome e antes da partida.
+const DIFFICULTY := preload("res://globals/Difficulty.gd")
+const DIFFICULTY_PANEL_WIDTH := 600.0
+const DIFFICULTY_OPTION_HEIGHT := 52.0
+const DIFFICULTY_INFO_HEIGHT := 192.0
 const DEV_SESSION_CODE := "dev"
 const OVERLAY_DIM := Color(0.0, 0.0, 0.0, 0.7)
 
@@ -79,6 +85,17 @@ var _override_swaps: Array = []
 var _help_screen: Control
 var _participant_code_input: LineEdit
 var _name_prompt: Control
+var _difficulty_menu: Control
+var _difficulty_options: Array[Button] = []
+var _difficulty_info_title: Label
+var _difficulty_info_text: Label
+var _difficulty_info_rules: Label
+var _difficulty_start: Button
+var _selected_difficulty: DifficultyData
+var _dev_difficulty: OptionButton
+
+## Nome digitado, guardado enquanto a dificuldade e escolhida.
+var _pending_name := ""
 var _dev_menu: Control
 var _dev_button: Button
 var _dev_skip_intro: CheckBox
@@ -209,6 +226,9 @@ func _build_interface() -> void:
 		Control.PRESET_FULL_RECT
 	)
 	_help_screen.closed.connect(_on_help_closed)
+
+	_difficulty_menu = _build_difficulty_menu()
+	add_child(_difficulty_menu)
 
 	if OS.is_debug_build():
 		_name_prompt = _build_name_prompt()
@@ -432,9 +452,10 @@ func _build_button(
 
 func _on_play_pressed() -> void:
 	# Na build final nao ha registro de participante: Jogar
-	# comeca direto.
+	# vai direto para a dificuldade.
 	if _name_prompt == null:
-		_start_game("")
+		_pending_name = ""
+		_open_difficulty_menu()
 		return
 
 	_participant_code_input.clear()
@@ -443,7 +464,9 @@ func _on_play_pressed() -> void:
 
 
 func _on_name_confirmed() -> void:
-	_start_game(_participant_code_input.text)
+	_pending_name = _participant_code_input.text
+	_name_prompt.hide()
+	_open_difficulty_menu()
 
 
 func _start_game(participant_code: String) -> void:
@@ -456,11 +479,202 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
 
+	if _difficulty_menu.visible:
+		_on_difficulty_back()
+		get_viewport().set_input_as_handled()
+		return
+
 	for overlay: Control in [_name_prompt, _dev_menu]:
 		if overlay != null and overlay.visible:
 			overlay.hide()
 			get_viewport().set_input_as_handled()
 			return
+
+
+# --- Dificuldade ----------------------------------------------
+
+func _build_difficulty_menu() -> Control:
+	var parts := _build_overlay(DIFFICULTY_PANEL_WIDTH)
+	var overlay: Control = parts[0]
+	var content: VBoxContainer = parts[1]
+
+	content.add_child(_make_overlay_title("Escolha a dificuldade"))
+
+	# Um botao por nivel, com o icone de patente na frente. O
+	# grupo deixa so um marcado por vez.
+	var group := ButtonGroup.new()
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 8)
+	content.add_child(list)
+
+	for option: DifficultyData in DIFFICULTY.OPTIONS:
+		var button := Button.new()
+		button.text = option.display_name
+		button.toggle_mode = true
+		button.button_group = group
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.custom_minimum_size = Vector2(0.0, DIFFICULTY_OPTION_HEIGHT)
+		button.add_theme_font_size_override("font_size", 18)
+		button.set_meta("difficulty", option)
+
+		_style_difficulty_button(button)
+
+		if option.icon != null:
+			UIPalette.set_button_icon(button, option.icon)
+			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+
+		# Com o mouse em cima do nivel marcado, mantem a caixa
+		# marcada (ja com a folga do icone).
+		button.add_theme_stylebox_override(
+			"hover_pressed", button.get_theme_stylebox("pressed")
+		)
+
+		button.pressed.connect(_on_difficulty_chosen.bind(option))
+		button.mouse_entered.connect(_show_difficulty_info.bind(option))
+		button.focus_entered.connect(_show_difficulty_info.bind(option))
+		button.mouse_exited.connect(_show_difficulty_info.bind(null))
+		list.add_child(button)
+		_difficulty_options.append(button)
+
+	# Area de descricao, embaixo da lista. A altura e fixa para
+	# a janela nao mudar de tamanho de um nivel para outro.
+	var info_panel := PanelContainer.new()
+	info_panel.custom_minimum_size = Vector2(0.0, DIFFICULTY_INFO_HEIGHT)
+	var info_style := StyleBoxFlat.new()
+	info_style.bg_color = UIPalette.BACKGROUND
+	info_style.border_color = UIPalette.DIM
+	info_style.set_border_width_all(1)
+	info_style.set_content_margin_all(14)
+	info_panel.add_theme_stylebox_override("panel", info_style)
+	content.add_child(info_panel)
+
+	var info := VBoxContainer.new()
+	info.add_theme_constant_override("separation", 6)
+	info_panel.add_child(info)
+
+	_difficulty_info_title = Label.new()
+	_difficulty_info_title.add_theme_font_override("font", UIPalette.TEXT_FONT_BOLD)
+	_difficulty_info_title.add_theme_font_size_override("font_size", 17)
+	_difficulty_info_title.add_theme_color_override("font_color", UIPalette.PRIMARY)
+	info.add_child(_difficulty_info_title)
+
+	_difficulty_info_text = Label.new()
+	_difficulty_info_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_difficulty_info_text.add_theme_font_size_override("font_size", 15)
+	_difficulty_info_text.add_theme_color_override("font_color", UIPalette.TEXT)
+	info.add_child(_difficulty_info_text)
+
+	_difficulty_info_rules = Label.new()
+	_difficulty_info_rules.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_difficulty_info_rules.add_theme_font_size_override("font_size", 13)
+	_difficulty_info_rules.add_theme_color_override(
+		"font_color", UIPalette.TEXT.darkened(0.3)
+	)
+	info.add_child(_difficulty_info_rules)
+
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 12)
+	buttons.alignment = BoxContainer.ALIGNMENT_END
+	content.add_child(buttons)
+
+	var back := _build_button("Voltar", _on_difficulty_back)
+	back.custom_minimum_size.x = 120.0
+	buttons.add_child(back)
+
+	_difficulty_start = _build_button("Começar", _on_difficulty_confirmed)
+	_difficulty_start.custom_minimum_size.x = 140.0
+	buttons.add_child(_difficulty_start)
+
+	return overlay
+
+
+## O tema pinta o botao marcado de verde cheio, e o icone
+## verde do Iniciante sumiria nele. O marcado fica com fundo
+## escuro destacado e borda cheia, e os icones mantem a cor.
+func _style_difficulty_button(button: Button) -> void:
+	button.add_theme_constant_override("h_separation", 14)
+
+	var pressed := StyleBoxFlat.new()
+	pressed.bg_color = UIPalette.HOVER
+	pressed.border_color = UIPalette.PRIMARY
+	pressed.set_border_width_all(2)
+	pressed.content_margin_left = 16
+	pressed.content_margin_right = 16
+	button.add_theme_stylebox_override("pressed", pressed)
+
+	for state in ["normal", "hover", "focus"]:
+		var box := button.get_theme_stylebox(state).duplicate()
+		box.content_margin_left = 16
+		box.content_margin_right = 16
+		button.add_theme_stylebox_override(state, box)
+
+	button.add_theme_color_override("font_pressed_color", UIPalette.PRIMARY)
+	button.add_theme_color_override("font_hover_pressed_color", UIPalette.PRIMARY)
+
+	for color_name in [
+		"icon_normal_color", "icon_hover_color", "icon_pressed_color",
+		"icon_hover_pressed_color", "icon_focus_color",
+	]:
+		button.add_theme_color_override(color_name, Color.WHITE)
+
+
+func _open_difficulty_menu() -> void:
+	_selected_difficulty = null
+	_difficulty_start.disabled = true
+
+	for button in _difficulty_options:
+		button.set_pressed_no_signal(false)
+
+	_show_difficulty_info(null)
+
+	# Nenhum nivel comeca marcado nem com foco, para a escolha
+	# nao ser puxada para o primeiro da lista.
+	_difficulty_menu.show()
+
+
+func _on_difficulty_chosen(option: DifficultyData) -> void:
+	_selected_difficulty = option
+	_difficulty_start.disabled = false
+	_show_difficulty_info(option)
+
+
+## Mostra a descricao do nivel sob o mouse. Sem nenhum sob o
+## mouse, volta para o nivel marcado, ou para a instrucao.
+func _show_difficulty_info(option: DifficultyData) -> void:
+	if option == null:
+		option = _selected_difficulty
+
+	_difficulty_info_title.visible = option != null
+
+	if option == null:
+		_difficulty_info_title.text = ""
+		_difficulty_info_text.text = (
+			"Passe o mouse sobre uma dificuldade para ver para "
+			+ "quem ela é recomendada."
+		)
+		_difficulty_info_rules.text = ""
+		return
+
+	_difficulty_info_title.text = option.display_name
+	_difficulty_info_text.text = option.description
+	_difficulty_info_rules.text = option.rules_text
+
+
+func _on_difficulty_back() -> void:
+	_difficulty_menu.hide()
+
+	# Volta para o nome, que continua preenchido.
+	if _name_prompt != null:
+		_name_prompt.show()
+		_participant_code_input.grab_focus()
+
+
+func _on_difficulty_confirmed() -> void:
+	if _selected_difficulty == null:
+		return
+
+	DIFFICULTY.select(_selected_difficulty)
+	_start_game(_pending_name)
 
 
 # --- Janelas por cima do menu ---------------------------------
@@ -657,6 +871,23 @@ func _build_dev_menu() -> Control:
 	_style_checkbox(_dev_open_breaches)
 	content.add_child(_dev_open_breaches)
 
+	var difficulty_row := HBoxContainer.new()
+	difficulty_row.add_theme_constant_override("separation", 12)
+	content.add_child(difficulty_row)
+
+	var difficulty_label := Label.new()
+	difficulty_label.text = "Dificuldade"
+	difficulty_row.add_child(difficulty_label)
+
+	_dev_difficulty = OptionButton.new()
+	_dev_difficulty.focus_mode = Control.FOCUS_NONE
+
+	for option: DifficultyData in DIFFICULTY.OPTIONS:
+		_dev_difficulty.add_item(option.display_name)
+
+	_dev_difficulty.select(DIFFICULTY.OPTIONS.find(DIFFICULTY.DEFAULT))
+	difficulty_row.add_child(_dev_difficulty)
+
 	var close_row := HBoxContainer.new()
 	close_row.alignment = BoxContainer.ALIGNMENT_END
 	content.add_child(close_row)
@@ -688,6 +919,8 @@ func _on_dev_start_pressed(
 	start: String,
 	round_index: int
 ) -> void:
+	DIFFICULTY.select(DIFFICULTY.OPTIONS[_dev_difficulty.selected])
+
 	DEV_OPTIONS.request_start(
 		scenario_index,
 		start,

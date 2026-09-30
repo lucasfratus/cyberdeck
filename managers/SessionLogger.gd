@@ -68,6 +68,16 @@ func start_session(participant_code: String) -> void:
 	log_event("session_start", {})
 
 
+## Guarda um dado da sessao no topo do registro, fora da lista
+## de eventos. Usado para a dificuldade escolhida.
+func set_session_info(key: String, value: Variant) -> void:
+	if not _active:
+		return
+
+	_session[key] = value
+	_save()
+
+
 func log_event(type: String, data: Dictionary) -> void:
 	if not _active:
 		return

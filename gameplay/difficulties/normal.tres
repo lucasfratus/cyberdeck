@@ -1,9 +1,13 @@
 [gd_resource type="Resource" script_class="DifficultyData" format=3 uid="uid://bdkjeh7nlrhek"]
 
 [ext_resource type="Script" uid="uid://8ax0cmx61ka2" path="res://gameplay/DifficultyData.gd" id="1_87xsm"]
+[ext_resource type="Texture2D" path="res://assets/icons/ui/difficulty_intermediario.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_87xsm")
-id = &"normal"
-display_name = "Normal"
+id = &"intermediario"
+display_name = "Intermediário"
+icon = ExtResource("2_icon")
+description = "Para quem joga de vez em quando ou já tem alguma noção de segurança digital. Aqui o jogo segue o equilíbrio original."
+rules_text = "Mão com 5 cartas e ameaças no nível original."
 metadata/_custom_type_script = "uid://8ax0cmx61ka2"

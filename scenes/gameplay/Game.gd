@@ -335,6 +335,10 @@ const SCENARIO_LIST: Array[ScenarioData] = [
 ]
 
 const DEV_OPTIONS := preload("res://globals/DevOptions.gd")
+const DIFFICULTY := preload("res://globals/Difficulty.gd")
+
+## Nivel escolhido no menu antes da partida.
+var difficulty: DifficultyData
 
 var scenarios: Array[ScenarioData] = SCENARIO_LIST.duplicate()
 
@@ -420,6 +424,11 @@ func _ready() -> void:
 	# Rodando Game.tscn direto (F6), sem o menu principal.
 	if not SessionLogger.is_active():
 		SessionLogger.start_session("")
+
+	difficulty = DIFFICULTY.get_selected()
+	round_controller.difficulty = difficulty
+	boss_battle.wrong_damage_multiplier = difficulty.boss_damage_multiplier
+	SessionLogger.set_session_info("difficulty", str(difficulty.id))
 
 	await _start_game()
 
@@ -1316,9 +1325,14 @@ func _start_round(is_retry := false) -> void:
 	_update_play_button_state()
 	
 	
+func _hand_size() -> int:
+	var modifier := difficulty.hand_size_modifier if difficulty != null else 0
+	return maxi(1, INITIAL_HAND_SIZE + modifier)
+
+
 func _fill_hand() -> void:
 	var current_hand_size := hand.get_cards().size()
-	var missing_cards := INITIAL_HAND_SIZE - current_hand_size
+	var missing_cards := _hand_size() - current_hand_size
 
 	if missing_cards > 0:
 		_draw_cards(missing_cards)

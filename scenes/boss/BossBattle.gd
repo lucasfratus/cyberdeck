@@ -472,8 +472,16 @@ func _build_question_panel() -> Control:
 	content.add_theme_constant_override("separation", 6)
 	panel.add_child(content)
 
+	# Os textos com quebra de linha recebem largura fixa. O painel
+	# fica escondido durante as falas, e Control escondido nao
+	# recebe layout: sem essa largura, na primeira pergunta o
+	# texto era medido com 1 px, a altura calculada ia ao maximo
+	# e o painel aparecia muito maior que o conteudo.
+	var text_width := panel.size.x - style.get_margin(SIDE_LEFT) - style.get_margin(SIDE_RIGHT)
+
 	_question_label = _make_label("", 18, UIPalette.TEXT)
 	_question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_question_label.custom_minimum_size.x = text_width
 	content.add_child(_question_label)
 
 	for i in range(4):
@@ -490,6 +498,7 @@ func _build_question_panel() -> Control:
 
 	_explanation_label = _make_label("", 16, UIPalette.TEXT)
 	_explanation_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_explanation_label.custom_minimum_size.x = text_width
 	content.add_child(_explanation_label)
 
 	# Resultado e botao na mesma linha, para caber tudo no painel.

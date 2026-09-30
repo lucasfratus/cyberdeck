@@ -791,15 +791,12 @@ func _on_card_details_requested(card: Card) -> void:
 	detailed_card = card
 	_begin_details_view(card)
 
-	# Evita mostrar o painel enquanto seu conteúdo
-	# e seu tamanho ainda estão sendo recalculados.
-	card_details_panel.visible = false
-
+	# O painel fica visivel mas transparente enquanto o
+	# conteudo e o tamanho sao recalculados. Escondido (visible
+	# = false) os Containers nao refazem o layout, e o painel
+	# aparecia um frame com os textos no tamanho antigo.
 	card_details_panel.show_card(card.data)
-
-	# show_card() pode tornar o painel visível.
-	# Mantemos oculto até terminar o layout.
-	card_details_panel.visible = false
+	card_details_panel.modulate.a = 0.0
 
 	# Aguarda os Labels e Containers recalcularem
 	# seus tamanhos mínimos.
@@ -822,7 +819,7 @@ func _on_card_details_requested(card: Card) -> void:
 
 	_position_card_details_panel(card)
 
-	card_details_panel.visible = true
+	card_details_panel.modulate.a = 1.0
 
 
 func _position_card_details_panel(card: Card) -> void:

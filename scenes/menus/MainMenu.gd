@@ -47,6 +47,13 @@ const DIFFICULTY := preload("res://globals/Difficulty.gd")
 const DIFFICULTY_PANEL_WIDTH := 600.0
 const DIFFICULTY_OPTION_HEIGHT := 52.0
 const DIFFICULTY_INFO_HEIGHT := 192.0
+
+## Largura do texto dentro da area de descricao: a janela
+## menos as margens do painel (24 de cada lado) e da area
+## (14 de cada lado, mais a borda).
+const DIFFICULTY_INFO_TEXT_WIDTH := (
+	DIFFICULTY_PANEL_WIDTH - 24.0 * 2.0 - 15.0 * 2.0
+)
 const DEV_SESSION_CODE := "dev"
 const OVERLAY_DIM := Color(0.0, 0.0, 0.0, 0.7)
 
@@ -558,13 +565,19 @@ func _build_difficulty_menu() -> Control:
 	_difficulty_info_title.add_theme_color_override("font_color", UIPalette.PRIMARY)
 	info.add_child(_difficulty_info_title)
 
+	# Texto com quebra de linha precisa de largura fixa. Sem ela,
+	# no primeiro frame depois de trocar o texto o Label calcula
+	# a altura com largura quase zero, fica altissimo e estica
+	# a janela por um instante.
 	_difficulty_info_text = Label.new()
+	_difficulty_info_text.custom_minimum_size.x = DIFFICULTY_INFO_TEXT_WIDTH
 	_difficulty_info_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_difficulty_info_text.add_theme_font_size_override("font_size", 15)
 	_difficulty_info_text.add_theme_color_override("font_color", UIPalette.TEXT)
 	info.add_child(_difficulty_info_text)
 
 	_difficulty_info_rules = Label.new()
+	_difficulty_info_rules.custom_minimum_size.x = DIFFICULTY_INFO_TEXT_WIDTH
 	_difficulty_info_rules.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_difficulty_info_rules.add_theme_font_size_override("font_size", 13)
 	_difficulty_info_rules.add_theme_color_override(

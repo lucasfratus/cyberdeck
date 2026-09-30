@@ -31,6 +31,7 @@ const LOCKED_TEXT := \
 func _ready() -> void:
 	custom_minimum_size.x = panel_width
 	size.x = panel_width
+	_fix_text_width()
 
 	description_label.add_theme_font_size_override(
 		"font_size",
@@ -48,6 +49,33 @@ func set_panel_width(width: float) -> void:
 	panel_width = width
 	custom_minimum_size.x = width
 	size.x = width
+	_fix_text_width()
+
+
+## O painel passa a maior parte do tempo escondido, e Control
+## escondido nao recebe layout. Sem largura fixa, os textos com
+## quebra de linha ficavam com 1 px de largura ate o painel
+## aparecer pela primeira vez: a descricao media milhares de
+## pixels de altura e o painel surgia vazio e esticado por um
+## instante. Com a largura definida aqui, a altura ja sai certa.
+func _fix_text_width() -> void:
+	if description_label == null:
+		return
+
+	var margin := $MarginContainer as MarginContainer
+	var padding := (
+		margin.get_theme_constant("margin_left")
+		+ margin.get_theme_constant("margin_right")
+	)
+
+	var box := get_theme_stylebox("panel")
+
+	if box != null:
+		padding += box.get_margin(SIDE_LEFT) + box.get_margin(SIDE_RIGHT)
+
+	var text_width := maxf(panel_width - padding, 0.0)
+	description_label.custom_minimum_size.x = text_width
+	title_label.custom_minimum_size.x = text_width
 
 
 func show_card(card_data: CardData, locked := false) -> void:

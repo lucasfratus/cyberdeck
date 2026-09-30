@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="security_card_game"
+config/name="Cyberdeck"
 run/main_scene="res://scenes/menus/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://assets/logo/icon.png"
 
 [autoload]
 

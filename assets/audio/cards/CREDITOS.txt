@@ -1,0 +1,17 @@
+Sons das cartas
+
+Origem: UI SFX (uisfx), versao 0.4.0, de Romain Simon.
+https://uisfx.com  |  https://github.com/romainsimon/uisfx
+Licenca do audio: CC0 1.0 (dominio publico). Uso livre, inclusive
+comercial, sem necessidade de atribuicao.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Os originais em Ogg (Opus) foram convertidos para WAV mono,
+pois o Godot nao importa Opus.
+
+Arquivo neste projeto   Arquivo original (pacote/som)
+card_draw.wav           studio/swipe.ogg
+card_play.wav           studio/drop.ogg
+practice_good.wav       studio/success.ogg
+practice_bad.wav        studio/error.ogg
+round_score.wav         glass/complete.ogg

@@ -121,6 +121,35 @@ var played_cards_landing_time := 0.0
 const PLAY_CARD_MOVE_DURATION := 0.3
 const PLAY_CARD_STAGGER := 0.06
 
+## Sons das cartas (CC0, ver assets/audio/cards/CREDITOS.txt).
+const SFX_CARD_DRAW: AudioStream = preload("res://assets/audio/cards/card_draw.wav")
+const SFX_CARD_PLAY: AudioStream = preload("res://assets/audio/cards/card_play.wav")
+const SFX_PRACTICE_GOOD: AudioStream = preload("res://assets/audio/cards/practice_good.wav")
+const SFX_PRACTICE_BAD: AudioStream = preload("res://assets/audio/cards/practice_bad.wav")
+const SFX_ROUND_SCORE: AudioStream = preload("res://assets/audio/cards/round_score.wav")
+
+## Volume de cada som. A compra e o som mais frequente, entao
+## fica mais baixa; a soma da rodada fecha a jogada, mais alta.
+const SFX_CARD_DRAW_DB := -9.0
+const SFX_CARD_PLAY_DB := -7.0
+const SFX_PRACTICE_DB := -6.0
+const SFX_ROUND_SCORE_DB := -5.0
+
+## Variacao aleatoria de tom nas cartas, para varias compras ou
+## jogadas seguidas nao soarem identicas.
+const SFX_CARD_PITCH_VARIATION := 0.08
+
+## Varios sons podem tocar ao mesmo tempo (cinco cartas
+## entrando na mao, por exemplo). Cada um usa um player livre.
+const SFX_PLAYER_COUNT := 6
+
+## Mesmo intervalo usado pela mao para a entrada das cartas
+## (HandLayout.ENTRY_STAGGER), para o som acompanhar cada uma.
+const SFX_DRAW_STAGGER := 0.07
+
+var sfx_players: Array[AudioStreamPlayer] = []
+var sfx_next_player := 0
+
 ## Indicadores de brecha no HUD, por id da brecha. Mantidos
 ## entre atualizacoes para animar so o que abriu ou fechou.
 var breach_indicators: Dictionary = {}
@@ -371,6 +400,7 @@ func _ready() -> void:
 	_setup_codec_call()
 	_setup_boss_battle()
 	_setup_ad_popups()
+	_setup_sfx()
 	_setup_hud()
 	_setup_background()
 
@@ -888,6 +918,8 @@ func _setup_deck() -> void:
 
 
 func _draw_cards(amount: int) -> void:
+	var drawn := 0
+
 	for _i in range(amount):
 		var card_id := player_deck.draw()
 
@@ -907,6 +939,14 @@ func _draw_cards(amount: int) -> void:
 			continue
 
 		hand.add_card(card)
+
+		_play_sfx_later(
+			drawn * SFX_DRAW_STAGGER,
+			SFX_CARD_DRAW,
+			SFX_CARD_DRAW_DB,
+			_random_card_pitch()
+		)
+		drawn += 1
 
 
 func _on_play_button_pressed() -> void:
@@ -1017,6 +1057,16 @@ func _show_played_cards(cards: Array[Card]) -> void:
 		played_cards_landing_time = maxf(
 			played_cards_landing_time,
 			delay + PLAY_CARD_MOVE_DURATION
+		)
+
+		# O som toca quando a carta chega na mesa. A curva de
+		# saida rapida faz a carta chegar perto do destino antes
+		# do fim do movimento.
+		_play_sfx_later(
+			delay + PLAY_CARD_MOVE_DURATION * 0.6,
+			SFX_CARD_PLAY,
+			SFX_CARD_PLAY_DB,
+			_random_card_pitch()
 		)
 
 
@@ -2236,6 +2286,64 @@ func _play_boss_battle(boss: Resource) -> void:
 	pause_menu.set_encyclopedia_locked(false)
 
 
+# --- Sons das cartas --------------------------------------------
+
+func _setup_sfx() -> void:
+	for i in range(SFX_PLAYER_COUNT):
+		var player := AudioStreamPlayer.new()
+		add_child(player)
+		sfx_players.append(player)
+
+
+func _play_sfx(stream: AudioStream, volume_db := 0.0, pitch := 1.0) -> void:
+	if stream == null or sfx_players.is_empty():
+		return
+
+	# Procura um player parado. Se todos estiverem tocando, usa
+	# o mais antigo da fila.
+	var player: AudioStreamPlayer = null
+
+	for i in range(sfx_players.size()):
+		var candidate := sfx_players[(sfx_next_player + i) % sfx_players.size()]
+
+		if not candidate.playing:
+			player = candidate
+			break
+
+	if player == null:
+		player = sfx_players[sfx_next_player]
+
+	sfx_next_player = (sfx_next_player + 1) % sfx_players.size()
+
+	player.stream = stream
+	player.volume_db = volume_db
+	player.pitch_scale = pitch
+	player.play()
+
+
+## Toca depois de um atraso. O timer respeita a pausa.
+func _play_sfx_later(
+	delay: float,
+	stream: AudioStream,
+	volume_db := 0.0,
+	pitch := 1.0
+) -> void:
+	if delay <= 0.0:
+		_play_sfx(stream, volume_db, pitch)
+		return
+
+	get_tree().create_timer(delay, false).timeout.connect(
+		_play_sfx.bind(stream, volume_db, pitch)
+	)
+
+
+func _random_card_pitch() -> float:
+	return 1.0 + randf_range(
+		-SFX_CARD_PITCH_VARIATION,
+		SFX_CARD_PITCH_VARIATION
+	)
+
+
 # --- Anuncios do navegador sequestrado --------------------------
 
 func _setup_ad_popups() -> void:
@@ -2849,6 +2957,12 @@ func _animate_play_resolution(
 	)
 	score_tween.tween_callback(score_popup_root.hide)
 
+	# Som da soma: os pontos da jogada entram no placar da rodada.
+	if round_score_after > round_score_before:
+		score_tween.tween_callback(
+			_play_sfx.bind(SFX_ROUND_SCORE, SFX_ROUND_SCORE_DB)
+		)
+
 	score_tween.tween_method(
 		_show_round_score_step,
 		round_score_before,
@@ -2869,6 +2983,11 @@ func _signal_card_practice(card: Card) -> void:
 
 	if insecure:
 		color = UIPalette.DANGER
+
+	_play_sfx(
+		SFX_PRACTICE_BAD if insecure else SFX_PRACTICE_GOOD,
+		SFX_PRACTICE_DB
+	)
 
 	_shake_card(card, insecure)
 	_flash_card_glow(card, color)

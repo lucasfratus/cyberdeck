@@ -108,7 +108,6 @@ var _dev_difficulty: OptionButton
 ## Nome digitado, guardado enquanto a dificuldade e escolhida.
 var _pending_name := ""
 var _dev_menu: Control
-var _dev_button: Button
 var _dev_skip_intro: CheckBox
 var _dev_open_breaches: CheckBox
 
@@ -222,7 +221,6 @@ func _build_interface() -> void:
 	# Ferramentas da avaliacao: so em build de depuracao.
 	if OS.is_debug_build():
 		_build_sessions_corner_button()
-		_build_dev_corner_button()
 
 	# No navegador nao existe "sair", a aba e que fecha.
 	if not OS.has_feature("web"):
@@ -356,8 +354,6 @@ func _set_invaded(on: bool) -> void:
 	if _corner_button != null:
 		_corner_button.theme = _invaded_theme if on else null
 
-	if _dev_button != null:
-		_dev_button.theme = _invaded_theme if on else null
 
 	for swap: Array in _override_swaps:
 		var button: Button = swap[0]
@@ -500,8 +496,29 @@ func _start_game(participant_code: String) -> void:
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
 
 
-## Esc fecha a janela aberta por cima do menu.
+## Atalho do menu de desenvolvedor. Fica escondido do
+## participante: nao ha botao, so a combinacao de teclas.
+const DEV_MENU_SHORTCUT_TEXT := "Ctrl + Shift + D"
+
+
+## Esc fecha a janela aberta por cima do menu. Ctrl + Shift + D
+## abre ou fecha o menu de desenvolvedor (so depuracao).
 func _unhandled_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+
+	if (
+		_dev_menu != null
+		and key != null
+		and key.pressed
+		and not key.echo
+		and key.keycode == KEY_D
+		and key.ctrl_pressed
+		and key.shift_pressed
+	):
+		_dev_menu.visible = not _dev_menu.visible
+		get_viewport().set_input_as_handled()
+		return
+
 	if not event.is_action_pressed("ui_cancel"):
 		return
 
@@ -816,24 +833,6 @@ func _build_name_prompt() -> Control:
 	return overlay
 
 
-func _build_dev_corner_button() -> void:
-	var button := Button.new()
-	_dev_button = button
-	button.icon = UIPalette.ICON_DEV
-	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	button.tooltip_text = "Menu de desenvolvedor"
-	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(func() -> void: _dev_menu.show())
-	add_child(button)
-
-	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	button.offset_left = CORNER_MARGIN
-	button.offset_top = -CORNER_MARGIN - CORNER_BUTTON_SIZE.y
-	button.offset_right = CORNER_MARGIN + CORNER_BUTTON_SIZE.x
-	button.offset_bottom = -CORNER_MARGIN
-	button.grow_vertical = Control.GROW_DIRECTION_BEGIN
-
-
 func _build_dev_menu() -> Control:
 	var parts := _build_overlay(0.0)
 	var overlay: Control = parts[0]
@@ -842,8 +841,9 @@ func _build_dev_menu() -> Control:
 	content.add_child(_make_overlay_title("Menu de desenvolvedor"))
 	content.add_child(_make_overlay_note(
 		"Começa a partida direto no ponto escolhido. As partidas "
-		+ "abertas aqui ficam registradas com o nome \"%s\"."
+		+ "abertas aqui ficam registradas com o nome \"%s\". "
 		% DEV_SESSION_CODE
+		+ "Atalho para abrir e fechar: %s." % DEV_MENU_SHORTCUT_TEXT
 	))
 
 	# A lista vem do Game, para o menu acompanhar cenarios novos.

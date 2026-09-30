@@ -86,6 +86,10 @@ var help_screen: Control
 const OPTIONS_SCREEN_SCRIPT := preload("res://scenes/menus/OptionsScreen.gd")
 var options_screen: Control
 
+## Tela de agradecimento depois do ultimo cenario.
+const FINAL_SCREEN_SCRIPT := preload("res://scenes/menus/FinalScreen.gd")
+var final_screen: Control
+
 ## Se a enciclopedia ou a ajuda foi aberta pelo menu de
 ## pausa (true) ou pelos botoes do HUD (false).
 var overlay_returns_to_pause := true
@@ -495,6 +499,13 @@ func _setup_menus() -> void:
 	options_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	options_screen.closed.connect(_on_options_closed)
 
+	final_screen = FINAL_SCREEN_SCRIPT.new()
+	menu_layer.add_child(final_screen)
+	final_screen.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+	final_screen.main_menu_requested.connect(_on_main_menu_requested)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
@@ -515,6 +526,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if options_screen != null and options_screen.visible:
+		return
+
+	# Depois do fim, a pausa nao tem mais funcao.
+	if final_screen != null and final_screen.visible:
 		return
 
 	if pause_menu.visible:
@@ -1620,9 +1635,8 @@ func _finish_game() -> void:
 
 	SessionLogger.end_session("completed")
 
-	result_label.text = "Você concluiu todos os cenários!"
-	result_label.visible = true
-	score_label.text = "Fim da partida"
+	_hide_card_details()
+	final_screen.show_screen(dialogue_box.character_texture)
 	
 	
 func _show_scenario_intro() -> void:

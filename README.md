@@ -44,25 +44,40 @@ Se o jogador perde uma rodada, as brechas voltam ao estado em que estavam no in�
 
 ### Cenários
 
-| Cenário | Tema | Brecha principal |
-|---|---|---|
-| E-mail suspeito | Phishing, anexos e links maliciosos | Dispositivo comprometido |
-| Senhas | Reutilização de senhas e vazamento de credenciais | Credenciais expostas |
+| Cenário | Tema | Brecha principal | Chefe |
+|---|---|---|---|
+| E-mail suspeito | Phishing, anexos e links maliciosos | Dispositivo comprometido | O Imitador |
+| Senhas | Reutilização de senhas e vazamento de credenciais | Credenciais expostas | A Chave-Mestra |
+| Programa gratuito | Adware, instaladores com extras e notificações | Navegador sequestrado | O Anunciante |
 
-Cada rodada tem um baralho próprio. As cartas novas vão sendo apresentadas aos poucos, em vez de aparecerem todas na primeira rodada.
+Cada cenário tem três rodadas e termina com a batalha contra um chefe, vencida respondendo perguntas sobre o tema. Cada rodada tem um baralho próprio, e as cartas novas vão sendo apresentadas aos poucos.
+
 
 ### Cartas
+
 
 | Carta | Proteção | Vulnerabilidade | Efeito |
 |---|---|---|---|
 | Senha Forte | 35 | ×1.0 | |
-| Autenticação em Dois Fatores | 20 | ×1.5 | |
-| Verificar o Remetente | 30 | ×1.5 | |
 | Utilizar senhas exclusivas | 55 | ×1.0 | Fecha *Credenciais expostas* |
-| Antivírus Atualizado | 40 | ×1.0 | Fecha *Dispositivo comprometido* |
+| Usar Gerenciador de Senhas | 35 | ×1.3 | |
+| Trocar Senha Vazada | 30 | ×1.2 | Fecha *Credenciais expostas* |
+| Autenticação em Dois Fatores | 20 | ×1.5 | |
+| Não Repassar o Código | 25 | ×1.5 | |
+| Verificar o Remetente | 30 | ×1.5 | |
+| Antivírus Atualizado | 40 | ×1.0 | Fecha *Dispositivo comprometido* e *Navegador sequestrado* |
+| Instalação Personalizada | 30 | ×1.3 | |
+| Revisar Extensões | 25 | ×1.2 | Fecha *Navegador sequestrado* |
+| Bloquear Notificações | 20 | ×1.5 | |
 | Reutilizar Senha | 10 | ×2.0 | Abre *Credenciais expostas* |
+| Senha de Aniversário | 10 | ×2.0 | Abre *Credenciais expostas* |
+| Anotar Senha no Monitor | 15 | ×1.8 | Abre *Credenciais expostas* |
 | Clicar em Link Suspeito | 5 | ×2.0 | Abre *Dispositivo comprometido* |
 | Abrir Anexo Desconhecido | 10 | ×2.0 | Abre *Dispositivo comprometido* |
+| Clicar em Baixar | 10 | ×2.0 | Abre *Dispositivo comprometido* |
+| Instalação Rápida | 10 | ×2.0 | Abre *Navegador sequestrado* |
+| Permitir Notificações | 15 | ×1.8 | Abre *Navegador sequestrado* |
+
 
 ## Recursos
 
@@ -70,10 +85,18 @@ Cada rodada tem um baralho próprio. As cartas novas vão sendo apresentadas aos
 - **Painel educativo**: ao passar o mouse sobre uma carta, aparece uma explicação sobre a prática que ela representa.
 - **Enciclopédia**, acessível pelo menu principal e pelo menu de pausa, dividida em capítulos por ameaça. Cada capítulo explica como a ameaça funciona, traz links para as cartilhas do CERT.br e mostra as cartas relacionadas, indicando quais são boas práticas e quais abrem brechas. Uma aba final reúne todas as cartas por categoria. As cartas que ainda não apareceram ficam bloqueadas, com as informações substituídas por `?`.
 - **Tela Como jogar**, no menu principal e no menu de pausa, com as regras, a fórmula de pontuação e os controles.
-- **Revisão ao fim de cada cenário**, com as práticas que apareceram nele e a indicação das cartas novas.
+- **Tela de conclusão de cada cenário**, com pontuação, brechas abertas e corrigidas, tempo e a lista das cartas que apareceram.
+- **Opções**: volume geral e modo para daltonismo (protanopia, deuteranopia e tritanopia), com intensidade ajustável. As opções ficam salvas entre uma execução e outra.
+- **Narrativa** com a vilã E.V.E, apresentada em ligações entre os cenários.
 - **Registro de métricas de sessão**, usado na avaliação experimental (detalhes abaixo).
 
 ## Como executar
+
+### Versão pronta
+
+Baixe o arquivo da sua plataforma na página de [Releases](https://github.com/lucasfratus/cyberdeck/releases), descompacte e execute. Não é preciso instalar o Godot.
+
+### Pelo código-fonte
 
 **Requisito:** [Godot Engine](https://godotengine.org/) 4.7.1.
 
@@ -84,7 +107,7 @@ Cada rodada tem um baralho próprio. As cartas novas vão sendo apresentadas aos
 2. Abra o Godot e importe o projeto selecionando o arquivo `project.godot`.
 3. Pressione **F5** para executar. O jogo começa pelo menu principal.
 
-O projeto usa o renderizador de compatibilidade (GL Compatibility), o que permite a exportação para a web (HTML5).
+O projeto usa o renderizador de compatibilidade (GL Compatibility).
 
 ### Controles
 
@@ -95,15 +118,16 @@ O projeto usa o renderizador de compatibilidade (GL Compatibility), o que permit
 | Avançar um diálogo | Clique na caixa de diálogo, botão *Continuar* ou Enter |
 | Pausar | Esc |
 
-## Ferramentas para a avaliação experimental
+# Ferramentas para a avaliação experimental
 
-Em build de depuração, que inclui a execução pelo editor e as exportações com a opção *Export With Debug*, o jogo mostra recursos voltados às sessões de avaliação:
+Em build de depuração, que inclui a execução pelo editor e as exportações com a opção *Exportar com Depuração*, o jogo mostra recursos voltados às sessões de avaliação:
 
-- **Código do participante** no menu principal. Ele identifica o arquivo de métricas e permite relacioná-lo às respostas dos questionários.
-- **Abrir pasta das sessões**, que abre a pasta onde os registros são gravados.
-- **Limpar coleção**, na enciclopédia, que apaga o registro de cartas encontradas para o próximo participante começar do zero.
+- **Nome do participante**, pedido depois de *Jogar*. Ele identifica o arquivo de métricas e permite relacioná-lo às respostas dos questionários.
+- **Abrir pasta das sessões**, no canto inferior direito do menu principal, que abre a pasta onde os registros são gravados.
+- **Limpar coleção**, na Enciclopédia, que apaga o registro de cartas encontradas para o próximo participante começar do zero.
+- **Menu de desenvolvedor**, aberto com **Ctrl + Shift + D** no menu principal. Ele começa a partida direto em qualquer rodada ou chefe de qualquer cenário, com a dificuldade escolhida. Não tem botão na tela, para não aparecer para os participantes.
 
-Cada sessão gera um arquivo JSON em `user://sessions/`, gravado de novo a cada evento. O arquivo registra o início e o fim de cenários e rodadas, cada jogada com as cartas usadas, as práticas inseguras, a pontuação e as brechas abertas ou fechadas, o tempo de leitura dos painéis educativos as aberturas da pausa, da enciclopédia e da tela Como jogar, os capítulos consultados e os links de referência abertos. No topo do arquivo, um bloco `summary` traz os totais já calculados.
+Cada sessão gera um arquivo JSON em `user://sessions/`, gravado de novo a cada evento. No topo do arquivo ficam o nome do participante, a dificuldade e o modo para daltonismo usados. Os eventos registram o início e o fim de cenários e rodadas, cada jogada com as cartas usadas, as práticas inseguras, a pontuação e as brechas abertas ou fechadas, o tempo de leitura dos painéis educativos, as aberturas da pausa, da Enciclopédia e da tela Como jogar, os capítulos consultados, os links abertos, as respostas aos chefes e as janelas de anúncio fechadas ou clicadas. O bloco `summary` traz os totais já calculados.
 
 ## Estrutura do projeto
 
@@ -121,7 +145,12 @@ O conteúdo fica separado da lógica. Cartas, brechas, rodadas, cenários e diá
 
 ## Créditos
 
-Desenvolvido por **Lucas de Oliveira Fratus**, sob orientação do **Prof. Dr. Alisson Renan Svaigen**, no Departamento de Informática da Universidade Estadual de Maringá.
+Desenvolvido por **Lucas de Oliveira Fratus**, sob orientação do **Prof. Dr. Alisson Renan Svaigen** e **Prof. Me. Felippe Fernandes da Silva**, no Departamento de Informática da Universidade Estadual de Maringá.
 
-- Motor: [Godot Engine](https://godotengine.org/)
-- Fontes: Atkinson Hyperlegible e Atkinson Hyperlegible Mono, do Braille Institute. A licença da versão Mono (SIL Open Font License 1.1) está em `assets/fonts/OFL-AtkinsonHyperlegibleMono.txt`.
+- Parte das ilustrações das cartas e os personagens foram gerados pelo autor com IA (**Google Gemini**).
+- Sons das cartas: [UI SFX](https://github.com/romainsimon/uisfx), de Romain Simon (CC0).
+- Correção para daltonismo: shader de Vildravn, publicado no [Godot Shaders](https://godotshaders.com/shader/colorblindness-correction-shader/) (CC0).
+- Fontes: Atkinson Hyperlegible e Atkinson Hyperlegible Mono, do Braille Institute (SIL Open Font License 1.1).
+- Motor: [Godot Engine](https://godotengine.org/).
+
+A origem de cada arquivo está em [creditos.md](creditos.md).

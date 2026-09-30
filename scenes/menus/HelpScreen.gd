@@ -40,7 +40,16 @@ Reúne, para cada ameaça, uma explicação de como ela funciona, links para mat
 • Mouse sobre uma carta: ver a explicação da prática.
 • Clique ou Enter: avançar os diálogos.
 • Esc: pausar o jogo e abrir a Enciclopédia e estas regras.
-• Ícones no canto superior direito: abrir estas regras e a Enciclopédia sem passar pela pausa."""
+• Ícones no canto superior direito: abrir estas regras e a Enciclopédia sem passar pela pausa.
+
+[b]Créditos[/b]
+Desenvolvido por Lucas de Oliveira Fratus, com orientação do Prof. Dr. Alisson Renan Svaigen (Departamento de Informática, UEM).
+• Parte das ilustrações e os personagens foram gerados pelo autor com IA (Google Gemini). As demais imagens em pixel art e os sons sintetizados foram feitos por código, com auxílio de IA (Claude, da Anthropic).
+• Sons das cartas: UI SFX, de Romain Simon (CC0).
+• Correção para daltonismo: shader de Vildravn (CC0).
+• Fontes: Atkinson Hyperlegible, do Braille Institute (SIL OFL 1.1).
+• Leituras complementares: Cartilha de Segurança para Internet, do CERT.br.
+A lista completa está no arquivo CREDITOS.md do projeto."""
 
 
 func _ready() -> void:

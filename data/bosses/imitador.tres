@@ -1,12 +1,34 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://c3mfkdvf2558a"]
 
-[ext_resource type="Script" path="res://scenes/boss/BossData.gd" id="1_boss"]
-[ext_resource type="Script" path="res://scenes/boss/BossQuestionData.gd" id="2_question"]
+[ext_resource type="Script" uid="uid://0aryj301q2ad" path="res://scenes/boss/BossData.gd" id="1_boss"]
+[ext_resource type="Script" uid="uid://cki7d3g00i1l8" path="res://scenes/boss/BossQuestionData.gd" id="2_question"]
 [ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="3_line"]
 [ext_resource type="Script" uid="uid://knobenf0qolu" path="res://scenes/dialogue/DialogueData.gd" id="4_dialogue"]
-[ext_resource type="Texture2D" path="res://assets/icons/ui/anomaly.png" id="5_sprite"]
+[ext_resource type="Texture2D" uid="uid://bnhq5ify70ko5" path="res://assets/icons/ui/anomaly.png" id="5_sprite"]
 [ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="6_assistant"]
-[ext_resource type="AudioStream" path="res://assets/audio/voice_grunt.wav" id="7_voice"]
+[ext_resource type="AudioStream" uid="uid://wgf4sjq1alym" path="res://assets/audio/voice_grunt.wav" id="7_voice"]
+
+[sub_resource type="Resource" id="Line_12"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "Obrigado por confirmar seus dados!"
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_13"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela me acertou demais. Vamos de novo, com calma. Leia cada pergunta como leria um e-mail suspeito."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_defeat"]
+script = ExtResource("4_dialogue")
+id = "imitador_defeat"
+lines = Array[ExtResource("3_line")]([SubResource("Line_12"), SubResource("Line_13")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
 
 [sub_resource type="Resource" id="Line_01"]
 script = ExtResource("3_line")
@@ -82,57 +104,6 @@ id = "imitador_phase"
 lines = Array[ExtResource("3_line")]([SubResource("Line_07"), SubResource("Line_08")])
 metadata/_custom_type_script = "uid://knobenf0qolu"
 
-[sub_resource type="Resource" id="Line_09"]
-script = ExtResource("3_line")
-speaker = "O Imitador"
-text = "Remetente... não... verificado..."
-portrait = ExtResource("5_sprite")
-voice = ExtResource("7_voice")
-voice_pitch = 1.35
-metadata/_custom_type_script = "uid://tp6qdjosqu15"
-
-[sub_resource type="Resource" id="Line_10"]
-script = ExtResource("3_line")
-speaker = "Assistente"
-text = "Anomalia neutralizada. O setor de Comunicações está limpo."
-portrait = ExtResource("6_assistant")
-metadata/_custom_type_script = "uid://tp6qdjosqu15"
-
-[sub_resource type="Resource" id="Line_11"]
-script = ExtResource("3_line")
-speaker = "Assistente"
-text = "Ela só existia porque as pessoas clicavam sem conferir. Você mostrou o contrário."
-portrait = ExtResource("6_assistant")
-metadata/_custom_type_script = "uid://tp6qdjosqu15"
-
-[sub_resource type="Resource" id="Dialogue_victory"]
-script = ExtResource("4_dialogue")
-id = "imitador_victory"
-lines = Array[ExtResource("3_line")]([SubResource("Line_09"), SubResource("Line_10"), SubResource("Line_11")])
-metadata/_custom_type_script = "uid://knobenf0qolu"
-
-[sub_resource type="Resource" id="Line_12"]
-script = ExtResource("3_line")
-speaker = "O Imitador"
-text = "Obrigado por confirmar seus dados!"
-portrait = ExtResource("5_sprite")
-voice = ExtResource("7_voice")
-voice_pitch = 1.35
-metadata/_custom_type_script = "uid://tp6qdjosqu15"
-
-[sub_resource type="Resource" id="Line_13"]
-script = ExtResource("3_line")
-speaker = "Assistente"
-text = "Ela me acertou demais. Vamos de novo, com calma. Leia cada pergunta como leria um e-mail suspeito."
-portrait = ExtResource("6_assistant")
-metadata/_custom_type_script = "uid://tp6qdjosqu15"
-
-[sub_resource type="Resource" id="Dialogue_defeat"]
-script = ExtResource("4_dialogue")
-id = "imitador_defeat"
-lines = Array[ExtResource("3_line")]([SubResource("Line_12"), SubResource("Line_13")])
-metadata/_custom_type_script = "uid://knobenf0qolu"
-
 [sub_resource type="Resource" id="Question_01"]
 script = ExtResource("2_question")
 id = &"imitador_q01"
@@ -197,15 +168,40 @@ options = Array[String](["Comprar logo, porque ele é conhecido.", "Confirmar o 
 correct_index = 1
 explanation = "Golpistas se passam por pessoas conhecidas, usando contas invadidas ou números novos. Antes de qualquer pagamento, confirme por um canal que você já usava com a pessoa."
 
+[sub_resource type="Resource" id="Line_09"]
+script = ExtResource("3_line")
+speaker = "O Imitador"
+text = "Remetente... não... verificado..."
+portrait = ExtResource("5_sprite")
+voice = ExtResource("7_voice")
+voice_pitch = 1.35
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_10"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Anomalia neutralizada. O setor de Comunicações está limpo."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Line_11"]
+script = ExtResource("3_line")
+speaker = "Assistente"
+text = "Ela só existia porque as pessoas clicavam sem conferir. Você mostrou o contrário."
+portrait = ExtResource("6_assistant")
+metadata/_custom_type_script = "uid://tp6qdjosqu15"
+
+[sub_resource type="Resource" id="Dialogue_victory"]
+script = ExtResource("4_dialogue")
+id = "imitador_victory"
+lines = Array[ExtResource("3_line")]([SubResource("Line_09"), SubResource("Line_10"), SubResource("Line_11")])
+metadata/_custom_type_script = "uid://knobenf0qolu"
+
 [resource]
 script = ExtResource("1_boss")
 id = &"imitador"
 display_name = "O Imitador"
 sprite = ExtResource("5_sprite")
-max_hp = 100
-damage_per_correct = 25
-assistant_max_hp = 100
-damage_per_wrong = 34
 questions = Array[Resource]([SubResource("Question_01"), SubResource("Question_02"), SubResource("Question_03"), SubResource("Question_04"), SubResource("Question_05"), SubResource("Question_06"), SubResource("Question_07"), SubResource("Question_08")])
 intro_dialogue = SubResource("Dialogue_intro")
 phase_dialogue = SubResource("Dialogue_phase")

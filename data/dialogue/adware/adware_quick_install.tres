@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="DialogueData" format=3]
+[gd_resource type="Resource" script_class="DialogueData" format=3 uid="uid://b1ngutf1bt67f"]
 
 [ext_resource type="Script" uid="uid://tp6qdjosqu15" path="res://scenes/dialogue/DialogueLineData.gd" id="1_line"]
 [ext_resource type="Texture2D" uid="uid://bqcs830gpjh7r" path="res://assets/dialogue/assistant_portrait.png" id="2_portrait"]

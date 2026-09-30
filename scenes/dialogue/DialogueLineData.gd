@@ -9,7 +9,8 @@ enum HighlightTarget {
 	PLAYS,
 	PLAY_BUTTON,
 	HAND,
-	PLAY_AREA
+	PLAY_AREA,
+	BREACHES
 }
 
 

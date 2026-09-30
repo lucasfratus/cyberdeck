@@ -22,6 +22,7 @@ metadata/_custom_type_script = "uid://tp6qdjosqu15"
 script = ExtResource("1_j2mbj")
 speaker = "Assistente"
 text = "Observe o indicador de brechas abertas. Passe o mouse sobre ele para consultar a causa e os efeitos da brecha."
+highlight_target = 8
 portrait = ExtResource("2_h2s7t")
 metadata/_custom_type_script = "uid://tp6qdjosqu15"
 

@@ -63,6 +63,11 @@ var _assistant_hp := 0
 var _question_queue: Array = []
 var _phase_dialogue_shown := false
 var _attempt := 0
+
+## Respostas da batalha inteira, somando todas as tentativas.
+## O resumo do cenario le estes numeros.
+var correct_answers := 0
+var wrong_answers := 0
 var _awaiting_answer := false
 var _option_order: Array[int] = []
 var _current_question: Resource
@@ -104,6 +109,8 @@ func play(boss: Resource, dialogue_box: DialogueBox) -> void:
 	_boss = boss
 	_dialogue_box = dialogue_box
 	_attempt = 0
+	correct_answers = 0
+	wrong_answers = 0
 
 	_boss_name_label.text = str(boss.display_name).to_upper()
 	_boss_sprite.texture = boss.sprite
@@ -592,6 +599,11 @@ func _ask_question() -> void:
 
 	var chosen: int = _option_order[chosen_button]
 	var correct: bool = chosen == int(question.correct_index)
+
+	if correct:
+		correct_answers += 1
+	else:
+		wrong_answers += 1
 
 	SessionLogger.log_event("boss_answer", {
 		"boss": str(_boss.id),

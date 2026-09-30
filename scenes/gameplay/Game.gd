@@ -101,6 +101,19 @@ var scenario_summary: ScenarioSummary
 var scenario_seen_card_ids: Array[String] = []
 var scenario_new_card_ids: Array[String] = []
 
+## Numeros do cenario atual, mostrados na tela de conclusao.
+## A pontuacao soma so as rodadas vencidas; as tentativas
+## perdidas contam em scenario_retries.
+var scenario_score := 0.0
+var scenario_breaches_opened := 0
+var scenario_breaches_closed := 0
+var scenario_retries := 0
+
+## Tempo de jogo no cenario, em segundos. Conta em _process,
+## que para com a arvore pausada, entao a pausa nao entra.
+var scenario_elapsed := 0.0
+var scenario_timer_running := false
+
 ## Controle de tentativas da mesma rodada, para as
 ## metricas distinguirem a primeira vez de um retry.
 var round_attempt := 0
@@ -672,6 +685,7 @@ func _start_game_from_dev_menu(request: Dictionary) -> void:
 
 	match start:
 		DEV_OPTIONS.START_ROUND:
+			_reset_scenario_stats()
 			current_round_index = clampi(
 				int(request.get("round_index", 0)), 0, rounds.size() - 1
 			)
@@ -686,6 +700,7 @@ func _start_game_from_dev_menu(request: Dictionary) -> void:
 			await _start_round()
 
 		DEV_OPTIONS.START_BOSS:
+			_reset_scenario_stats()
 			# Posiciona na ultima rodada: avancar a progressao a
 			# partir dela leva ao chefe, ao resumo e a ligacao.
 			current_round_index = rounds.size() - 1
@@ -704,8 +719,7 @@ func _start_game_from_dev_menu(request: Dictionary) -> void:
 
 
 func _start_scenario() -> void:
-	scenario_seen_card_ids.clear()
-	scenario_new_card_ids.clear()
+	_reset_scenario_stats()
 
 	print(
 		"Iniciando cenário: ",
@@ -1133,6 +1147,7 @@ func _resolve_played_cards() -> void:
 
 		if closed_breach != null:
 			closed_breaches.append(closed_breach)
+			scenario_breaches_closed += 1
 
 	# Apenas as brechas que permaneceram abertas
 	# penalizam esta jogada.
@@ -1169,6 +1184,7 @@ func _resolve_played_cards() -> void:
 
 		if was_opened:
 			newly_opened_breaches.append(breach)
+			scenario_breaches_opened += 1
 
 	_log_play(newly_opened_breaches, closed_breaches)
 
@@ -1390,13 +1406,22 @@ func _advance_progression() -> void:
 	if boss != null:
 		await _play_boss_battle(boss)
 
+	scenario_timer_running = false
+	var stats := _build_scenario_stats(boss != null)
+
 	SessionLogger.log_event("scenario_end", {
 		"scenario_id": str(current_scenario_data.id),
 		"cards_seen": scenario_seen_card_ids.duplicate(),
 		"new_cards": scenario_new_card_ids.duplicate(),
+		"score": stats["score"],
+		"breaches_opened": stats["breaches_opened"],
+		"breaches_closed": stats["breaches_closed"],
+		"retries": stats["retries"],
+		"seconds": snappedf(stats["seconds"], 0.1),
 	})
 
-	await _show_scenario_summary()
+	await _show_scenario_summary(stats)
+
 
 	# O resumo cobria a batalha; ela sai agora.
 	if boss_battle.visible:
@@ -1437,6 +1462,11 @@ func _advance_progression() -> void:
 	
 func _finish_round(victory: bool) -> void:
 	_log_round_end(victory)
+
+	if victory:
+		scenario_score += round_controller.score
+	else:
+		scenario_retries += 1
 
 	# Os anuncios somem entre as rodadas. Se a brecha continuar
 	# aberta, eles voltam na rodada seguinte.
@@ -1708,6 +1738,9 @@ func _on_dialogue_highlight_changed(
 
 		DialogueLineData.HighlightTarget.PLAY_AREA:
 			_highlight_control(played_cards)
+
+		DialogueLineData.HighlightTarget.BREACHES:
+			_highlight_control(breaches_panel)
 
 
 func _highlight_control(control: Control) -> void:
@@ -2104,14 +2137,46 @@ func _register_scenario_card(
 		scenario_new_card_ids.append(card_id)
 
 
-func _show_scenario_summary() -> void:
+func _reset_scenario_stats() -> void:
+	scenario_seen_card_ids.clear()
+	scenario_new_card_ids.clear()
+	scenario_score = 0.0
+	scenario_breaches_opened = 0
+	scenario_breaches_closed = 0
+	scenario_retries = 0
+	scenario_elapsed = 0.0
+	scenario_timer_running = true
+
+
+func _process(delta: float) -> void:
+	if scenario_timer_running:
+		scenario_elapsed += delta
+
+
+func _build_scenario_stats(had_boss: bool) -> Dictionary:
+	var stats := {
+		"score": scenario_score,
+		"breaches_opened": scenario_breaches_opened,
+		"breaches_closed": scenario_breaches_closed,
+		"retries": scenario_retries,
+		"seconds": scenario_elapsed,
+		"has_boss": had_boss,
+		"boss_correct": 0,
+		"boss_wrong": 0,
+	}
+
+	if had_boss:
+		stats["boss_correct"] = boss_battle.correct_answers
+		stats["boss_wrong"] = boss_battle.wrong_answers
+
+	return stats
+
+
+func _show_scenario_summary(stats: Dictionary) -> void:
 	if scenario_summary == null:
 		return
 
 	if current_scenario_data == null:
-		return
-
-	if scenario_seen_card_ids.is_empty():
 		return
 
 	_hide_card_details()
@@ -2124,7 +2189,8 @@ func _show_scenario_summary() -> void:
 	scenario_summary.show_summary(
 		current_scenario_data.display_name,
 		scenario_seen_card_ids,
-		scenario_new_card_ids
+		scenario_new_card_ids,
+		stats
 	)
 
 	await scenario_summary.continue_requested

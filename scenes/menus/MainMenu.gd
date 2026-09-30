@@ -13,6 +13,9 @@ const ENCYCLOPEDIA_SCENE := preload(
 const HELP_SCREEN_SCRIPT := preload(
 	"res://scenes/menus/HelpScreen.gd"
 )
+const OPTIONS_SCREEN_SCRIPT := preload(
+	"res://scenes/menus/OptionsScreen.gd"
+)
 
 ## Logo com o titulo do jogo, no topo do menu.
 const TITLE_LOGO: Texture2D = preload("res://assets/logo/logo_completa.png")
@@ -90,6 +93,7 @@ var _corner_button: Button
 ## uma. Cada item: [botao, estado, caixa normal, caixa vermelha].
 var _override_swaps: Array = []
 var _help_screen: Control
+var _options_screen: Control
 var _participant_code_input: LineEdit
 var _name_prompt: Control
 var _difficulty_menu: Control
@@ -207,6 +211,14 @@ func _build_interface() -> void:
 		)
 	)
 
+	box.add_child(
+		_build_button(
+			"Opções",
+			_on_options_pressed,
+			UIPalette.ICON_OPTIONS
+		)
+	)
+
 	# Ferramentas da avaliacao: so em build de depuracao.
 	if OS.is_debug_build():
 		_build_sessions_corner_button()
@@ -233,6 +245,13 @@ func _build_interface() -> void:
 		Control.PRESET_FULL_RECT
 	)
 	_help_screen.closed.connect(_on_help_closed)
+
+	_options_screen = OPTIONS_SCREEN_SCRIPT.new()
+	add_child(_options_screen)
+	_options_screen.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+	_options_screen.closed.connect(_options_screen.hide)
 
 	_difficulty_menu = _build_difficulty_menu()
 	add_child(_difficulty_menu)
@@ -952,6 +971,11 @@ func _on_open_sessions_pressed() -> void:
 
 func _on_help_pressed() -> void:
 	_help_screen.show()
+
+
+func _on_options_pressed() -> void:
+	_options_screen.refresh()
+	_options_screen.show()
 
 
 func _on_help_closed() -> void:

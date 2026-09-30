@@ -8,6 +8,7 @@ class_name PauseMenu
 signal resume_requested
 signal encyclopedia_requested
 signal help_requested
+signal options_requested
 signal main_menu_requested
 
 var _encyclopedia_button: Button
@@ -71,6 +72,14 @@ func _build_interface() -> void:
 		UIPalette.ICON_ENCYCLOPEDIA
 	)
 	box.add_child(_encyclopedia_button)
+
+	box.add_child(
+		_build_button(
+			"Opções",
+			func() -> void: options_requested.emit(),
+			UIPalette.ICON_OPTIONS
+		)
+	)
 
 	box.add_child(
 		_build_button("Menu principal", _on_main_menu_pressed)

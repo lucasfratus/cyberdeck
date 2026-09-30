@@ -83,6 +83,9 @@ var pause_menu: PauseMenu
 var encyclopedia: Encyclopedia
 var help_screen: Control
 
+const OPTIONS_SCREEN_SCRIPT := preload("res://scenes/menus/OptionsScreen.gd")
+var options_screen: Control
+
 ## Se a enciclopedia ou a ajuda foi aberta pelo menu de
 ## pausa (true) ou pelos botoes do HUD (false).
 var overlay_returns_to_pause := true
@@ -429,6 +432,7 @@ func _ready() -> void:
 	round_controller.difficulty = difficulty
 	boss_battle.wrong_damage_multiplier = difficulty.boss_damage_multiplier
 	SessionLogger.set_session_info("difficulty", str(difficulty.id))
+	SessionLogger.set_session_info("colorblind_mode", GameSettings.get_colorblind_id())
 
 	await _start_game()
 
@@ -459,6 +463,9 @@ func _setup_menus() -> void:
 	pause_menu.help_requested.connect(
 		_on_help_requested
 	)
+	pause_menu.options_requested.connect(
+		_on_options_requested
+	)
 	pause_menu.main_menu_requested.connect(
 		_on_main_menu_requested
 	)
@@ -480,6 +487,14 @@ func _setup_menus() -> void:
 	help_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	help_screen.closed.connect(_on_help_closed)
 
+	options_screen = OPTIONS_SCREEN_SCRIPT.new()
+	menu_layer.add_child(options_screen)
+	options_screen.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+	options_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	options_screen.closed.connect(_on_options_closed)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
@@ -497,6 +512,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if help_screen != null and help_screen.visible:
+		return
+
+	if options_screen != null and options_screen.visible:
 		return
 
 	if pause_menu.visible:
@@ -576,6 +594,20 @@ func _on_hud_help_pressed() -> void:
 	})
 	_pause_for_overlay()
 	help_screen.show()
+
+
+## Opcoes so abrem pela pausa, entao sempre voltam para ela.
+func _on_options_requested() -> void:
+	overlay_returns_to_pause = true
+	pause_menu.hide()
+	options_screen.refresh()
+	options_screen.show()
+
+
+func _on_options_closed() -> void:
+	options_screen.hide()
+	SessionLogger.set_session_info("colorblind_mode", GameSettings.get_colorblind_id())
+	_return_from_overlay()
 
 
 func _on_help_closed() -> void:
